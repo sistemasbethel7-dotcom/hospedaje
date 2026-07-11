@@ -21,6 +21,22 @@ document.getElementById('cambiar-evento-btn').addEventListener('click', () => {
   window.location.href = 'eventos.html';
 });
 
+document.getElementById('menu-hogares').addEventListener('click', () => {
+  window.location.href = 'hogares.html';
+});
+
+document.getElementById('qa-hogar').addEventListener('click', () => {
+  window.location.href = 'registro.html';
+});
+document.getElementById('qa-ingresos').addEventListener('click', () => {
+  window.location.href = 'ingresos.html';
+});
+document.getElementById('logout-btn').addEventListener('click', () => {
+  clearSession();
+  clearActiveEventId();
+  window.location.href = 'index.html';
+});
+
 if (!session) {
   window.location.href = 'index.html';
 } else {
@@ -48,22 +64,9 @@ if (!session) {
 
       const eventoAbierto = evento.estatus === 'abierto';
       if ((user.role === 'agente' || user.role === 'admin') && eventoAbierto) {
-        const hogarTile = document.getElementById('qa-hogar');
-        const ingresosTile = document.getElementById('qa-ingresos');
-        hogarTile.hidden = false;
-        ingresosTile.hidden = false;
-
-        hogarTile.addEventListener('click', () => {
-          window.location.href = 'registro.html';
-        });
-        ingresosTile.addEventListener('click', () => {
-          window.location.href = 'ingresos.html';
-        });
+        document.getElementById('qa-hogar').hidden = false;
+        document.getElementById('qa-ingresos').hidden = false;
       }
-
-      document.getElementById('menu-hogares').addEventListener('click', () => {
-        window.location.href = 'hogares.html';
-      });
     } catch (err) {
       if (err.status === 401) {
         clearSession();
@@ -77,11 +80,5 @@ if (!session) {
         window.location.href = 'index.html';
       }
     }
-
-    document.getElementById('logout-btn').addEventListener('click', () => {
-      clearSession();
-      clearActiveEventId();
-      window.location.href = 'index.html';
-    });
   }
 }
