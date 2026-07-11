@@ -29,6 +29,47 @@
   margin-top: 6px;
 }
 
+.home-evento {
+  width: 100%;
+  max-width: 320px;
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.home-evento-nombre {
+  font: 600 16px var(--font-display);
+  color: var(--color-text);
+}
+
+.home-evento-fechas {
+  font: 500 11.5px var(--font-body);
+  color: var(--color-text-muted);
+  margin-top: -6px;
+}
+
+.home-evento-stats {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-gold-border);
+  width: 100%;
+}
+
+.home-evento-cambiar {
+  border: none;
+  background: none;
+  color: var(--color-gold-deep);
+  font: 600 10.5px var(--font-body);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  text-decoration: underline;
+  padding: 2px;
+}
+
 .home-grid {
   width: 100%;
   max-width: 320px;

@@ -1,6 +1,7 @@
 import { registerServiceWorker } from '../app.js';
-import { me } from '../services/api.js';
+import { me, obtenerEvento } from '../services/api.js';
 import { getSession, clearSession } from '../services/session.js';
+import { getActiveEventId, clearActiveEventId } from '../services/eventoActivo.js';
 
 registerServiceWorker();
 
@@ -11,38 +12,76 @@ function displayName(email) {
   return local.charAt(0).toUpperCase() + local.slice(1);
 }
 
+function formatFecha(iso) {
+  const [y, m, d] = iso.slice(0, 10).split('-');
+  return `${d}/${m}/${y}`;
+}
+
+document.getElementById('cambiar-evento-btn').addEventListener('click', () => {
+  window.location.href = 'eventos.html';
+});
+
 if (!session) {
   window.location.href = 'index.html';
 } else {
-  try {
-    const { user } = await me(session.token);
-    document.getElementById('home-role').textContent = user.role;
-    document.getElementById('home-greeting-name').textContent = `Hola, ${displayName(user.email)}`;
+  const eventoId = getActiveEventId();
+  if (!eventoId) {
+    window.location.href = 'eventos.html';
+  } else {
+    try {
+      const [{ user }, { evento }] = await Promise.all([me(session.token), obtenerEvento(session.token, eventoId)]);
 
-    if (user.role === 'agente' || user.role === 'admin') {
-      const hogarTile = document.getElementById('qa-hogar');
-      const ingresosTile = document.getElementById('qa-ingresos');
-      hogarTile.hidden = false;
-      ingresosTile.hidden = false;
+      document.getElementById('home-role').textContent = user.role;
+      document.getElementById('home-greeting-name').textContent = `Hola, ${displayName(user.email)}`;
 
-      hogarTile.addEventListener('click', () => {
-        window.location.href = 'registro.html';
+      const eventoBox = document.getElementById('home-evento');
+      eventoBox.hidden = false;
+      document.getElementById('evento-nombre').textContent = evento.nombre;
+      document.getElementById('evento-fechas').textContent = `${formatFecha(evento.fecha_inicio)} – ${formatFecha(evento.fecha_fin)}`;
+
+      const esGestor = user.role === 'admin' || user.role === 'supervisor';
+      if (esGestor) {
+        document.getElementById('evento-stats').hidden = false;
+        document.getElementById('evento-stat-hogares').textContent = evento.total_hogares;
+        document.getElementById('evento-stat-ocupacion').textContent = `${evento.ocupacion_total}/${evento.capacidad_total}`;
+      }
+
+      const eventoAbierto = evento.estatus === 'abierto';
+      if ((user.role === 'agente' || user.role === 'admin') && eventoAbierto) {
+        const hogarTile = document.getElementById('qa-hogar');
+        const ingresosTile = document.getElementById('qa-ingresos');
+        hogarTile.hidden = false;
+        ingresosTile.hidden = false;
+
+        hogarTile.addEventListener('click', () => {
+          window.location.href = 'registro.html';
+        });
+        ingresosTile.addEventListener('click', () => {
+          window.location.href = 'ingresos.html';
+        });
+      }
+
+      document.getElementById('menu-hogares').addEventListener('click', () => {
+        window.location.href = 'hogares.html';
       });
-      ingresosTile.addEventListener('click', () => {
-        window.location.href = 'ingresos.html';
-      });
+    } catch (err) {
+      if (err.status === 401) {
+        clearSession();
+        clearActiveEventId();
+        window.location.href = 'index.html';
+      } else if (err.status === 404) {
+        clearActiveEventId();
+        window.location.href = 'eventos.html';
+      } else {
+        clearSession();
+        window.location.href = 'index.html';
+      }
     }
 
-    document.getElementById('menu-hogares').addEventListener('click', () => {
-      window.location.href = 'hogares.html';
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      clearSession();
+      clearActiveEventId();
+      window.location.href = 'index.html';
     });
-  } catch {
-    clearSession();
-    window.location.href = 'index.html';
   }
-
-  document.getElementById('logout-btn').addEventListener('click', () => {
-    clearSession();
-    window.location.href = 'index.html';
-  });
 }

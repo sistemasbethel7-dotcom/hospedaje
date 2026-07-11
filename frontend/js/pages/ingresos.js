@@ -1,12 +1,18 @@
 import { registerServiceWorker } from '../app.js';
-import { listarHogares, registrarIngreso } from '../services/api.js';
+import { listarHogares, registrarIngreso, obtenerEvento } from '../services/api.js';
 import { getSession, clearSession } from '../services/session.js';
+import { getActiveEventId, clearActiveEventId } from '../services/eventoActivo.js';
 
 registerServiceWorker();
 
 const session = getSession();
 if (!session) {
   window.location.href = 'index.html';
+}
+
+const eventoId = getActiveEventId();
+if (!eventoId) {
+  window.location.href = 'eventos.html';
 }
 
 document.getElementById('back-btn').addEventListener('click', () => {
@@ -43,7 +49,7 @@ function renderList() {
         <div class="card-bordered hogar-card selectable ${isSelected ? 'selected' : ''}" data-id="${h.id}" style="${isFull ? 'opacity:.5' : ''}">
           <div class="hogar-info">
             <div class="hogar-nombre">${escapeHtml(h.nombre_dueno)}</div>
-            <div class="hogar-direccion">${escapeHtml(h.direccion)}</div>
+            <div class="hogar-direccion">${escapeHtml(h.calle_numero)}, ${escapeHtml(h.colonia)}</div>
             <div class="hogar-ocupacion">${isFull ? 'Sin lugares disponibles' : `${disponibles(h)} lugares disponibles`}</div>
           </div>
         </div>
@@ -102,6 +108,7 @@ document.getElementById('confirmar-btn').addEventListener('click', async () => {
   } catch (err) {
     if (err.status === 401) {
       clearSession();
+      clearActiveEventId();
       window.location.href = 'index.html';
       return;
     }
@@ -112,12 +119,18 @@ document.getElementById('confirmar-btn').addEventListener('click', async () => {
 });
 
 try {
-  const data = await listarHogares(session.token);
+  const data = await listarHogares(session.token, eventoId);
   hogares = data.hogares;
   renderList();
+  obtenerEvento(session.token, eventoId)
+    .then(({ evento }) => {
+      document.getElementById('evento-context').textContent = `Evento: ${evento.nombre}`;
+    })
+    .catch(() => {});
 } catch (err) {
   if (err.status === 401) {
     clearSession();
+    clearActiveEventId();
     window.location.href = 'index.html';
   } else {
     document.getElementById('ingresos-list-error').textContent = 'No se pudo cargar la lista de hogares.';

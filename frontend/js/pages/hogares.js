@@ -1,12 +1,18 @@
 import { registerServiceWorker } from '../app.js';
-import { listarHogares } from '../services/api.js';
+import { listarHogares, obtenerEvento } from '../services/api.js';
 import { getSession, clearSession } from '../services/session.js';
+import { getActiveEventId, clearActiveEventId } from '../services/eventoActivo.js';
 
 registerServiceWorker();
 
 const session = getSession();
 if (!session) {
   window.location.href = 'index.html';
+}
+
+const eventoId = getActiveEventId();
+if (!eventoId) {
+  window.location.href = 'eventos.html';
 }
 
 document.getElementById('back-btn').addEventListener('click', () => {
@@ -38,7 +44,7 @@ function renderHogares(hogares) {
           <div class="hogar-thumb" ${thumbStyle}>${thumbContent}</div>
           <div class="hogar-info">
             <div class="hogar-nombre">${escapeHtml(h.nombre_dueno)}</div>
-            <div class="hogar-direccion">${escapeHtml(h.direccion)}</div>
+            <div class="hogar-direccion">${escapeHtml(h.calle_numero)}, ${escapeHtml(h.colonia)}</div>
             <div class="hogar-ocupacion">${h.ocupacion_actual}/${h.capacidad} lugares ocupados</div>
           </div>
         </button>
@@ -54,11 +60,17 @@ function renderHogares(hogares) {
 }
 
 try {
-  const { hogares } = await listarHogares(session.token);
+  const { hogares } = await listarHogares(session.token, eventoId);
   renderHogares(hogares);
+  obtenerEvento(session.token, eventoId)
+    .then(({ evento }) => {
+      document.getElementById('evento-context').textContent = `Evento: ${evento.nombre}`;
+    })
+    .catch(() => {});
 } catch (err) {
   if (err.status === 401) {
     clearSession();
+    clearActiveEventId();
     window.location.href = 'index.html';
   } else {
     document.getElementById('hogares-list').innerHTML =

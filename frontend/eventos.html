@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Hogares registrados · Anfitriones</title>
+<title>Eventos · Anfitriones</title>
 <meta name="theme-color" content="#A8832E">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
@@ -13,21 +13,22 @@
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/components.css">
-<link rel="stylesheet" href="css/hogares.css">
+<link rel="stylesheet" href="css/eventos.css">
 </head>
 <body>
 <div class="screen">
   <header class="screen-header">
-    <button type="button" class="screen-back" id="back-btn" aria-label="Volver">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <button type="button" class="screen-back" id="logout-btn" aria-label="Cerrar sesión">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
-    <span class="screen-heading">Hogares registrados</span>
+    <span class="screen-heading" id="eventos-heading">Eventos</span>
+    <button type="button" class="eventos-add-btn" id="crear-evento-btn" hidden aria-label="Crear evento">+</button>
   </header>
-  <p class="evento-context" id="evento-context"></p>
 
-  <div class="hogares-list" id="hogares-list"></div>
+  <p class="form-error" id="eventos-error" role="alert"></p>
+  <div class="eventos-list" id="eventos-list"></div>
 </div>
 
-<script type="module" src="js/pages/hogares.js"></script>
+<script type="module" src="js/pages/eventos.js"></script>
 </body>
 </html>

@@ -27,6 +27,69 @@ export async function me(token) {
   return res.json();
 }
 
+export async function crearEvento(token, payload) {
+  const res = await fetch(`${API_BASE}/eventos`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    const error = new Error(data.message || 'No se pudo crear el evento.');
+    error.status = res.status;
+    throw error;
+  }
+
+  return res.json();
+}
+
+export async function listarEventos(token, estatus) {
+  const url = estatus ? `${API_BASE}/eventos?estatus=${estatus}` : `${API_BASE}/eventos`;
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    const error = new Error('No se pudo cargar la lista de eventos.');
+    error.status = res.status;
+    throw error;
+  }
+
+  return res.json();
+}
+
+export async function obtenerEvento(token, id) {
+  const res = await fetch(`${API_BASE}/eventos/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    const error = new Error('No se pudo cargar el evento.');
+    error.status = res.status;
+    throw error;
+  }
+
+  return res.json();
+}
+
+export async function actualizarEvento(token, id, payload) {
+  const res = await fetch(`${API_BASE}/eventos/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    const error = new Error(data.message || 'No se pudo actualizar el evento.');
+    error.status = res.status;
+    throw error;
+  }
+
+  return res.json();
+}
+
 export async function crearHogar(token, formData) {
   const res = await fetch(`${API_BASE}/hogares`, {
     method: 'POST',
@@ -44,8 +107,8 @@ export async function crearHogar(token, formData) {
   return res.json();
 }
 
-export async function listarHogares(token) {
-  const res = await fetch(`${API_BASE}/hogares`, {
+export async function listarHogares(token, eventoId) {
+  const res = await fetch(`${API_BASE}/hogares?evento_id=${eventoId}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 

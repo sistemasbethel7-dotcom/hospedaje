@@ -36,6 +36,8 @@
       <div class="card-bordered detalle-card">
         <h2 class="detalle-nombre" id="v-nombre"></h2>
         <p class="detalle-direccion" id="v-direccion"></p>
+        <p class="detalle-notas" id="v-cp" hidden></p>
+        <p class="detalle-notas" id="v-referencias" hidden></p>
         <div class="detalle-row"><span class="label-caps">Capacidad</span><span id="v-capacidad"></span></div>
         <div class="detalle-row"><span class="label-caps">Agua</span><span id="v-agua"></span></div>
         <div class="detalle-row"><span class="label-caps">Luz</span><span id="v-luz"></span></div>
@@ -60,8 +62,20 @@
         <input type="text" id="nombre_dueno" name="nombre_dueno" required>
       </div>
       <div class="field">
-        <label class="label-caps" for="direccion">Dirección</label>
-        <input type="text" id="direccion" name="direccion" required>
+        <label class="label-caps" for="calle_numero">Calle y número</label>
+        <input type="text" id="calle_numero" name="calle_numero" required>
+      </div>
+      <div class="field">
+        <label class="label-caps" for="colonia">Colonia</label>
+        <input type="text" id="colonia" name="colonia" required>
+      </div>
+      <div class="field">
+        <label class="label-caps" for="codigo_postal">Código postal (opcional)</label>
+        <input type="text" id="codigo_postal" name="codigo_postal" inputmode="numeric">
+      </div>
+      <div class="field">
+        <label class="label-caps" for="referencias">Referencias (opcional)</label>
+        <input type="text" id="referencias" name="referencias">
       </div>
       <button type="button" class="wizard-location-trigger" id="ubicar-btn">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-7.58 7-12a7 7 0 10-14 0c0 4.42 7 12 7 12z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.8"/></svg>

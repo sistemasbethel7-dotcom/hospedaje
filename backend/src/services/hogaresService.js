@@ -3,13 +3,18 @@ import { pool } from '../config/db.js';
 export async function insertHogar(data) {
   const { rows } = await pool.query(
     `INSERT INTO hogares
-      (nombre_dueno, direccion, lat, lng, capacidad, foto_dueno, foto_fachada,
-       agua, luz, electricidad, vulnerabilidades, notas_vulnerabilidad, perfil_sugerido, registrado_por)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
-     RETURNING id, nombre_dueno, direccion, capacidad, created_at`,
+      (evento_id, nombre_dueno, calle_numero, colonia, codigo_postal, referencias, lat, lng, capacidad,
+       foto_dueno, foto_fachada, agua, luz, electricidad, vulnerabilidades, notas_vulnerabilidad,
+       perfil_sugerido, registrado_por)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+     RETURNING id, nombre_dueno, calle_numero, colonia, capacidad, created_at`,
     [
+      data.eventoId,
       data.nombreDueno,
-      data.direccion,
+      data.calleNumero,
+      data.colonia,
+      data.codigoPostal,
+      data.referencias,
       data.lat,
       data.lng,
       data.capacidad,
@@ -27,11 +32,13 @@ export async function insertHogar(data) {
   return rows[0];
 }
 
-export async function listHogares() {
+export async function listHogares(eventoId) {
   const { rows } = await pool.query(
-    `SELECT id, nombre_dueno, direccion, capacidad, ocupacion_actual, foto_fachada, created_at
+    `SELECT id, nombre_dueno, calle_numero, colonia, capacidad, ocupacion_actual, foto_fachada, created_at
      FROM hogares
-     ORDER BY created_at DESC`
+     WHERE evento_id = $1
+     ORDER BY created_at DESC`,
+    [eventoId]
   );
   return rows;
 }
@@ -46,8 +53,8 @@ export async function getHogarById(id) {
 
 export async function getHogarDetalle(id) {
   const { rows } = await pool.query(
-    `SELECT id, nombre_dueno, direccion, lat, lng, capacidad, ocupacion_actual,
-            foto_dueno, foto_fachada, agua, luz, electricidad,
+    `SELECT id, evento_id, nombre_dueno, calle_numero, colonia, codigo_postal, referencias, lat, lng,
+            capacidad, ocupacion_actual, foto_dueno, foto_fachada, agua, luz, electricidad,
             vulnerabilidades, notas_vulnerabilidad, perfil_sugerido, created_at
      FROM hogares
      WHERE id = $1`,
@@ -60,23 +67,29 @@ export async function updateHogar(id, data) {
   const { rows } = await pool.query(
     `UPDATE hogares SET
        nombre_dueno = $1,
-       direccion = $2,
-       lat = $3,
-       lng = $4,
-       capacidad = $5,
-       agua = $6,
-       luz = $7,
-       electricidad = $8,
-       vulnerabilidades = $9,
-       notas_vulnerabilidad = $10,
-       perfil_sugerido = $11,
-       foto_dueno = COALESCE($12, foto_dueno),
-       foto_fachada = COALESCE($13, foto_fachada)
-     WHERE id = $14
-     RETURNING id, nombre_dueno, direccion, capacidad, created_at`,
+       calle_numero = $2,
+       colonia = $3,
+       codigo_postal = $4,
+       referencias = $5,
+       lat = $6,
+       lng = $7,
+       capacidad = $8,
+       agua = $9,
+       luz = $10,
+       electricidad = $11,
+       vulnerabilidades = $12,
+       notas_vulnerabilidad = $13,
+       perfil_sugerido = $14,
+       foto_dueno = COALESCE($15, foto_dueno),
+       foto_fachada = COALESCE($16, foto_fachada)
+     WHERE id = $17
+     RETURNING id, nombre_dueno, calle_numero, colonia, capacidad, created_at`,
     [
       data.nombreDueno,
-      data.direccion,
+      data.calleNumero,
+      data.colonia,
+      data.codigoPostal,
+      data.referencias,
       data.lat,
       data.lng,
       data.capacidad,

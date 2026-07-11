@@ -1,4 +1,5 @@
 import { pool } from '../config/db.js';
+import { EventoFinalizadoError } from './eventosService.js';
 
 export class CapacidadExcedidaError extends Error {}
 
@@ -8,12 +9,18 @@ export async function registrarIngreso(hogarId, cantidad, registradoPor) {
     await client.query('BEGIN');
 
     const { rows } = await client.query(
-      'SELECT capacidad, ocupacion_actual FROM hogares WHERE id = $1 FOR UPDATE',
+      `SELECT h.capacidad, h.ocupacion_actual, e.estatus AS evento_estatus
+       FROM hogares h JOIN eventos e ON e.id = h.evento_id
+       WHERE h.id = $1
+       FOR UPDATE OF h`,
       [hogarId]
     );
     const hogar = rows[0];
     if (!hogar) {
       throw new Error('Hogar no encontrado.');
+    }
+    if (hogar.evento_estatus === 'finalizado') {
+      throw new EventoFinalizadoError('El evento ya fue finalizado.');
     }
 
     const nuevaOcupacion = hogar.ocupacion_actual + cantidad;

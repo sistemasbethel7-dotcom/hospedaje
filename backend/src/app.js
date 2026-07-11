@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import path from 'node:path';
 import authRoutes from './routes/auth.js';
+import eventosRoutes from './routes/eventos.js';
 import hogaresRoutes from './routes/hogares.js';
 
 export function createApp() {
@@ -16,6 +17,7 @@ export function createApp() {
   });
 
   app.use('/api/auth', authRoutes);
+  app.use('/api/eventos', eventosRoutes);
   app.use('/api/hogares', hogaresRoutes);
 
   app.use((err, req, res, next) => {

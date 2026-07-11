@@ -1,0 +1,115 @@
+.eventos-add-btn {
+  margin-left: auto;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--color-gold);
+  background: transparent;
+  color: var(--color-gold-deep);
+  font: 600 18px var(--font-body);
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.eventos-list {
+  flex: 1;
+  padding: 18px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.evento-card {
+  width: 100%;
+  background: var(--color-bg);
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.evento-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.evento-nombre {
+  font: 600 17px var(--font-display);
+  color: var(--color-text);
+}
+
+.evento-sede {
+  font: 500 12px var(--font-body);
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.evento-fechas {
+  font: 500 11.5px var(--font-body);
+  color: var(--color-text-muted);
+}
+
+.estatus-badge {
+  flex: none;
+  font: 700 9.5px var(--font-body);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: var(--color-gold-tint);
+  color: var(--color-gold-deep);
+}
+
+.estatus-badge.finalizado {
+  background: var(--color-bg-soft);
+  color: var(--color-text-muted);
+}
+
+.evento-stats {
+  display: flex;
+  gap: 18px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-gold-border);
+}
+
+.evento-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.evento-stat-valor {
+  font: 600 16px var(--font-display);
+  color: var(--color-text);
+}
+
+.evento-stat-label {
+  font: 600 9.5px var(--font-body);
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.evento-finalizar-btn {
+  align-self: flex-start;
+  border: 1px solid var(--color-warn);
+  color: var(--color-warn);
+  background: transparent;
+  font: 600 10px var(--font-body);
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border-radius: 20px;
+}
+
+.eventos-empty {
+  text-align: center;
+  color: var(--color-text-muted);
+  font: 500 13px var(--font-body);
+  padding: 60px 24px;
+}

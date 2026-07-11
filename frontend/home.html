@@ -14,6 +14,7 @@
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/eventos.css">
 <link rel="stylesheet" href="css/home.css">
 </head>
 <body>
@@ -23,6 +24,16 @@
   <div class="home-greeting">
     <p class="label-caps" id="home-role"></p>
     <h2 class="home-title" id="home-greeting-name">Hola</h2>
+  </div>
+
+  <div class="home-evento card-bordered" id="home-evento" hidden>
+    <div class="home-evento-nombre" id="evento-nombre"></div>
+    <div class="home-evento-fechas" id="evento-fechas"></div>
+    <div class="home-evento-stats" id="evento-stats" hidden>
+      <div class="evento-stat"><span class="evento-stat-valor" id="evento-stat-hogares"></span><span class="evento-stat-label">Hogares</span></div>
+      <div class="evento-stat"><span class="evento-stat-valor" id="evento-stat-ocupacion"></span><span class="evento-stat-label">Ocupación</span></div>
+    </div>
+    <button type="button" class="home-evento-cambiar" id="cambiar-evento-btn">Cambiar evento</button>
   </div>
 
   <div class="home-grid">

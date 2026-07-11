@@ -1,6 +1,7 @@
 import { registerServiceWorker } from '../app.js';
 import { crearHogar } from '../services/api.js';
 import { getSession, clearSession } from '../services/session.js';
+import { getActiveEventId, clearActiveEventId } from '../services/eventoActivo.js';
 import { setupMapModal } from '../mapModal.js';
 
 registerServiceWorker();
@@ -8,6 +9,11 @@ registerServiceWorker();
 const session = getSession();
 if (!session) {
   window.location.href = 'index.html';
+}
+
+const eventoId = getActiveEventId();
+if (!eventoId) {
+  window.location.href = 'eventos.html';
 }
 
 const TOTAL_STEPS = 6;
@@ -30,9 +36,16 @@ function loadDraft() {
   if (!raw) return;
   try {
     const draft = JSON.parse(raw);
+    if (draft.evento_id !== eventoId) {
+      localStorage.removeItem(DRAFT_KEY);
+      return;
+    }
     Object.assign(state, draft);
     document.getElementById('nombre_dueno').value = draft.nombre_dueno || '';
-    document.getElementById('direccion').value = draft.direccion || '';
+    document.getElementById('calle_numero').value = draft.calle_numero || '';
+    document.getElementById('colonia').value = draft.colonia || '';
+    document.getElementById('codigo_postal').value = draft.codigo_postal || '';
+    document.getElementById('referencias').value = draft.referencias || '';
     document.getElementById('notas_vulnerabilidad').value = draft.notas_vulnerabilidad || '';
   } catch {
     localStorage.removeItem(DRAFT_KEY);
@@ -41,6 +54,7 @@ function loadDraft() {
 
 function saveDraft() {
   const draft = {
+    evento_id: eventoId,
     step: state.step,
     capacidad: state.capacidad,
     aguaActiva: state.aguaActiva,
@@ -48,7 +62,10 @@ function saveDraft() {
     vulnerabilidades: state.vulnerabilidades,
     perfil: state.perfil,
     nombre_dueno: document.getElementById('nombre_dueno').value,
-    direccion: document.getElementById('direccion').value,
+    calle_numero: document.getElementById('calle_numero').value,
+    colonia: document.getElementById('colonia').value,
+    codigo_postal: document.getElementById('codigo_postal').value,
+    referencias: document.getElementById('referencias').value,
     notas_vulnerabilidad: document.getElementById('notas_vulnerabilidad').value,
     lat: state.lat,
     lng: state.lng,
@@ -73,9 +90,10 @@ function renderStep() {
 function validateStep() {
   if (state.step === 1) {
     const nombre = document.getElementById('nombre_dueno').value.trim();
-    const direccion = document.getElementById('direccion').value.trim();
-    if (!nombre || !direccion) {
-      return 'Completa el nombre del dueño y la dirección.';
+    const calleNumero = document.getElementById('calle_numero').value.trim();
+    const colonia = document.getElementById('colonia').value.trim();
+    if (!nombre || !calleNumero || !colonia) {
+      return 'Completa el nombre del dueño, la calle y número, y la colonia.';
     }
   }
   return null;
@@ -182,8 +200,12 @@ async function handleSubmit() {
   errorEl.textContent = '';
 
   const formData = new FormData();
+  formData.append('evento_id', eventoId);
   formData.append('nombre_dueno', document.getElementById('nombre_dueno').value.trim());
-  formData.append('direccion', document.getElementById('direccion').value.trim());
+  formData.append('calle_numero', document.getElementById('calle_numero').value.trim());
+  formData.append('colonia', document.getElementById('colonia').value.trim());
+  formData.append('codigo_postal', document.getElementById('codigo_postal').value.trim());
+  formData.append('referencias', document.getElementById('referencias').value.trim());
   if (state.lat) formData.append('lat', state.lat);
   if (state.lng) formData.append('lng', state.lng);
   formData.append('capacidad', state.capacidad);
@@ -205,6 +227,7 @@ async function handleSubmit() {
   } catch (err) {
     if (err.status === 401) {
       clearSession();
+      clearActiveEventId();
       window.location.href = 'index.html';
       return;
     }

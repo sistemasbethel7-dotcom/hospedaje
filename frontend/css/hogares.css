@@ -1,3 +1,9 @@
+.evento-context {
+  padding: 0 24px;
+  font: 500 11px var(--font-body);
+  color: var(--color-text-muted);
+}
+
 .hogares-list {
   flex: 1;
   padding: 18px 24px 24px;

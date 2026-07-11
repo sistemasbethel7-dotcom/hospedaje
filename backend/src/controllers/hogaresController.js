@@ -5,11 +5,16 @@ import {
   updateHogar,
   deleteHogar,
 } from '../services/hogaresService.js';
+import { getEventoById } from '../services/eventosService.js';
 
 export async function crear(req, res) {
   const {
+    evento_id,
     nombre_dueno,
-    direccion,
+    calle_numero,
+    colonia,
+    codigo_postal,
+    referencias,
     lat,
     lng,
     capacidad,
@@ -21,16 +26,32 @@ export async function crear(req, res) {
     perfil_sugerido,
   } = req.body;
 
-  if (!nombre_dueno || !direccion || !capacidad) {
+  const eventoId = Number(evento_id);
+  if (!eventoId) {
+    return res.status(400).json({ message: 'Falta el evento.' });
+  }
+  if (!nombre_dueno || !calle_numero || !colonia || !capacidad) {
     return res.status(400).json({ message: 'Faltan datos obligatorios de la casa.' });
+  }
+
+  const evento = await getEventoById(eventoId);
+  if (!evento) {
+    return res.status(404).json({ message: 'Evento no encontrado.' });
+  }
+  if (evento.estatus === 'finalizado') {
+    return res.status(409).json({ message: 'El evento ya fue finalizado.' });
   }
 
   const fotoDueno = req.files?.foto_dueno?.[0]?.filename || null;
   const fotoFachada = req.files?.foto_fachada?.[0]?.filename || null;
 
   const hogar = await insertHogar({
+    eventoId,
     nombreDueno: nombre_dueno,
-    direccion,
+    calleNumero: calle_numero,
+    colonia,
+    codigoPostal: codigo_postal || null,
+    referencias: referencias || null,
     lat: lat ? Number(lat) : null,
     lng: lng ? Number(lng) : null,
     capacidad: Number(capacidad),
@@ -49,7 +70,11 @@ export async function crear(req, res) {
 }
 
 export async function listar(req, res) {
-  const hogares = await listHogares();
+  const eventoId = Number(req.query.evento_id);
+  if (!eventoId) {
+    return res.status(400).json({ message: 'Falta el evento.' });
+  }
+  const hogares = await listHogares(eventoId);
   res.json({ hogares });
 }
 
@@ -64,7 +89,10 @@ export async function detalle(req, res) {
 export async function actualizar(req, res) {
   const {
     nombre_dueno,
-    direccion,
+    calle_numero,
+    colonia,
+    codigo_postal,
+    referencias,
     lat,
     lng,
     capacidad,
@@ -76,7 +104,7 @@ export async function actualizar(req, res) {
     perfil_sugerido,
   } = req.body;
 
-  if (!nombre_dueno || !direccion || !capacidad) {
+  if (!nombre_dueno || !calle_numero || !colonia || !capacidad) {
     return res.status(400).json({ message: 'Faltan datos obligatorios de la casa.' });
   }
 
@@ -85,7 +113,10 @@ export async function actualizar(req, res) {
 
   const hogar = await updateHogar(req.params.id, {
     nombreDueno: nombre_dueno,
-    direccion,
+    calleNumero: calle_numero,
+    colonia,
+    codigoPostal: codigo_postal || null,
+    referencias: referencias || null,
     lat: lat ? Number(lat) : null,
     lng: lng ? Number(lng) : null,
     capacidad: Number(capacidad),

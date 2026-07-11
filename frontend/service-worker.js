@@ -1,8 +1,10 @@
-const CACHE_NAME = 'anfitriones-v6';
+const CACHE_NAME = 'anfitriones-v7';
 const APP_SHELL = [
   '/',
   '/index.html',
   '/home.html',
+  '/eventos.html',
+  '/evento-nuevo.html',
   '/registro.html',
   '/hogares.html',
   '/hogar-detalle.html',
@@ -13,6 +15,8 @@ const APP_SHELL = [
   '/css/components.css',
   '/css/login.css',
   '/css/home.css',
+  '/css/eventos.css',
+  '/css/evento-nuevo.css',
   '/css/registro.css',
   '/css/hogares.css',
   '/css/hogar-detalle.css',
@@ -21,12 +25,15 @@ const APP_SHELL = [
   '/js/mapModal.js',
   '/js/pages/login.js',
   '/js/pages/home.js',
+  '/js/pages/eventos.js',
+  '/js/pages/evento-nuevo.js',
   '/js/pages/registro.js',
   '/js/pages/hogares.js',
   '/js/pages/hogar-detalle.js',
   '/js/pages/ingresos.js',
   '/js/services/api.js',
   '/js/services/session.js',
+  '/js/services/eventoActivo.js',
 ];
 
 self.addEventListener('install', (event) => {

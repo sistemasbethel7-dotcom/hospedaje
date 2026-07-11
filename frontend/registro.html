@@ -50,8 +50,20 @@
           <input type="text" id="nombre_dueno" name="nombre_dueno" placeholder="Familia Ramírez" required>
         </div>
         <div class="field">
-          <label class="label-caps" for="direccion">Dirección</label>
-          <input type="text" id="direccion" name="direccion" placeholder="Calle, número, colonia" required>
+          <label class="label-caps" for="calle_numero">Calle y número</label>
+          <input type="text" id="calle_numero" name="calle_numero" placeholder="Av. Juárez 123" required>
+        </div>
+        <div class="field">
+          <label class="label-caps" for="colonia">Colonia</label>
+          <input type="text" id="colonia" name="colonia" placeholder="Centro" required>
+        </div>
+        <div class="field">
+          <label class="label-caps" for="codigo_postal">Código postal (opcional)</label>
+          <input type="text" id="codigo_postal" name="codigo_postal" placeholder="44100" inputmode="numeric">
+        </div>
+        <div class="field">
+          <label class="label-caps" for="referencias">Referencias (opcional)</label>
+          <input type="text" id="referencias" name="referencias" placeholder="Portón azul, casa de dos pisos">
         </div>
         <button type="button" class="wizard-location-trigger" id="ubicar-btn">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-7.58 7-12a7 7 0 10-14 0c0 4.42 7 12 7 12z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.8"/></svg>

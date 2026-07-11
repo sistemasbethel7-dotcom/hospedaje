@@ -1,6 +1,7 @@
 import { registerServiceWorker } from '../app.js';
 import { me, obtenerHogar, actualizarHogar, eliminarHogar } from '../services/api.js';
 import { getSession, clearSession } from '../services/session.js';
+import { clearActiveEventId } from '../services/eventoActivo.js';
 import { setupMapModal } from '../mapModal.js';
 
 registerServiceWorker();
@@ -50,7 +51,16 @@ function renderView() {
   }
 
   document.getElementById('v-nombre').textContent = hogar.nombre_dueno;
-  document.getElementById('v-direccion').textContent = hogar.direccion;
+  document.getElementById('v-direccion').textContent = `${hogar.calle_numero}, ${hogar.colonia}`;
+
+  const cpEl = document.getElementById('v-cp');
+  cpEl.hidden = !hogar.codigo_postal;
+  cpEl.textContent = hogar.codigo_postal ? `C.P. ${hogar.codigo_postal}` : '';
+
+  const refEl = document.getElementById('v-referencias');
+  refEl.hidden = !hogar.referencias;
+  refEl.textContent = hogar.referencias || '';
+
   document.getElementById('v-capacidad').textContent = `${hogar.ocupacion_actual}/${hogar.capacidad} lugares ocupados`;
   document.getElementById('v-agua').textContent = hogar.agua ? AGUA_LABELS[hogar.agua] : 'Sin servicio';
   document.getElementById('v-luz').textContent = hogar.luz ? 'Sí' : 'No';
@@ -179,7 +189,10 @@ function resetPhotoPreview(labelId, filename, placeholder) {
 
 function fillEditForm() {
   document.getElementById('nombre_dueno').value = hogar.nombre_dueno;
-  document.getElementById('direccion').value = hogar.direccion;
+  document.getElementById('calle_numero').value = hogar.calle_numero;
+  document.getElementById('colonia').value = hogar.colonia;
+  document.getElementById('codigo_postal').value = hogar.codigo_postal || '';
+  document.getElementById('referencias').value = hogar.referencias || '';
 
   state.lat = hogar.lat;
   state.lng = hogar.lng;
@@ -238,15 +251,19 @@ async function handleGuardar() {
   errorEl.textContent = '';
 
   const nombre = document.getElementById('nombre_dueno').value.trim();
-  const direccion = document.getElementById('direccion').value.trim();
-  if (!nombre || !direccion) {
-    errorEl.textContent = 'Completa el nombre del dueño y la dirección.';
+  const calleNumero = document.getElementById('calle_numero').value.trim();
+  const colonia = document.getElementById('colonia').value.trim();
+  if (!nombre || !calleNumero || !colonia) {
+    errorEl.textContent = 'Completa el nombre del dueño, la calle y número, y la colonia.';
     return;
   }
 
   const formData = new FormData();
   formData.append('nombre_dueno', nombre);
-  formData.append('direccion', direccion);
+  formData.append('calle_numero', calleNumero);
+  formData.append('colonia', colonia);
+  formData.append('codigo_postal', document.getElementById('codigo_postal').value.trim());
+  formData.append('referencias', document.getElementById('referencias').value.trim());
   if (state.lat) formData.append('lat', state.lat);
   if (state.lng) formData.append('lng', state.lng);
   formData.append('capacidad', state.capacidad);
@@ -270,6 +287,7 @@ async function handleGuardar() {
   } catch (err) {
     if (err.status === 401) {
       clearSession();
+      clearActiveEventId();
       window.location.href = 'index.html';
       return;
     }
@@ -291,6 +309,7 @@ async function handleEliminar() {
   } catch (err) {
     if (err.status === 401) {
       clearSession();
+      clearActiveEventId();
       window.location.href = 'index.html';
       return;
     }
@@ -331,6 +350,7 @@ try {
 } catch (err) {
   if (err.status === 401) {
     clearSession();
+    clearActiveEventId();
     window.location.href = 'index.html';
   } else {
     document.getElementById('detalle-error').textContent = 'No se pudo cargar el registro.';
