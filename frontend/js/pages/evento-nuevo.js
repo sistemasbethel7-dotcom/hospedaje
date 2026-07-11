@@ -14,19 +14,6 @@ document.getElementById('back-btn').addEventListener('click', () => {
   window.location.href = 'eventos.html';
 });
 
-try {
-  const { user } = await me(session.token);
-  if (user.role !== 'admin') {
-    window.location.href = 'eventos.html';
-  }
-} catch (err) {
-  if (err.status === 401) {
-    clearSession();
-    clearActiveEventId();
-  }
-  window.location.href = 'index.html';
-}
-
 document.getElementById('crear-btn').addEventListener('click', async () => {
   const errorEl = document.getElementById('evento-error');
   errorEl.textContent = '';
@@ -61,3 +48,16 @@ document.getElementById('crear-btn').addEventListener('click', async () => {
     btn.disabled = false;
   }
 });
+
+try {
+  const { user } = await me(session.token);
+  if (user.role !== 'admin') {
+    window.location.href = 'eventos.html';
+  }
+} catch (err) {
+  if (err.status === 401) {
+    clearSession();
+    clearActiveEventId();
+  }
+  window.location.href = 'index.html';
+}
