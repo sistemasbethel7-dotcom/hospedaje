@@ -4,7 +4,7 @@ import { pool } from '../config/db.js';
 
 export async function verifyCredentials(email, password) {
   const { rows } = await pool.query(
-    'SELECT id, email, password_hash FROM usuarios WHERE email = $1',
+    'SELECT id, email, password_hash, role FROM usuarios WHERE email = $1',
     [email]
   );
   const user = rows[0];
@@ -16,7 +16,7 @@ export async function verifyCredentials(email, password) {
 
 export function generateToken(user) {
   return jwt.sign(
-    { sub: user.id, email: user.email },
+    { sub: user.id, email: user.email, role: user.role },
     process.env.JWT_SECRET,
     { expiresIn: '30d' }
   );

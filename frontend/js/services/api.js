@@ -14,3 +14,15 @@ export async function login(email, password) {
 
   return res.json();
 }
+
+export async function me(token) {
+  const res = await fetch(`${API_BASE}/auth/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    throw new Error('Sesión inválida.');
+  }
+
+  return res.json();
+}
