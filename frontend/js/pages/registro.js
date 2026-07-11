@@ -99,8 +99,8 @@ function initMap() {
   const initialZoom = hasDraftLocation ? 19 : 12;
 
   const map = L.map('wizard-map').setView(initialCenter, initialZoom);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap',
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles © Esri',
     maxZoom: 19,
   }).addTo(map);
 
