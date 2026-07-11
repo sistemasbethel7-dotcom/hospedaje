@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Detalle del hogar · Anfitriones</title>
+<meta name="theme-color" content="#A8832E">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/registro.css">
+<link rel="stylesheet" href="css/hogares.css">
+<link rel="stylesheet" href="css/hogar-detalle.css">
+</head>
+<body>
+<div class="screen">
+  <header class="screen-header">
+    <button type="button" class="screen-back" id="back-btn" aria-label="Volver">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <span class="screen-heading" id="screen-title">Detalle del hogar</span>
+  </header>
+
+  <div class="detalle-body" id="detalle-body">
+
+    <section id="view-mode" hidden>
+      <div class="detalle-photo" id="detalle-photo"></div>
+
+      <div class="card-bordered detalle-card">
+        <h2 class="detalle-nombre" id="v-nombre"></h2>
+        <p class="detalle-direccion" id="v-direccion"></p>
+        <div class="detalle-row"><span class="label-caps">Capacidad</span><span id="v-capacidad"></span></div>
+        <div class="detalle-row"><span class="label-caps">Agua</span><span id="v-agua"></span></div>
+        <div class="detalle-row"><span class="label-caps">Luz</span><span id="v-luz"></span></div>
+        <div class="detalle-row"><span class="label-caps">Electricidad</span><span id="v-electricidad"></span></div>
+      </div>
+
+      <div class="card-bordered detalle-card" id="v-vulnerabilidades-card" hidden>
+        <span class="label-caps">Vulnerabilidades</span>
+        <div class="pill-group" id="v-vulnerabilidades"></div>
+        <p class="detalle-notas" id="v-notas"></p>
+      </div>
+
+      <div class="card-bordered detalle-card" id="v-perfil-card" hidden>
+        <span class="label-caps">Perfil recomendado</span>
+        <div class="pill-group" id="v-perfil"></div>
+      </div>
+    </section>
+
+    <form class="card-bordered wizard-card" id="edit-mode" hidden>
+      <div class="field">
+        <label class="label-caps" for="nombre_dueno">Nombre del dueño</label>
+        <input type="text" id="nombre_dueno" name="nombre_dueno" required>
+      </div>
+      <div class="field">
+        <label class="label-caps" for="direccion">Dirección</label>
+        <input type="text" id="direccion" name="direccion" required>
+      </div>
+      <button type="button" class="wizard-location-trigger" id="ubicar-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-7.58 7-12a7 7 0 10-14 0c0 4.42 7 12 7 12z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.8"/></svg>
+        <span id="ubicar-trigger-text">Ubicar en el mapa</span>
+      </button>
+
+      <div class="wizard-photos">
+        <div class="wizard-photo-slot">
+          <label for="foto_dueno" id="foto_dueno_label"><span>Dueño</span></label>
+          <input type="file" id="foto_dueno" name="foto_dueno" accept="image/*">
+        </div>
+        <div class="wizard-photo-slot rect">
+          <label for="foto_fachada" id="foto_fachada_label"><span>Fachada</span></label>
+          <input type="file" id="foto_fachada" name="foto_fachada" accept="image/*">
+        </div>
+      </div>
+
+      <div class="stepper">
+        <button type="button" id="capacidad-menos" aria-label="Restar">–</button>
+        <output id="capacidad-valor">1</output>
+        <button type="button" id="capacidad-mas" aria-label="Sumar">+</button>
+      </div>
+      <input type="hidden" id="capacidad" name="capacidad" value="1">
+
+      <div class="toggle-row">
+        <label class="toggle">
+          <span class="toggle-label">Agua potable</span>
+          <input type="checkbox" id="agua-toggle">
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        </label>
+        <div class="pill-group water-status" id="water-status">
+          <button type="button" class="pill selected" data-agua="buena">Buena</button>
+          <button type="button" class="pill" data-agua="intermitente">Intermitente</button>
+          <button type="button" class="pill" data-agua="sin_servicio">Sin servicio</button>
+        </div>
+      </div>
+      <input type="hidden" id="agua" name="agua" value="">
+
+      <div class="toggle-row">
+        <label class="toggle">
+          <span class="toggle-label">Luz (iluminación)</span>
+          <input type="checkbox" id="luz" name="luz">
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        </label>
+      </div>
+
+      <div class="toggle-row">
+        <label class="toggle">
+          <span class="toggle-label">Electricidad</span>
+          <input type="checkbox" id="electricidad" name="electricidad">
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        </label>
+      </div>
+
+      <div class="field">
+        <span class="label-caps">Vulnerabilidades</span>
+        <div class="pill-group" id="vulnerabilidades-group">
+          <button type="button" class="pill" data-vuln="Acceso complicado">Acceso complicado</button>
+          <button type="button" class="pill" data-vuln="Zona insegura">Zona insegura</button>
+          <button type="button" class="pill" data-vuln="Sin salida de emergencia">Sin salida de emergencia</button>
+          <button type="button" class="pill" data-vuln="Iluminación deficiente">Iluminación deficiente</button>
+          <button type="button" class="pill" data-vuln="Mascotas sueltas">Mascotas sueltas</button>
+        </div>
+        <textarea class="wizard-textarea" id="notas_vulnerabilidad" name="notas_vulnerabilidad" placeholder="Notas adicionales (opcional)"></textarea>
+      </div>
+
+      <div class="field">
+        <span class="label-caps">Perfil recomendado</span>
+        <div class="pill-group" id="perfil-group">
+          <button type="button" class="pill" data-perfil="Familia con niños">Familia con niños</button>
+          <button type="button" class="pill" data-perfil="Adultos mayores">Adultos mayores</button>
+          <button type="button" class="pill" data-perfil="Matrimonios">Matrimonios</button>
+        </div>
+      </div>
+    </form>
+
+  </div>
+
+  <p class="form-error" id="detalle-error" role="alert"></p>
+
+  <footer class="wizard-footer" id="view-footer" hidden>
+    <button type="button" class="btn-outline-danger" id="eliminar-btn">Eliminar</button>
+    <button type="button" class="btn-gold" id="editar-btn">Editar</button>
+  </footer>
+
+  <footer class="wizard-footer" id="edit-footer" hidden>
+    <button type="button" class="btn-outline" id="cancelar-btn">Cancelar</button>
+    <button type="button" class="btn-gold" id="guardar-btn">Guardar cambios</button>
+  </footer>
+</div>
+
+<div class="map-modal" id="map-modal" hidden>
+  <div class="map-modal-header">
+    <button type="button" class="screen-back" id="map-modal-close" aria-label="Cerrar">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <span class="screen-heading">Fijar ubicación</span>
+    <button type="button" class="map-modal-toggle" id="map-toggle-view">Satélite</button>
+  </div>
+  <div class="map-modal-body">
+    <div id="modal-map"></div>
+    <div class="map-modal-pin">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 00-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 00-7-7z"/></svg>
+    </div>
+  </div>
+  <div class="map-modal-footer">
+    <button type="button" class="map-modal-locate" id="map-locate-btn" aria-label="Usar mi ubicación">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="6" stroke="currentColor" stroke-width="2"/></svg>
+    </button>
+    <button type="button" class="btn-gold" id="map-confirm-btn">Confirmar ubicación</button>
+  </div>
+</div>
+
+<script type="module" src="js/pages/hogar-detalle.js"></script>
+</body>
+</html>

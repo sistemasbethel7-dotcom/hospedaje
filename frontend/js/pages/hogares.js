@@ -34,17 +34,23 @@ function renderHogares(hogares) {
       const thumbStyle = h.foto_fachada ? `style="background-image:url(/uploads/${h.foto_fachada})"` : '';
       const thumbContent = h.foto_fachada ? '' : HOUSE_ICON;
       return `
-        <div class="card-bordered hogar-card">
+        <button type="button" class="card-bordered hogar-card" data-id="${h.id}">
           <div class="hogar-thumb" ${thumbStyle}>${thumbContent}</div>
           <div class="hogar-info">
             <div class="hogar-nombre">${escapeHtml(h.nombre_dueno)}</div>
             <div class="hogar-direccion">${escapeHtml(h.direccion)}</div>
             <div class="hogar-ocupacion">${h.ocupacion_actual}/${h.capacidad} lugares ocupados</div>
           </div>
-        </div>
+        </button>
       `;
     })
     .join('');
+
+  list.querySelectorAll('.hogar-card').forEach((card) => {
+    card.addEventListener('click', () => {
+      window.location.href = `hogar-detalle.html?id=${card.dataset.id}`;
+    });
+  });
 }
 
 try {

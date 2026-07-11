@@ -10,6 +10,10 @@
   display: flex;
   gap: 14px;
   align-items: center;
+  width: 100%;
+  background: var(--color-bg);
+  text-align: left;
+  cursor: pointer;
 }
 
 .hogar-thumb {

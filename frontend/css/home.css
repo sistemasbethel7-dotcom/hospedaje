@@ -13,6 +13,12 @@
   text-align: center;
 }
 
+.home-app-title {
+  font: 700 40px var(--font-display);
+  color: var(--color-gold-deep);
+  margin-bottom: 28px;
+}
+
 .home-greeting {
   margin-bottom: 4px;
 }

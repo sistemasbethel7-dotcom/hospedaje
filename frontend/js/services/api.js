@@ -58,6 +58,51 @@ export async function listarHogares(token) {
   return res.json();
 }
 
+export async function obtenerHogar(token, id) {
+  const res = await fetch(`${API_BASE}/hogares/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    const error = new Error('No se pudo cargar el registro.');
+    error.status = res.status;
+    throw error;
+  }
+
+  return res.json();
+}
+
+export async function actualizarHogar(token, id, formData) {
+  const res = await fetch(`${API_BASE}/hogares/${id}`, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    const error = new Error(data.message || 'No se pudo actualizar el registro.');
+    error.status = res.status;
+    throw error;
+  }
+
+  return res.json();
+}
+
+export async function eliminarHogar(token, id) {
+  const res = await fetch(`${API_BASE}/hogares/${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    const error = new Error(data.message || 'No se pudo eliminar el registro.');
+    error.status = res.status;
+    throw error;
+  }
+}
+
 export async function registrarIngreso(token, hogarId, cantidad) {
   const res = await fetch(`${API_BASE}/hogares/${hogarId}/ingresos`, {
     method: 'POST',

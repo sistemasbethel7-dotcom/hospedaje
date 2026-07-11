@@ -1,6 +1,7 @@
 import { registerServiceWorker } from '../app.js';
 import { crearHogar } from '../services/api.js';
 import { getSession, clearSession } from '../services/session.js';
+import { setupMapModal } from '../mapModal.js';
 
 registerServiceWorker();
 
@@ -84,89 +85,12 @@ function updateOfflineBadge() {
   document.getElementById('offline-badge').hidden = navigator.onLine;
 }
 
-const STREET_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}';
-const SATELLITE_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
-
-let modalMap = null;
-let streetLayer = null;
-let satelliteLayer = null;
-let activeLayer = null;
-
 function updateLocationTrigger() {
   const btn = document.getElementById('ubicar-btn');
   const text = document.getElementById('ubicar-trigger-text');
   const hasLocation = typeof state.lat === 'number' && typeof state.lng === 'number';
   btn.classList.toggle('set', hasLocation);
   text.textContent = hasLocation ? 'Ubicación fijada · Toca para ajustar' : 'Ubicar en el mapa';
-}
-
-function ensureModalMap() {
-  if (modalMap) return;
-
-  streetLayer = L.tileLayer(STREET_URL, { attribution: 'Tiles © Esri', maxZoom: 19 });
-  satelliteLayer = L.tileLayer(SATELLITE_URL, { attribution: 'Tiles © Esri', maxZoom: 19 });
-
-  const hasLocation = typeof state.lat === 'number' && typeof state.lng === 'number';
-  const initialCenter = hasLocation ? [state.lat, state.lng] : [20.6597, -103.3496];
-  const initialZoom = hasLocation ? 19 : 12;
-
-  modalMap = L.map('modal-map').setView(initialCenter, initialZoom);
-  activeLayer = streetLayer;
-  activeLayer.addTo(modalMap);
-}
-
-function openMapModal() {
-  ensureModalMap();
-
-  if (activeLayer !== streetLayer) {
-    modalMap.removeLayer(activeLayer);
-    activeLayer = streetLayer;
-    activeLayer.addTo(modalMap);
-    document.getElementById('map-toggle-view').textContent = 'Satélite';
-  }
-
-  document.getElementById('map-modal').hidden = false;
-  setTimeout(() => modalMap.invalidateSize(), 50);
-
-  const hasLocation = typeof state.lat === 'number' && typeof state.lng === 'number';
-  if (!hasLocation && navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => modalMap.setView([pos.coords.latitude, pos.coords.longitude], 19),
-      () => {}
-    );
-  }
-}
-
-function closeMapModal() {
-  document.getElementById('map-modal').hidden = true;
-}
-
-function setupMapModal() {
-  document.getElementById('ubicar-btn').addEventListener('click', openMapModal);
-  document.getElementById('map-modal-close').addEventListener('click', closeMapModal);
-
-  document.getElementById('map-toggle-view').addEventListener('click', () => {
-    modalMap.removeLayer(activeLayer);
-    activeLayer = activeLayer === streetLayer ? satelliteLayer : streetLayer;
-    activeLayer.addTo(modalMap);
-    document.getElementById('map-toggle-view').textContent = activeLayer === streetLayer ? 'Satélite' : 'Normal';
-  });
-
-  document.getElementById('map-locate-btn').addEventListener('click', () => {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition((pos) => {
-      modalMap.setView([pos.coords.latitude, pos.coords.longitude], 19);
-    });
-  });
-
-  document.getElementById('map-confirm-btn').addEventListener('click', () => {
-    const center = modalMap.getCenter();
-    state.lat = center.lat;
-    state.lng = center.lng;
-    updateLocationTrigger();
-    saveDraft();
-    closeMapModal();
-  });
 }
 
 function setupPhotos() {
@@ -328,7 +252,16 @@ window.addEventListener('offline', updateOfflineBadge);
 
 loadDraft();
 updateLocationTrigger();
-setupMapModal();
+setupMapModal({
+  getLocation: () =>
+    (typeof state.lat === 'number' && typeof state.lng === 'number' ? { lat: state.lat, lng: state.lng } : null),
+  onConfirm: (lat, lng) => {
+    state.lat = lat;
+    state.lng = lng;
+    updateLocationTrigger();
+    saveDraft();
+  },
+});
 setupPhotos();
 setupCapacidad();
 setupAgua();
