@@ -60,8 +60,10 @@
           <label class="label-caps" for="direccion">Dirección</label>
           <input type="text" id="direccion" name="direccion" placeholder="Calle, número, colonia" required>
         </div>
-        <div class="wizard-map" id="wizard-map"></div>
-        <p class="wizard-location-status" id="ubicar-status">Obteniendo tu ubicación…</p>
+        <button type="button" class="wizard-location-trigger" id="ubicar-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-7.58 7-12a7 7 0 10-14 0c0 4.42 7 12 7 12z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.8"/></svg>
+          <span id="ubicar-trigger-text">Ubicar en el mapa</span>
+        </button>
       </div>
     </section>
 
@@ -176,6 +178,28 @@
     <button type="button" class="btn-outline" id="atras-btn">Atrás</button>
     <button type="button" class="btn-gold" id="siguiente-btn">Siguiente</button>
   </footer>
+</div>
+
+<div class="map-modal" id="map-modal" hidden>
+  <div class="map-modal-header">
+    <button type="button" class="screen-back" id="map-modal-close" aria-label="Cerrar">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <span class="screen-heading">Fijar ubicación</span>
+    <button type="button" class="map-modal-toggle" id="map-toggle-view">Satélite</button>
+  </div>
+  <div class="map-modal-body">
+    <div id="modal-map"></div>
+    <div class="map-modal-pin">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 00-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 00-7-7z"/></svg>
+    </div>
+  </div>
+  <div class="map-modal-footer">
+    <button type="button" class="map-modal-locate" id="map-locate-btn" aria-label="Usar mi ubicación">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="6" stroke="currentColor" stroke-width="2"/></svg>
+    </button>
+    <button type="button" class="btn-gold" id="map-confirm-btn">Confirmar ubicación</button>
+  </div>
 </div>
 
 <script type="module" src="js/pages/registro.js"></script>

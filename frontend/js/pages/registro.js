@@ -92,54 +92,89 @@ function updateOfflineBadge() {
   document.getElementById('offline-badge').hidden = navigator.onLine;
 }
 
-function initMap() {
-  const statusEl = document.getElementById('ubicar-status');
-  const hasDraftLocation = typeof state.lat === 'number' && typeof state.lng === 'number';
-  const initialCenter = hasDraftLocation ? [state.lat, state.lng] : [20.6597, -103.3496];
-  const initialZoom = hasDraftLocation ? 19 : 12;
+const STREET_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}';
+const SATELLITE_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
 
-  const map = L.map('wizard-map').setView(initialCenter, initialZoom);
-  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-    attribution: 'Tiles © Esri',
-    maxZoom: 19,
-  }).addTo(map);
+let modalMap = null;
+let streetLayer = null;
+let satelliteLayer = null;
+let activeLayer = null;
 
-  const marker = L.marker(initialCenter, { draggable: true }).addTo(map);
+function updateLocationTrigger() {
+  const btn = document.getElementById('ubicar-btn');
+  const text = document.getElementById('ubicar-trigger-text');
+  const hasLocation = typeof state.lat === 'number' && typeof state.lng === 'number';
+  btn.classList.toggle('set', hasLocation);
+  text.textContent = hasLocation ? 'Ubicación fijada · Toca para ajustar' : 'Ubicar en el mapa';
+}
 
-  const updateFromLatLng = (latlng) => {
-    state.lat = latlng.lat;
-    state.lng = latlng.lng;
-    statusEl.textContent = 'Ubicación fijada. Ajusta el pin si no es exacta.';
-    saveDraft();
-  };
+function ensureModalMap() {
+  if (modalMap) return;
 
-  marker.on('dragend', () => updateFromLatLng(marker.getLatLng()));
-  map.on('click', (event) => {
-    marker.setLatLng(event.latlng);
-    updateFromLatLng(event.latlng);
+  streetLayer = L.tileLayer(STREET_URL, { attribution: 'Tiles © Esri', maxZoom: 19 });
+  satelliteLayer = L.tileLayer(SATELLITE_URL, { attribution: 'Tiles © Esri', maxZoom: 19 });
+
+  const hasLocation = typeof state.lat === 'number' && typeof state.lng === 'number';
+  const initialCenter = hasLocation ? [state.lat, state.lng] : [20.6597, -103.3496];
+  const initialZoom = hasLocation ? 19 : 12;
+
+  modalMap = L.map('modal-map').setView(initialCenter, initialZoom);
+  activeLayer = streetLayer;
+  activeLayer.addTo(modalMap);
+}
+
+function openMapModal() {
+  ensureModalMap();
+
+  if (activeLayer !== streetLayer) {
+    modalMap.removeLayer(activeLayer);
+    activeLayer = streetLayer;
+    activeLayer.addTo(modalMap);
+    document.getElementById('map-toggle-view').textContent = 'Satélite';
+  }
+
+  document.getElementById('map-modal').hidden = false;
+  setTimeout(() => modalMap.invalidateSize(), 50);
+
+  const hasLocation = typeof state.lat === 'number' && typeof state.lng === 'number';
+  if (!hasLocation && navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => modalMap.setView([pos.coords.latitude, pos.coords.longitude], 19),
+      () => {}
+    );
+  }
+}
+
+function closeMapModal() {
+  document.getElementById('map-modal').hidden = true;
+}
+
+function setupMapModal() {
+  document.getElementById('ubicar-btn').addEventListener('click', openMapModal);
+  document.getElementById('map-modal-close').addEventListener('click', closeMapModal);
+
+  document.getElementById('map-toggle-view').addEventListener('click', () => {
+    modalMap.removeLayer(activeLayer);
+    activeLayer = activeLayer === streetLayer ? satelliteLayer : streetLayer;
+    activeLayer.addTo(modalMap);
+    document.getElementById('map-toggle-view').textContent = activeLayer === streetLayer ? 'Satélite' : 'Normal';
   });
 
-  if (hasDraftLocation) {
-    statusEl.textContent = 'Ubicación fijada. Ajusta el pin si no es exacta.';
-    return;
-  }
+  document.getElementById('map-locate-btn').addEventListener('click', () => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition((pos) => {
+      modalMap.setView([pos.coords.latitude, pos.coords.longitude], 19);
+    });
+  });
 
-  if (!navigator.geolocation) {
-    statusEl.textContent = 'Este dispositivo no soporta ubicación automática. Toca el mapa para fijar el lugar.';
-    return;
-  }
-
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      const latlng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      map.setView([latlng.lat, latlng.lng], 19);
-      marker.setLatLng(latlng);
-      updateFromLatLng(latlng);
-    },
-    () => {
-      statusEl.textContent = 'No se pudo obtener tu ubicación. Mueve el mapa y toca el lugar exacto.';
-    }
-  );
+  document.getElementById('map-confirm-btn').addEventListener('click', () => {
+    const center = modalMap.getCenter();
+    state.lat = center.lat;
+    state.lng = center.lng;
+    updateLocationTrigger();
+    saveDraft();
+    closeMapModal();
+  });
 }
 
 function setupPhotos() {
@@ -300,7 +335,8 @@ window.addEventListener('online', updateOfflineBadge);
 window.addEventListener('offline', updateOfflineBadge);
 
 loadDraft();
-initMap();
+updateLocationTrigger();
+setupMapModal();
 setupPhotos();
 setupCapacidad();
 setupAgua();

@@ -84,18 +84,105 @@
   gap: 16px;
 }
 
-.wizard-map {
-  height: 220px;
+.wizard-location-trigger {
+  height: 96px;
+  border: 1px dashed var(--color-gold-border);
   border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid var(--color-gold-border);
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--color-gold);
+  font: 600 11px var(--font-body);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  text-align: center;
+  padding: 8px;
 }
 
-.wizard-location-status {
-  font: 500 11.5px var(--font-body);
-  color: var(--color-success);
-  text-align: center;
-  min-height: 14px;
+.wizard-location-trigger.set {
+  border-style: solid;
+  border-color: var(--color-gold);
+  color: var(--color-gold-deep);
+}
+
+.map-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: var(--color-bg);
+  display: flex;
+  flex-direction: column;
+}
+
+.map-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  flex: none;
+  border-bottom: 1px solid var(--color-gold-border);
+}
+
+.map-modal-toggle {
+  margin-left: auto;
+  border: 1px solid var(--color-gold);
+  color: var(--color-gold-deep);
+  background: transparent;
+  font: 600 11px var(--font-body);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  padding: 6px 14px;
+  border-radius: 20px;
+}
+
+.map-modal-body {
+  flex: 1;
+  position: relative;
+}
+
+#modal-map {
+  position: absolute;
+  inset: 0;
+}
+
+.map-modal-pin {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+  color: var(--color-gold);
+  z-index: 500;
+  filter: drop-shadow(0 4px 5px rgba(27, 24, 19, .35));
+}
+
+.map-modal-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px 24px;
+  flex: none;
+  border-top: 1px solid var(--color-gold-border);
+}
+
+.map-modal-locate {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid var(--color-gold);
+  background: var(--color-bg);
+  color: var(--color-gold-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.map-modal-footer .btn-gold {
+  flex: 1;
 }
 
 .wizard-photos {
