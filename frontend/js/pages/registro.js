@@ -61,6 +61,7 @@ function renderStep() {
   });
 
   document.getElementById('wizard-current-step').textContent = STEP_NAMES[state.step - 1];
+  document.getElementById('wizard-step-count').textContent = `${state.step}/${TOTAL_STEPS}`;
   document.getElementById('wizard-progress-fill').style.width = `${(state.step / TOTAL_STEPS) * 100}%`;
 
   document.getElementById('atras-btn').style.visibility = state.step === 1 ? 'hidden' : 'visible';

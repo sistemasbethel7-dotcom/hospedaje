@@ -2,11 +2,22 @@
   padding: 18px 24px 0;
 }
 
+.wizard-step-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
 .wizard-current-step {
   font: 600 11px var(--font-body);
   letter-spacing: .03em;
   text-transform: uppercase;
   color: var(--color-text);
+}
+
+.wizard-step-count {
+  font: 600 11px var(--font-body);
+  color: var(--color-text-muted);
 }
 
 .wizard-progress-single {
