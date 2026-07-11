@@ -1,0 +1,62 @@
+.card-bordered {
+  border: 1px solid var(--color-gold-border);
+  border-radius: 14px;
+  padding: 22px 18px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field input {
+  height: 46px;
+  border: none;
+  border-bottom: 1px solid var(--color-gold-border);
+  background: transparent;
+  font: 500 15px var(--font-body);
+  color: var(--color-text);
+  padding: 0;
+}
+
+.field input:focus {
+  outline: none;
+  border-bottom-color: var(--color-gold);
+}
+
+.field input::placeholder {
+  color: var(--color-text-faint);
+}
+
+.field input[data-code] {
+  font: 600 18px var(--font-body);
+  letter-spacing: 6px;
+}
+
+.btn-gold {
+  width: 100%;
+  height: 52px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--color-gold);
+  color: #fff;
+  font: 600 13px var(--font-display);
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+
+.btn-gold:active {
+  background: var(--color-gold-deep);
+}
+
+.btn-gold:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.form-error {
+  font: 500 12px var(--font-body);
+  color: var(--color-warn);
+  min-height: 16px;
+}

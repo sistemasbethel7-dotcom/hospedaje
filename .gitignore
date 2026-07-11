@@ -1,0 +1,6 @@
+vps-credentials.json
+.DS_Store
+node_modules/
+.env
+*.zip
+*.pdf

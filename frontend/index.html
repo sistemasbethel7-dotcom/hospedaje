@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Anfitriones · Centenario</title>
+<meta name="theme-color" content="#A8832E">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+<main class="login-screen">
+  <div class="login-emblem">
+    <div class="login-emblem-inner"><span>100</span></div>
+  </div>
+  <p class="login-kicker">Aniversario</p>
+  <h1 class="login-title">Anfitriones</h1>
+  <p class="login-subtitle">Distribución de hogares</p>
+
+  <form class="login-form card-bordered" id="login-form" novalidate>
+    <div class="field">
+      <label class="label-caps" for="phone">Teléfono</label>
+      <input type="tel" id="phone" name="phone" inputmode="numeric" autocomplete="tel" placeholder="33 1234 5678" required>
+    </div>
+    <div class="field">
+      <label class="label-caps" for="code">Código de acceso</label>
+      <input type="password" id="code" name="code" data-code inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="••••••" required>
+    </div>
+    <p class="form-error" id="login-error" role="alert"></p>
+    <button type="submit" class="btn-gold" id="login-submit">Acceder</button>
+  </form>
+
+  <p class="login-footer">Congregación Mundial · Centenario</p>
+</main>
+
+<script type="module" src="js/pages/login.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "Anfitriones - Centenario",
+  "short_name": "Anfitriones",
+  "description": "Distribución de hogares para el evento del Centenario",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FFFEFB",
+  "theme_color": "#A8832E",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

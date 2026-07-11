@@ -1,0 +1,28 @@
+:root {
+  /* Fondo */
+  --color-bg: #FFFEFB;
+  --color-bg-soft: #F8F4EA;
+
+  /* Dorado (acento, marcos, botones) */
+  --color-gold: #A8832E;
+  --color-gold-deep: #7C5E20;
+  --color-gold-border: rgba(168, 131, 46, .35);
+  --color-gold-tint: #F4E9CB;
+
+  /* Texto */
+  --color-text: #241D12;
+  --color-text-muted: #7A705B;
+  --color-text-faint: #a89b78;
+
+  /* Estado */
+  --color-warn: #B0632E;
+  --color-success: #4B7A5B;
+
+  /* Tipografía */
+  --font-display: 'Cormorant Garamond', serif;
+  --font-body: 'Manrope', sans-serif;
+
+  /* Forma */
+  --radius: 4px;
+  --radius-round: 50%;
+}
