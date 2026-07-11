@@ -59,10 +59,13 @@ function renderStep() {
     el.hidden = Number(el.dataset.step) !== state.step;
   });
 
-  document.querySelectorAll('#wizard-roman span').forEach((el) => {
+  document.querySelectorAll('#wizard-steps span').forEach((el) => {
     const n = Number(el.dataset.step);
     el.classList.toggle('done', n < state.step);
     el.classList.toggle('current', n === state.step);
+    if (n === state.step) {
+      el.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+    }
   });
 
   document.querySelectorAll('.wizard-progress-bar').forEach((el) => {
@@ -89,26 +92,54 @@ function updateOfflineBadge() {
   document.getElementById('offline-badge').hidden = navigator.onLine;
 }
 
-function setupGeolocation() {
-  document.getElementById('ubicar-btn').addEventListener('click', () => {
-    const status = document.getElementById('ubicar-status');
-    if (!navigator.geolocation) {
-      status.textContent = 'Este dispositivo no soporta ubicación.';
-      return;
-    }
-    status.textContent = 'Obteniendo ubicación…';
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        state.lat = pos.coords.latitude;
-        state.lng = pos.coords.longitude;
-        status.textContent = 'Ubicación capturada correctamente.';
-        saveDraft();
-      },
-      () => {
-        status.textContent = 'No se pudo obtener la ubicación. Puedes continuar sin ella.';
-      }
-    );
+function initMap() {
+  const statusEl = document.getElementById('ubicar-status');
+  const hasDraftLocation = typeof state.lat === 'number' && typeof state.lng === 'number';
+  const initialCenter = hasDraftLocation ? [state.lat, state.lng] : [20.6597, -103.3496];
+  const initialZoom = hasDraftLocation ? 17 : 12;
+
+  const map = L.map('wizard-map').setView(initialCenter, initialZoom);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap',
+    maxZoom: 19,
+  }).addTo(map);
+
+  const marker = L.marker(initialCenter, { draggable: true }).addTo(map);
+
+  const updateFromLatLng = (latlng) => {
+    state.lat = latlng.lat;
+    state.lng = latlng.lng;
+    statusEl.textContent = 'Ubicación fijada. Ajusta el pin si no es exacta.';
+    saveDraft();
+  };
+
+  marker.on('dragend', () => updateFromLatLng(marker.getLatLng()));
+  map.on('click', (event) => {
+    marker.setLatLng(event.latlng);
+    updateFromLatLng(event.latlng);
   });
+
+  if (hasDraftLocation) {
+    statusEl.textContent = 'Ubicación fijada. Ajusta el pin si no es exacta.';
+    return;
+  }
+
+  if (!navigator.geolocation) {
+    statusEl.textContent = 'Este dispositivo no soporta ubicación automática. Toca el mapa para fijar el lugar.';
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const latlng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      map.setView([latlng.lat, latlng.lng], 17);
+      marker.setLatLng(latlng);
+      updateFromLatLng(latlng);
+    },
+    () => {
+      statusEl.textContent = 'No se pudo obtener tu ubicación. Mueve el mapa y toca el lugar exacto.';
+    }
+  );
 }
 
 function setupPhotos() {
@@ -269,7 +300,7 @@ window.addEventListener('online', updateOfflineBadge);
 window.addEventListener('offline', updateOfflineBadge);
 
 loadDraft();
-setupGeolocation();
+initMap();
 setupPhotos();
 setupCapacidad();
 setupAgua();

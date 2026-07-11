@@ -1,31 +1,34 @@
-.wizard-roman {
+.wizard-steps {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
+  gap: 18px;
   padding: 18px 24px 0;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 
-.wizard-roman span {
-  font: 600 15px var(--font-display);
+.wizard-steps::-webkit-scrollbar {
+  display: none;
+}
+
+.wizard-steps span {
+  font: 600 11px var(--font-body);
+  letter-spacing: .03em;
+  text-transform: uppercase;
   color: #C9BE9F;
+  white-space: nowrap;
+  padding-bottom: 4px;
+  border-bottom: 2px solid transparent;
+  flex: none;
 }
 
-.wizard-roman span.done,
-.wizard-roman span.current {
+.wizard-steps span.done {
   color: var(--color-gold);
 }
 
-.wizard-roman span.current {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: 1px solid var(--color-gold);
+.wizard-steps span.current {
   color: var(--color-text);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
+  border-bottom-color: var(--color-gold);
 }
 
 .wizard-progress {
@@ -64,10 +67,6 @@
   text-align: center;
 }
 
-.wizard-step-head .label-caps {
-  margin-bottom: 6px;
-}
-
 .wizard-step-title {
   font: 600 28px var(--font-display);
   color: var(--color-text);
@@ -85,20 +84,11 @@
   gap: 16px;
 }
 
-.wizard-location-btn {
-  height: 96px;
-  border: 1px dashed var(--color-gold-border);
+.wizard-map {
+  height: 220px;
   border-radius: 12px;
-  background: transparent;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  color: var(--color-gold);
-  font: 600 11px var(--font-body);
-  text-transform: uppercase;
-  letter-spacing: .06em;
+  overflow: hidden;
+  border: 1px solid var(--color-gold-border);
 }
 
 .wizard-location-status {
