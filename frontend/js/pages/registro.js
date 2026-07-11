@@ -11,6 +11,7 @@ if (!session) {
 
 const TOTAL_STEPS = 6;
 const DRAFT_KEY = 'anfitriones_registro_draft';
+const STEP_NAMES = ['Datos del dueño', 'Fotografías', 'Capacidad', 'Servicios', 'Vulnerabilidades', 'Perfil recomendado'];
 
 const state = {
   step: 1,
@@ -59,18 +60,8 @@ function renderStep() {
     el.hidden = Number(el.dataset.step) !== state.step;
   });
 
-  document.querySelectorAll('#wizard-steps span').forEach((el) => {
-    const n = Number(el.dataset.step);
-    el.classList.toggle('done', n < state.step);
-    el.classList.toggle('current', n === state.step);
-    if (n === state.step) {
-      el.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
-    }
-  });
-
-  document.querySelectorAll('.wizard-progress-bar').forEach((el) => {
-    el.classList.toggle('done', Number(el.dataset.bar) <= state.step);
-  });
+  document.getElementById('wizard-current-step').textContent = STEP_NAMES[state.step - 1];
+  document.getElementById('wizard-progress-fill').style.width = `${(state.step / TOTAL_STEPS) * 100}%`;
 
   document.getElementById('atras-btn').style.visibility = state.step === 1 ? 'hidden' : 'visible';
   document.getElementById('siguiente-btn').textContent = state.step === TOTAL_STEPS ? 'Sellar registro' : 'Siguiente';

@@ -1,51 +1,26 @@
-.wizard-steps {
-  display: flex;
-  align-items: center;
-  gap: 18px;
+.wizard-progress-header {
   padding: 18px 24px 0;
-  overflow-x: auto;
-  scrollbar-width: none;
 }
 
-.wizard-steps::-webkit-scrollbar {
-  display: none;
-}
-
-.wizard-steps span {
+.wizard-current-step {
   font: 600 11px var(--font-body);
   letter-spacing: .03em;
   text-transform: uppercase;
-  color: #C9BE9F;
-  white-space: nowrap;
-  padding-bottom: 4px;
-  border-bottom: 2px solid transparent;
-  flex: none;
-}
-
-.wizard-steps span.done {
-  color: var(--color-gold);
-}
-
-.wizard-steps span.current {
   color: var(--color-text);
-  border-bottom-color: var(--color-gold);
 }
 
-.wizard-progress {
-  display: flex;
-  gap: 5px;
-  padding: 10px 24px 0;
-}
-
-.wizard-progress-bar {
-  flex: 1;
+.wizard-progress-single {
+  margin-top: 10px;
   height: 2px;
   border-radius: 1px;
   background: var(--color-gold-border);
+  overflow: hidden;
 }
 
-.wizard-progress-bar.done {
+.wizard-progress-fill {
+  height: 100%;
   background: var(--color-gold);
+  transition: width .2s ease;
 }
 
 .wizard-body {

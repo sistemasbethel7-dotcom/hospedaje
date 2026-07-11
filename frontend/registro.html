@@ -27,21 +27,11 @@
     <span class="offline-badge" id="offline-badge" hidden>SIN CONEXIÓN</span>
   </header>
 
-  <div class="wizard-steps" id="wizard-steps">
-    <span data-step="1">Datos del dueño</span>
-    <span data-step="2">Fotografías</span>
-    <span data-step="3">Capacidad</span>
-    <span data-step="4">Servicios</span>
-    <span data-step="5">Vulnerabilidades</span>
-    <span data-step="6">Perfil recomendado</span>
-  </div>
-  <div class="wizard-progress" id="wizard-progress">
-    <div class="wizard-progress-bar" data-bar="1"></div>
-    <div class="wizard-progress-bar" data-bar="2"></div>
-    <div class="wizard-progress-bar" data-bar="3"></div>
-    <div class="wizard-progress-bar" data-bar="4"></div>
-    <div class="wizard-progress-bar" data-bar="5"></div>
-    <div class="wizard-progress-bar" data-bar="6"></div>
+  <div class="wizard-progress-header">
+    <span class="wizard-current-step" id="wizard-current-step">Datos del dueño</span>
+    <div class="wizard-progress-single">
+      <div class="wizard-progress-fill" id="wizard-progress-fill"></div>
+    </div>
   </div>
 
   <form class="wizard-body" id="registro-form">
