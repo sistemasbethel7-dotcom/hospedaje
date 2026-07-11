@@ -6,6 +6,7 @@ import {
   deleteHogar,
 } from '../services/hogaresService.js';
 import { getEventoById } from '../services/eventosService.js';
+import { eventBus } from '../services/eventBus.js';
 
 export async function crear(req, res) {
   const {
@@ -66,6 +67,7 @@ export async function crear(req, res) {
     registradoPor: req.user.sub,
   });
 
+  eventBus.emit(`evento:${eventoId}`);
   res.status(201).json({ hogar });
 }
 
@@ -134,13 +136,15 @@ export async function actualizar(req, res) {
     return res.status(404).json({ message: 'Hogar no encontrado.' });
   }
 
+  eventBus.emit(`evento:${hogar.evento_id}`);
   res.json({ hogar });
 }
 
 export async function eliminar(req, res) {
-  const ok = await deleteHogar(req.params.id);
-  if (!ok) {
+  const resultado = await deleteHogar(req.params.id);
+  if (!resultado) {
     return res.status(404).json({ message: 'Hogar no encontrado.' });
   }
+  eventBus.emit(`evento:${resultado.eventoId}`);
   res.status(204).end();
 }

@@ -1,4 +1,5 @@
 import { insertEvento, listEventos, getEventoById, getEventoMetricas, updateEvento } from '../services/eventosService.js';
+import { eventBus } from '../services/eventBus.js';
 
 const ESTATUS_VALIDOS = ['abierto', 'finalizado'];
 
@@ -46,6 +47,29 @@ export async function metricas(req, res) {
     return res.status(404).json({ message: 'Evento no encontrado.' });
   }
   res.json({ metricas });
+}
+
+export function stream(req, res) {
+  const eventoId = Number(req.params.id);
+  const canal = `evento:${eventoId}`;
+
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache, no-transform',
+    Connection: 'keep-alive',
+    'X-Accel-Buffering': 'no',
+  });
+  res.write('retry: 3000\n\n');
+
+  const enviarActualizacion = () => res.write('event: actualizado\ndata: {}\n\n');
+  eventBus.on(canal, enviarActualizacion);
+
+  const keepAlive = setInterval(() => res.write(':ping\n\n'), 25000);
+
+  req.on('close', () => {
+    clearInterval(keepAlive);
+    eventBus.off(canal, enviarActualizacion);
+  });
 }
 
 export async function actualizar(req, res) {

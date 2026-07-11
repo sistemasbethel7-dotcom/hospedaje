@@ -103,6 +103,33 @@
   padding: 0 12px;
 }
 
+.admin-live-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font: 600 11px var(--font-body);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--color-success);
+}
+
+.admin-live-indicator.reconectando {
+  color: var(--color-warn);
+}
+
+.admin-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: admin-live-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes admin-live-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .35; }
+}
+
 .admin-btn {
   height: 40px;
   padding: 0 18px;

@@ -83,7 +83,7 @@ export async function updateHogar(id, data) {
        foto_dueno = COALESCE($15, foto_dueno),
        foto_fachada = COALESCE($16, foto_fachada)
      WHERE id = $17
-     RETURNING id, nombre_dueno, calle_numero, colonia, capacidad, created_at`,
+     RETURNING id, evento_id, nombre_dueno, calle_numero, colonia, capacidad, created_at`,
     [
       data.nombreDueno,
       data.calleNumero,
@@ -111,10 +111,15 @@ export async function deleteHogar(id) {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
+    const { rows } = await client.query('SELECT evento_id FROM hogares WHERE id = $1', [id]);
+    if (!rows[0]) {
+      await client.query('ROLLBACK');
+      return null;
+    }
     await client.query('DELETE FROM ingresos WHERE hogar_id = $1', [id]);
-    const { rowCount } = await client.query('DELETE FROM hogares WHERE id = $1', [id]);
+    await client.query('DELETE FROM hogares WHERE id = $1', [id]);
     await client.query('COMMIT');
-    return rowCount > 0;
+    return { eventoId: rows[0].evento_id };
   } catch (err) {
     await client.query('ROLLBACK');
     throw err;

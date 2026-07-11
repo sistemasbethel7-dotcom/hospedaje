@@ -9,7 +9,7 @@ export async function registrarIngreso(hogarId, cantidad, registradoPor) {
     await client.query('BEGIN');
 
     const { rows } = await client.query(
-      `SELECT h.capacidad, h.ocupacion_actual, e.estatus AS evento_estatus
+      `SELECT h.capacidad, h.ocupacion_actual, h.evento_id, e.estatus AS evento_estatus
        FROM hogares h JOIN eventos e ON e.id = h.evento_id
        WHERE h.id = $1
        FOR UPDATE OF h`,
@@ -41,7 +41,7 @@ export async function registrarIngreso(hogarId, cantidad, registradoPor) {
     );
 
     await client.query('COMMIT');
-    return updated[0];
+    return { ...updated[0], evento_id: hogar.evento_id };
   } catch (err) {
     await client.query('ROLLBACK');
     throw err;

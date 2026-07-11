@@ -1,5 +1,6 @@
 import { registrarIngreso, CapacidadExcedidaError } from '../services/ingresosService.js';
 import { EventoFinalizadoError } from '../services/eventosService.js';
+import { eventBus } from '../services/eventBus.js';
 
 export async function crear(req, res) {
   const { cantidad } = req.body;
@@ -12,6 +13,7 @@ export async function crear(req, res) {
 
   try {
     const hogar = await registrarIngreso(hogarId, cantidadNum, req.user.sub);
+    eventBus.emit(`evento:${hogar.evento_id}`);
     res.status(201).json({ hogar });
   } catch (err) {
     if (err instanceof CapacidadExcedidaError || err instanceof EventoFinalizadoError) {

@@ -2,6 +2,7 @@ import { registerServiceWorker } from '../app.js';
 import { me, listarEventos, obtenerMetricasEvento } from '../services/api.js';
 import { getSession, clearSession } from '../services/session.js';
 import { getActiveEventId, setActiveEventId, clearActiveEventId } from '../services/eventoActivo.js';
+import { subscribeToEvento } from '../services/eventStream.js';
 
 registerServiceWorker();
 
@@ -20,6 +21,8 @@ const PALETTE = [GOLD, GOLD_DEEP, WARN, SUCCESS, MUTED, GOLD_TINT];
 
 const charts = {};
 let eventos = [];
+let unsubscribeStream = null;
+let refrescoPendiente = null;
 
 document.getElementById('logout-btn').addEventListener('click', () => {
   clearSession();
@@ -30,7 +33,30 @@ document.getElementById('logout-btn').addEventListener('click', () => {
 document.getElementById('evento-select').addEventListener('change', (event) => {
   setActiveEventId(event.target.value);
   cargarMetricas(event.target.value);
+  suscribirEvento(event.target.value);
 });
+
+function setLiveStatus(estado) {
+  const indicator = document.getElementById('live-indicator');
+  const text = document.getElementById('live-indicator-text');
+  indicator.hidden = false;
+  indicator.classList.toggle('reconectando', estado === 'reconectando');
+  text.textContent = estado === 'reconectando' ? 'Reconectando…' : 'En vivo';
+}
+
+function suscribirEvento(eventoId) {
+  if (unsubscribeStream) {
+    unsubscribeStream();
+    unsubscribeStream = null;
+  }
+  unsubscribeStream = subscribeToEvento(session.token, eventoId, {
+    onStatusChange: setLiveStatus,
+    onUpdate: () => {
+      clearTimeout(refrescoPendiente);
+      refrescoPendiente = setTimeout(() => cargarMetricas(eventoId), 500);
+    },
+  });
+}
 
 function formatFecha(iso) {
   const [y, m, d] = iso.slice(0, 10).split('-');
@@ -157,6 +183,7 @@ try {
     document.getElementById('evento-select').value = inicial.id;
     setActiveEventId(inicial.id);
     await cargarMetricas(inicial.id);
+    suscribirEvento(inicial.id);
   }
 } catch (err) {
   if (err.status === 401) {
