@@ -1,9 +1,13 @@
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 32;
+}
+
 .home-screen {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 48px 28px 32px;
+  padding: 48px 28px 100px;
   max-width: 440px;
   margin: 0 auto;
   text-align: center;
@@ -19,43 +23,57 @@
   margin-top: 6px;
 }
 
-.home-quick-actions {
+.home-grid {
   width: 100%;
   max-width: 320px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
   margin-top: 36px;
 }
 
-.home-menu {
-  width: 100%;
-  max-width: 320px;
-  margin-top: 28px;
-  border-top: 1px solid var(--color-gold-border);
+.home-tile {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid var(--color-gold-border);
+  border-radius: 18px;
+  background: var(--color-bg);
+  padding: 12px;
 }
 
-.home-menu-item {
-  width: 100%;
+.home-tile .material-symbols-outlined {
+  font-size: 30px;
+  color: var(--color-gold);
+}
+
+.home-tile .tile-label {
+  font: 600 11px var(--font-body);
+  color: var(--color-text);
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  line-height: 1.3;
+}
+
+.home-logout-fab {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid var(--color-gold);
+  background: var(--color-bg);
+  color: var(--color-gold-deep);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 16px 4px;
-  border: none;
-  border-bottom: 1px solid var(--color-gold-border);
-  background: none;
-  font: 600 13px var(--font-body);
-  color: var(--color-text);
-  text-align: left;
+  justify-content: center;
+  box-shadow: 0 6px 16px rgba(27, 24, 19, .12);
 }
 
-.home-menu-item svg {
-  color: var(--color-gold);
-  flex: none;
-}
-
-.home-logout {
-  max-width: 280px;
-  margin-top: auto;
-  padding-top: 40px;
+.home-logout-fab .material-symbols-outlined {
+  font-size: 24px;
 }

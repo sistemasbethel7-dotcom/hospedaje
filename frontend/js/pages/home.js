@@ -20,13 +20,15 @@ if (!session) {
     document.getElementById('home-greeting-name').textContent = `Hola, ${displayName(user.email)}`;
 
     if (user.role === 'agente' || user.role === 'admin') {
-      const quickActions = document.getElementById('quick-actions');
-      quickActions.hidden = false;
+      const hogarTile = document.getElementById('qa-hogar');
+      const ingresosTile = document.getElementById('qa-ingresos');
+      hogarTile.hidden = false;
+      ingresosTile.hidden = false;
 
-      document.getElementById('qa-hogar').addEventListener('click', () => {
+      hogarTile.addEventListener('click', () => {
         window.location.href = 'registro.html';
       });
-      document.getElementById('qa-ingresos').addEventListener('click', () => {
+      ingresosTile.addEventListener('click', () => {
         window.location.href = 'ingresos.html';
       });
     }
