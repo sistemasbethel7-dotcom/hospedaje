@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nuevo registro · Anfitriones</title>
+<meta name="theme-color" content="#A8832E">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/registro.css">
+</head>
+<body>
+<div class="wizard-screen">
+  <header class="wizard-header">
+    <button type="button" class="wizard-back" id="header-back-btn" aria-label="Volver">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <span class="wizard-heading">Nuevo registro</span>
+    <span class="offline-badge" id="offline-badge" hidden>SIN CONEXIÓN</span>
+  </header>
+
+  <div class="wizard-roman" id="wizard-roman">
+    <span data-step="1">I</span>
+    <span data-step="2">II</span>
+    <span data-step="3">III</span>
+    <span data-step="4">IV</span>
+    <span data-step="5">V</span>
+    <span data-step="6">VI</span>
+  </div>
+  <div class="wizard-progress" id="wizard-progress">
+    <div class="wizard-progress-bar" data-bar="1"></div>
+    <div class="wizard-progress-bar" data-bar="2"></div>
+    <div class="wizard-progress-bar" data-bar="3"></div>
+    <div class="wizard-progress-bar" data-bar="4"></div>
+    <div class="wizard-progress-bar" data-bar="5"></div>
+    <div class="wizard-progress-bar" data-bar="6"></div>
+  </div>
+
+  <form class="wizard-body" id="registro-form">
+
+    <section class="wizard-step" data-step="1">
+      <div class="wizard-step-head">
+        <p class="label-caps">Paso I de VI</p>
+        <h2 class="wizard-step-title">Datos de la casa</h2>
+        <p class="wizard-step-desc">Nombre del dueño y dirección del hogar</p>
+      </div>
+      <div class="card-bordered wizard-card">
+        <div class="field">
+          <label class="label-caps" for="nombre_dueno">Nombre del dueño</label>
+          <input type="text" id="nombre_dueno" name="nombre_dueno" placeholder="Familia Ramírez" required>
+        </div>
+        <div class="field">
+          <label class="label-caps" for="direccion">Dirección</label>
+          <input type="text" id="direccion" name="direccion" placeholder="Calle, número, colonia" required>
+        </div>
+        <button type="button" class="wizard-location-btn" id="ubicar-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-7.58 7-12a7 7 0 10-14 0c0 4.42 7 12 7 12z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.8"/></svg>
+          <span>Ubicar en el mapa</span>
+        </button>
+        <p class="wizard-location-status" id="ubicar-status"></p>
+      </div>
+    </section>
+
+    <section class="wizard-step" data-step="2" hidden>
+      <div class="wizard-step-head">
+        <p class="label-caps">Paso II de VI</p>
+        <h2 class="wizard-step-title">Fotografías</h2>
+        <p class="wizard-step-desc">Foto del dueño (opcional) y de la fachada</p>
+      </div>
+      <div class="card-bordered wizard-card">
+        <div class="wizard-photos">
+          <div class="wizard-photo-slot">
+            <label for="foto_dueno" id="foto_dueno_label"><span>Dueño</span></label>
+            <input type="file" id="foto_dueno" name="foto_dueno" accept="image/*">
+          </div>
+          <div class="wizard-photo-slot rect">
+            <label for="foto_fachada" id="foto_fachada_label"><span>Fachada</span></label>
+            <input type="file" id="foto_fachada" name="foto_fachada" accept="image/*">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="wizard-step" data-step="3" hidden>
+      <div class="wizard-step-head">
+        <p class="label-caps">Paso III de VI</p>
+        <h2 class="wizard-step-title">Capacidad</h2>
+        <p class="wizard-step-desc">¿Cuántas personas puede alojar?</p>
+      </div>
+      <div class="card-bordered wizard-card">
+        <div class="wizard-stepper">
+          <button type="button" id="capacidad-menos" aria-label="Restar">–</button>
+          <output id="capacidad-valor">1</output>
+          <button type="button" id="capacidad-mas" aria-label="Sumar">+</button>
+        </div>
+        <input type="hidden" id="capacidad" name="capacidad" value="1">
+      </div>
+    </section>
+
+    <section class="wizard-step" data-step="4" hidden>
+      <div class="wizard-step-head">
+        <p class="label-caps">Paso IV de VI</p>
+        <h2 class="wizard-step-title">Servicios disponibles</h2>
+        <p class="wizard-step-desc">Indica con qué cuenta la casa y su condición actual</p>
+      </div>
+      <div class="card-bordered wizard-card">
+        <div class="toggle-row">
+          <label class="toggle">
+            <span class="toggle-label">Agua potable</span>
+            <input type="checkbox" id="agua-toggle">
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          </label>
+          <div class="pill-group water-status" id="water-status">
+            <button type="button" class="pill selected" data-agua="buena">Buena</button>
+            <button type="button" class="pill" data-agua="intermitente">Intermitente</button>
+            <button type="button" class="pill" data-agua="sin_servicio">Sin servicio</button>
+          </div>
+        </div>
+        <input type="hidden" id="agua" name="agua" value="">
+
+        <div class="toggle-row">
+          <label class="toggle">
+            <span class="toggle-label">Luz (iluminación)</span>
+            <input type="checkbox" id="luz" name="luz">
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          </label>
+        </div>
+
+        <div class="toggle-row">
+          <label class="toggle">
+            <span class="toggle-label">Electricidad</span>
+            <input type="checkbox" id="electricidad" name="electricidad">
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <section class="wizard-step" data-step="5" hidden>
+      <div class="wizard-step-head">
+        <p class="label-caps">Paso V de VI</p>
+        <h2 class="wizard-step-title">Vulnerabilidades</h2>
+        <p class="wizard-step-desc">Marca las condiciones que apliquen al lugar</p>
+      </div>
+      <div class="card-bordered wizard-card">
+        <div class="pill-group" id="vulnerabilidades-group">
+          <button type="button" class="pill" data-vuln="Acceso complicado">Acceso complicado</button>
+          <button type="button" class="pill" data-vuln="Zona insegura">Zona insegura</button>
+          <button type="button" class="pill" data-vuln="Sin salida de emergencia">Sin salida de emergencia</button>
+          <button type="button" class="pill" data-vuln="Iluminación deficiente">Iluminación deficiente</button>
+          <button type="button" class="pill" data-vuln="Mascotas sueltas">Mascotas sueltas</button>
+        </div>
+        <textarea class="wizard-textarea" id="notas_vulnerabilidad" name="notas_vulnerabilidad" placeholder="Notas adicionales (opcional)"></textarea>
+      </div>
+    </section>
+
+    <section class="wizard-step" data-step="6" hidden>
+      <div class="wizard-step-head">
+        <p class="label-caps">Paso VI de VI</p>
+        <h2 class="wizard-step-title">Perfil recomendado <span class="wizard-ai-badge">Sugerencia</span></h2>
+        <p class="wizard-step-desc">¿Qué tipo de hermanos recomiendas para este hogar?</p>
+      </div>
+      <div class="card-bordered wizard-card">
+        <div class="pill-group" id="perfil-group">
+          <button type="button" class="pill" data-perfil="Familia con niños">Familia con niños</button>
+          <button type="button" class="pill" data-perfil="Adultos mayores">Adultos mayores</button>
+          <button type="button" class="pill" data-perfil="Matrimonios">Matrimonios</button>
+        </div>
+      </div>
+    </section>
+
+  </form>
+
+  <p class="wizard-error" id="wizard-error" role="alert"></p>
+
+  <footer class="wizard-footer">
+    <button type="button" class="btn-outline" id="atras-btn">Atrás</button>
+    <button type="button" class="btn-gold" id="siguiente-btn">Siguiente</button>
+  </footer>
+</div>
+
+<script type="module" src="js/pages/registro.js"></script>
+</body>
+</html>

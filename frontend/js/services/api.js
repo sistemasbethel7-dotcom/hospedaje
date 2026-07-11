@@ -26,3 +26,20 @@ export async function me(token) {
 
   return res.json();
 }
+
+export async function crearHogar(token, formData) {
+  const res = await fetch(`${API_BASE}/hogares`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    const error = new Error(data.message || 'No se pudo guardar el registro.');
+    error.status = res.status;
+    throw error;
+  }
+
+  return res.json();
+}

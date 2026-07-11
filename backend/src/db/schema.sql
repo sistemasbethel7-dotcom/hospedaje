@@ -14,3 +14,26 @@ ALTER TABLE usuarios ADD CONSTRAINT usuarios_role_check CHECK (role IN ('admin',
 
 GRANT ALL PRIVILEGES ON TABLE usuarios TO pwa_templo_app;
 GRANT USAGE, SELECT ON SEQUENCE usuarios_id_seq TO pwa_templo_app;
+
+CREATE TABLE IF NOT EXISTS hogares (
+  id SERIAL PRIMARY KEY,
+  nombre_dueno TEXT NOT NULL,
+  direccion TEXT NOT NULL,
+  lat DOUBLE PRECISION,
+  lng DOUBLE PRECISION,
+  capacidad INTEGER NOT NULL DEFAULT 1,
+  foto_dueno TEXT,
+  foto_fachada TEXT,
+  agua TEXT CHECK (agua IN ('buena', 'intermitente', 'sin_servicio')),
+  luz BOOLEAN NOT NULL DEFAULT false,
+  electricidad BOOLEAN NOT NULL DEFAULT false,
+  vulnerabilidades TEXT[] NOT NULL DEFAULT '{}',
+  notas_vulnerabilidad TEXT,
+  perfil_sugerido TEXT[] NOT NULL DEFAULT '{}',
+  registrado_por INTEGER REFERENCES usuarios(id),
+  validado BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+GRANT ALL PRIVILEGES ON TABLE hogares TO pwa_templo_app;
+GRANT USAGE, SELECT ON SEQUENCE hogares_id_seq TO pwa_templo_app;

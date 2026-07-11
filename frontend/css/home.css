@@ -22,7 +22,12 @@
   color: var(--color-text-muted);
 }
 
-.home-logout {
+.home-action {
   max-width: 280px;
   margin-top: 40px;
+}
+
+.home-logout {
+  max-width: 280px;
+  margin-top: 12px;
 }
