@@ -129,7 +129,7 @@ function setupPhotos() {
 function setupCapacidad() {
   const input = document.getElementById('capacidad-valor');
   const hidden = document.getElementById('capacidad');
-  const clamp = (value) => Math.min(20, Math.max(1, value));
+  const clamp = (value) => Math.min(500, Math.max(1, value));
   const update = () => {
     input.value = state.capacidad;
     hidden.value = state.capacidad;
