@@ -129,20 +129,32 @@ function setupPhotos() {
 }
 
 function setupCapacidad() {
-  const output = document.getElementById('capacidad-valor');
+  const input = document.getElementById('capacidad-valor');
   const hidden = document.getElementById('capacidad');
+  const clamp = (value) => Math.min(20, Math.max(1, value));
   const update = () => {
-    output.textContent = state.capacidad;
+    input.value = state.capacidad;
     hidden.value = state.capacidad;
     saveDraft();
   };
   document.getElementById('capacidad-menos').addEventListener('click', () => {
-    state.capacidad = Math.max(1, state.capacidad - 1);
+    state.capacidad = clamp(state.capacidad - 1);
     update();
   });
   document.getElementById('capacidad-mas').addEventListener('click', () => {
-    state.capacidad = Math.min(20, state.capacidad + 1);
+    state.capacidad = clamp(state.capacidad + 1);
     update();
+  });
+  input.addEventListener('input', () => {
+    const value = parseInt(input.value, 10);
+    if (!Number.isNaN(value)) {
+      state.capacidad = clamp(value);
+      hidden.value = state.capacidad;
+      saveDraft();
+    }
+  });
+  input.addEventListener('blur', () => {
+    input.value = state.capacidad;
   });
   update();
 }
