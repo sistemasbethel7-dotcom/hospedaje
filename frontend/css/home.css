@@ -24,27 +24,10 @@
   color: var(--color-gold-deep);
 }
 
-.home-app-title {
-  font: 700 40px var(--font-display);
-  color: var(--color-text);
-  margin-bottom: 28px;
-}
-
-.home-greeting {
-  margin-top: 22px;
-  margin-bottom: 4px;
-}
-
-.home-title {
-  font: 600 34px var(--font-display);
-  color: var(--color-text);
-  margin-top: 6px;
-}
-
 .home-evento {
   width: 100%;
   max-width: 320px;
-  margin-top: 22px;
+  margin-top: 12px;
   display: flex;
   flex-direction: column;
   gap: 10px;

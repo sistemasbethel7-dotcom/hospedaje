@@ -7,11 +7,6 @@ registerServiceWorker();
 
 const session = getSession();
 
-function displayName(email) {
-  const local = email.split('@')[0];
-  return local.charAt(0).toUpperCase() + local.slice(1);
-}
-
 function formatFecha(iso) {
   const [y, m, d] = iso.slice(0, 10).split('-');
   return `${d}/${m}/${y}`;
@@ -48,7 +43,6 @@ if (!session) {
       const [{ user }, { evento }] = await Promise.all([me(session.token), obtenerEvento(session.token, eventoId)]);
 
       document.getElementById('home-role').textContent = user.role;
-      document.getElementById('home-greeting-name').textContent = `Hola, ${displayName(user.email)}`;
 
       const eventoBox = document.getElementById('home-evento');
       eventoBox.hidden = false;
