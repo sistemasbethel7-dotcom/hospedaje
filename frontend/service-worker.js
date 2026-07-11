@@ -1,15 +1,19 @@
-const CACHE_NAME = 'anfitriones-v1';
+const CACHE_NAME = 'anfitriones-v2';
 const APP_SHELL = [
   '/',
   '/index.html',
+  '/home.html',
   '/manifest.json',
   '/css/tokens.css',
   '/css/base.css',
   '/css/components.css',
   '/css/login.css',
+  '/css/home.css',
   '/js/app.js',
   '/js/pages/login.js',
+  '/js/pages/home.js',
   '/js/services/api.js',
+  '/js/services/session.js',
 ];
 
 self.addEventListener('install', (event) => {

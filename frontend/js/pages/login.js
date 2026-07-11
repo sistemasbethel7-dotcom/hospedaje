@@ -1,7 +1,12 @@
 import { registerServiceWorker } from '../app.js';
 import { login } from '../services/api.js';
+import { saveSession, getSession } from '../services/session.js';
 
 registerServiceWorker();
+
+if (getSession()) {
+  window.location.href = 'home.html';
+}
 
 const form = document.getElementById('login-form');
 const errorEl = document.getElementById('login-error');
@@ -11,19 +16,19 @@ form.addEventListener('submit', async (event) => {
   event.preventDefault();
   errorEl.textContent = '';
 
-  const phone = form.phone.value.trim();
-  const code = form.code.value.trim();
+  const email = form.email.value.trim();
+  const password = form.password.value;
 
-  if (!phone || !code) {
-    errorEl.textContent = 'Completa tu teléfono y código de acceso.';
+  if (!email || !password) {
+    errorEl.textContent = 'Completa tu correo y contraseña.';
     return;
   }
 
   submitBtn.disabled = true;
   try {
-    const session = await login(phone, code);
-    sessionStorage.setItem('anfitriones_session', JSON.stringify(session));
-    window.location.href = 'registro.html';
+    const session = await login(email, password);
+    saveSession(session);
+    window.location.href = 'home.html';
   } catch (err) {
     errorEl.textContent = err.message;
   } finally {
