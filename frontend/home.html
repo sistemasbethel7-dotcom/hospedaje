@@ -17,11 +17,23 @@
 </head>
 <body>
 <main class="home-screen">
-  <p class="label-caps" id="home-email"></p>
-  <h1 class="home-title">Hola Mundo</h1>
-  <p class="home-subtitle">Sesión iniciada correctamente</p>
+  <div class="home-greeting">
+    <p class="label-caps" id="home-role"></p>
+    <h1 class="home-title" id="home-greeting-name">Hola</h1>
+  </div>
 
-  <button class="btn-gold home-action" id="registrar-btn" hidden>Registrar hogar</button>
+  <div class="home-quick-actions" id="quick-actions" hidden>
+    <button class="btn-gold" id="qa-hogar">Registrar hogar</button>
+    <button class="btn-gold" id="qa-ingresos">Registrar ingresos</button>
+  </div>
+
+  <nav class="home-menu">
+    <button class="home-menu-item" id="menu-hogares">
+      <span>Ver hogares registrados</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </nav>
+
   <button class="btn-outline home-logout" id="logout-btn">Cerrar sesión</button>
 </main>
 

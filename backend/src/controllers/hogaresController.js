@@ -1,4 +1,4 @@
-import { insertHogar } from '../services/hogaresService.js';
+import { insertHogar, listHogares } from '../services/hogaresService.js';
 
 export async function crear(req, res) {
   const {
@@ -40,4 +40,9 @@ export async function crear(req, res) {
   });
 
   res.status(201).json({ hogar });
+}
+
+export async function listar(req, res) {
+  const hogares = await listHogares();
+  res.json({ hogares });
 }

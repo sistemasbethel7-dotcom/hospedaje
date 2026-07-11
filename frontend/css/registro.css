@@ -1,52 +1,3 @@
-.wizard-screen {
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  max-width: 480px;
-  margin: 0 auto;
-}
-
-.wizard-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 20px 24px 4px;
-}
-
-.wizard-back {
-  background: none;
-  border: none;
-  color: var(--color-text);
-  padding: 4px;
-  display: flex;
-}
-
-.wizard-heading {
-  font: 600 12px var(--font-display);
-  color: var(--color-text-muted);
-  letter-spacing: .16em;
-  text-transform: uppercase;
-}
-
-.offline-badge {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  color: var(--color-warn);
-  font: 700 9.5px var(--font-body);
-  letter-spacing: .03em;
-  margin-left: auto;
-}
-
-.offline-badge::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--color-warn);
-  display: inline-block;
-}
-
 .wizard-roman {
   display: flex;
   align-items: center;
@@ -197,30 +148,6 @@
   display: none;
 }
 
-.wizard-stepper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 24px;
-}
-
-.wizard-stepper button {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  border: 1px solid var(--color-gold);
-  background: transparent;
-  color: var(--color-gold-deep);
-  font: 600 18px var(--font-body);
-}
-
-.wizard-stepper output {
-  font: 600 34px var(--font-display);
-  color: var(--color-text);
-  min-width: 40px;
-  text-align: center;
-}
-
 .toggle-row {
   display: flex;
   flex-direction: column;
@@ -344,9 +271,3 @@
   flex: 2;
 }
 
-.wizard-error {
-  font: 500 12px var(--font-body);
-  color: var(--color-warn);
-  text-align: center;
-  min-height: 16px;
-}

@@ -16,12 +16,12 @@
 <link rel="stylesheet" href="css/registro.css">
 </head>
 <body>
-<div class="wizard-screen">
-  <header class="wizard-header">
-    <button type="button" class="wizard-back" id="header-back-btn" aria-label="Volver">
+<div class="screen">
+  <header class="screen-header">
+    <button type="button" class="screen-back" id="header-back-btn" aria-label="Volver">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
-    <span class="wizard-heading">Nuevo registro</span>
+    <span class="screen-heading">Nuevo registro</span>
     <span class="offline-badge" id="offline-badge" hidden>SIN CONEXIÓN</span>
   </header>
 
@@ -94,7 +94,7 @@
         <p class="wizard-step-desc">¿Cuántas personas puede alojar?</p>
       </div>
       <div class="card-bordered wizard-card">
-        <div class="wizard-stepper">
+        <div class="stepper">
           <button type="button" id="capacidad-menos" aria-label="Restar">–</button>
           <output id="capacidad-valor">1</output>
           <button type="button" id="capacidad-mas" aria-label="Sumar">+</button>
@@ -177,7 +177,7 @@
 
   </form>
 
-  <p class="wizard-error" id="wizard-error" role="alert"></p>
+  <p class="form-error" id="wizard-error" role="alert"></p>
 
   <footer class="wizard-footer">
     <button type="button" class="btn-outline" id="atras-btn">Atrás</button>

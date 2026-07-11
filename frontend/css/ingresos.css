@@ -1,0 +1,30 @@
+.hogar-card.selectable {
+  cursor: pointer;
+  border-color: var(--color-gold-border);
+}
+
+.hogar-card.selectable.selected {
+  border-color: var(--color-gold);
+  background: var(--color-gold-tint);
+}
+
+.ingresos-panel {
+  flex: none;
+  padding: 18px 24px 28px;
+  border-top: 1px solid var(--color-gold-border);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: center;
+}
+
+.ingresos-panel-nombre {
+  font: 600 16px var(--font-display);
+  color: var(--color-text);
+}
+
+.ingresos-panel-sub {
+  font: 500 12px var(--font-body);
+  color: var(--color-text-muted);
+  margin-top: -8px;
+}

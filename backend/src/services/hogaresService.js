@@ -26,3 +26,20 @@ export async function insertHogar(data) {
   );
   return rows[0];
 }
+
+export async function listHogares() {
+  const { rows } = await pool.query(
+    `SELECT id, nombre_dueno, direccion, capacidad, ocupacion_actual, foto_fachada, created_at
+     FROM hogares
+     ORDER BY created_at DESC`
+  );
+  return rows;
+}
+
+export async function getHogarById(id) {
+  const { rows } = await pool.query(
+    'SELECT id, nombre_dueno, capacidad, ocupacion_actual FROM hogares WHERE id = $1',
+    [id]
+  );
+  return rows[0] || null;
+}

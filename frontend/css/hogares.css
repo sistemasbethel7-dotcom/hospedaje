@@ -1,0 +1,56 @@
+.hogares-list {
+  flex: 1;
+  padding: 18px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.hogar-card {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.hogar-thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  background: var(--color-gold-tint) center/cover no-repeat;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-gold);
+}
+
+.hogar-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.hogar-nombre {
+  font: 600 15px var(--font-display);
+  color: var(--color-text);
+}
+
+.hogar-direccion {
+  font: 500 11.5px var(--font-body);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hogar-ocupacion {
+  font: 700 11px var(--font-body);
+  color: var(--color-gold-deep);
+  margin-top: 4px;
+}
+
+.hogares-empty {
+  text-align: center;
+  color: var(--color-text-muted);
+  font: 500 13px var(--font-body);
+  padding: 60px 24px;
+}

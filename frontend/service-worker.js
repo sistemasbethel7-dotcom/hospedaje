@@ -1,9 +1,11 @@
-const CACHE_NAME = 'anfitriones-v3';
+const CACHE_NAME = 'anfitriones-v4';
 const APP_SHELL = [
   '/',
   '/index.html',
   '/home.html',
   '/registro.html',
+  '/hogares.html',
+  '/ingresos.html',
   '/manifest.json',
   '/css/tokens.css',
   '/css/base.css',
@@ -11,10 +13,14 @@ const APP_SHELL = [
   '/css/login.css',
   '/css/home.css',
   '/css/registro.css',
+  '/css/hogares.css',
+  '/css/ingresos.css',
   '/js/app.js',
   '/js/pages/login.js',
   '/js/pages/home.js',
   '/js/pages/registro.js',
+  '/js/pages/hogares.js',
+  '/js/pages/ingresos.js',
   '/js/services/api.js',
   '/js/services/session.js',
 ];

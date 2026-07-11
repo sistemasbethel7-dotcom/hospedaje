@@ -43,3 +43,37 @@ export async function crearHogar(token, formData) {
 
   return res.json();
 }
+
+export async function listarHogares(token) {
+  const res = await fetch(`${API_BASE}/hogares`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    const error = new Error('No se pudo cargar la lista de hogares.');
+    error.status = res.status;
+    throw error;
+  }
+
+  return res.json();
+}
+
+export async function registrarIngreso(token, hogarId, cantidad) {
+  const res = await fetch(`${API_BASE}/hogares/${hogarId}/ingresos`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ cantidad }),
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    const error = new Error(data.message || 'No se pudo registrar el ingreso.');
+    error.status = res.status;
+    throw error;
+  }
+
+  return res.json();
+}
