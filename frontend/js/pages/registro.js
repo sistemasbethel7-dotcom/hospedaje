@@ -96,7 +96,7 @@ function initMap() {
   const statusEl = document.getElementById('ubicar-status');
   const hasDraftLocation = typeof state.lat === 'number' && typeof state.lng === 'number';
   const initialCenter = hasDraftLocation ? [state.lat, state.lng] : [20.6597, -103.3496];
-  const initialZoom = hasDraftLocation ? 17 : 12;
+  const initialZoom = hasDraftLocation ? 19 : 12;
 
   const map = L.map('wizard-map').setView(initialCenter, initialZoom);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -132,7 +132,7 @@ function initMap() {
   navigator.geolocation.getCurrentPosition(
     (pos) => {
       const latlng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      map.setView([latlng.lat, latlng.lng], 17);
+      map.setView([latlng.lat, latlng.lng], 19);
       marker.setLatLng(latlng);
       updateFromLatLng(latlng);
     },
