@@ -23,6 +23,28 @@ export function setupMapModal({ getLocation, onConfirm }) {
     activeLayer.addTo(modalMap);
   }
 
+  // En Safari móvil, un modal `position: fixed; inset: 0` se dimensiona contra el
+  // viewport de layout (pantalla completa, barra de Safari colapsada), no contra lo
+  // que realmente se ve mientras la barra de direcciones sigue expandida. Eso deja la
+  // cabecera (título + botón Satélite) tapada hasta que el usuario hace scroll y Safari
+  // colapsa su barra. Se corrige midiendo el visualViewport real y ajustando el modal.
+  function syncModalViewport() {
+    const modal = document.getElementById('map-modal');
+    if (modal.hidden) return;
+    const vv = window.visualViewport;
+    if (vv) {
+      modal.style.height = `${vv.height}px`;
+      modal.style.top = `${vv.offsetTop}px`;
+    } else {
+      modal.style.height = `${window.innerHeight}px`;
+      modal.style.top = '0px';
+    }
+    modalMap?.invalidateSize();
+  }
+
+  window.visualViewport?.addEventListener('resize', syncModalViewport);
+  window.visualViewport?.addEventListener('scroll', syncModalViewport);
+
   function openMapModal() {
     ensureModalMap();
 
@@ -34,7 +56,8 @@ export function setupMapModal({ getLocation, onConfirm }) {
     }
 
     document.getElementById('map-modal').hidden = false;
-    setTimeout(() => modalMap.invalidateSize(), 50);
+    syncModalViewport();
+    setTimeout(syncModalViewport, 50);
 
     const location = getLocation();
     if (!location && navigator.geolocation) {
