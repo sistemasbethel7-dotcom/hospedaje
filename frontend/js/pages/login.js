@@ -5,12 +5,16 @@ import { getActiveEventId } from '../services/eventoActivo.js';
 
 registerServiceWorker();
 
-function destinoPostLogin() {
+function destinoPostLogin(role) {
+  if (role === 'admin' || role === 'supervisor') {
+    return 'admin/dashboard.html';
+  }
   return getActiveEventId() ? 'home.html' : 'eventos.html';
 }
 
-if (getSession()) {
-  window.location.href = destinoPostLogin();
+const sesionExistente = getSession();
+if (sesionExistente) {
+  window.location.href = destinoPostLogin(sesionExistente.user.role);
 }
 
 const form = document.getElementById('login-form');
@@ -33,7 +37,7 @@ form.addEventListener('submit', async (event) => {
   try {
     const session = await login(email, password);
     saveSession(session);
-    window.location.href = destinoPostLogin();
+    window.location.href = destinoPostLogin(session.user.role);
   } catch (err) {
     errorEl.textContent = err.message;
   } finally {

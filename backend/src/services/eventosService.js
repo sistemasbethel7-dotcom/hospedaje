@@ -34,6 +34,53 @@ export async function getEventoById(id) {
   return rows[0] || null;
 }
 
+export async function getEventoMetricas(id) {
+  const [resumen, colonias, vulnerabilidades, perfiles, servicios] = await Promise.all([
+    getEventoById(id),
+    pool.query(
+      `SELECT colonia, COUNT(*)::int AS hogares,
+              COALESCE(SUM(capacidad), 0)::int AS capacidad,
+              COALESCE(SUM(ocupacion_actual), 0)::int AS ocupacion
+       FROM hogares WHERE evento_id = $1
+       GROUP BY colonia ORDER BY hogares DESC LIMIT 10`,
+      [id]
+    ),
+    pool.query(
+      `SELECT UNNEST(vulnerabilidades) AS etiqueta, COUNT(*)::int AS total
+       FROM hogares WHERE evento_id = $1
+       GROUP BY etiqueta ORDER BY total DESC`,
+      [id]
+    ),
+    pool.query(
+      `SELECT UNNEST(perfil_sugerido) AS etiqueta, COUNT(*)::int AS total
+       FROM hogares WHERE evento_id = $1
+       GROUP BY etiqueta ORDER BY total DESC`,
+      [id]
+    ),
+    pool.query(
+      `SELECT
+         COUNT(*) FILTER (WHERE agua = 'buena')::int AS agua_buena,
+         COUNT(*) FILTER (WHERE agua = 'intermitente')::int AS agua_intermitente,
+         COUNT(*) FILTER (WHERE agua IS NULL OR agua = 'sin_servicio')::int AS agua_sin_servicio,
+         COUNT(*) FILTER (WHERE luz)::int AS con_luz,
+         COUNT(*) FILTER (WHERE electricidad)::int AS con_electricidad,
+         COUNT(*)::int AS total_hogares
+       FROM hogares WHERE evento_id = $1`,
+      [id]
+    ),
+  ]);
+
+  if (!resumen) return null;
+
+  return {
+    ...resumen,
+    colonias: colonias.rows,
+    vulnerabilidades: vulnerabilidades.rows,
+    perfiles: perfiles.rows,
+    servicios: servicios.rows[0],
+  };
+}
+
 export async function updateEvento(id, data) {
   const { rows } = await pool.query(
     `UPDATE eventos SET

@@ -90,6 +90,68 @@ export async function actualizarEvento(token, id, payload) {
   return res.json();
 }
 
+export async function obtenerMetricasEvento(token, id) {
+  const res = await fetch(`${API_BASE}/eventos/${id}/metricas`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    const error = new Error('No se pudieron cargar las métricas del evento.');
+    error.status = res.status;
+    throw error;
+  }
+
+  return res.json();
+}
+
+export async function listarUsuarios(token) {
+  const res = await fetch(`${API_BASE}/usuarios`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    const error = new Error('No se pudo cargar la lista de usuarios.');
+    error.status = res.status;
+    throw error;
+  }
+
+  return res.json();
+}
+
+export async function crearUsuario(token, payload) {
+  const res = await fetch(`${API_BASE}/usuarios`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    const error = new Error(data.message || 'No se pudo crear el usuario.');
+    error.status = res.status;
+    throw error;
+  }
+
+  return res.json();
+}
+
+export async function actualizarUsuario(token, id, payload) {
+  const res = await fetch(`${API_BASE}/usuarios/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    const error = new Error(data.message || 'No se pudo actualizar el usuario.');
+    error.status = res.status;
+    throw error;
+  }
+
+  return res.json();
+}
+
 export async function crearHogar(token, formData) {
   const res = await fetch(`${API_BASE}/hogares`, {
     method: 'POST',

@@ -60,6 +60,7 @@ if (!session) {
         document.getElementById('evento-stats').hidden = false;
         document.getElementById('evento-stat-hogares').textContent = evento.total_hogares;
         document.getElementById('evento-stat-ocupacion').textContent = `${evento.ocupacion_total}/${evento.capacidad_total}`;
+        document.getElementById('volver-dashboard-link').hidden = false;
       }
 
       const eventoAbierto = evento.estatus === 'abierto';

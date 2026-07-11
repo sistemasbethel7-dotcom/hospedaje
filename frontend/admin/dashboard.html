@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard · Anfitriones</title>
+<meta name="theme-color" content="#A8832E">
+<link rel="manifest" href="../manifest.json">
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="../css/tokens.css">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/eventos.css">
+<link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar-title">Hospedaje</div>
+    <nav class="admin-nav">
+      <a href="dashboard.html" class="admin-nav-link active">Dashboard</a>
+      <a href="eventos.html" class="admin-nav-link">Eventos</a>
+      <a href="usuarios.html" class="admin-nav-link" id="nav-usuarios">Usuarios</a>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <a href="../eventos.html" class="admin-nav-link">Modo campo</a>
+      <button type="button" class="admin-nav-link" id="logout-btn">Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-page-header">
+      <h1 class="admin-page-title">Dashboard</h1>
+      <div class="admin-page-actions">
+        <select class="admin-select" id="evento-select"></select>
+      </div>
+    </div>
+
+    <p class="admin-error" id="dashboard-error" role="alert"></p>
+    <p class="admin-empty" id="dashboard-empty" hidden>Aún no hay eventos creados. <a href="eventos.html">Crea el primero</a>.</p>
+
+    <div id="dashboard-content" hidden>
+      <div class="admin-kpis">
+        <div class="admin-kpi-card">
+          <div class="admin-kpi-value" id="kpi-hogares"></div>
+          <div class="admin-kpi-label">Hogares registrados</div>
+        </div>
+        <div class="admin-kpi-card">
+          <div class="admin-kpi-value" id="kpi-capacidad"></div>
+          <div class="admin-kpi-label">Capacidad total</div>
+        </div>
+        <div class="admin-kpi-card">
+          <div class="admin-kpi-value" id="kpi-ocupacion"></div>
+          <div class="admin-kpi-label">Ocupación actual</div>
+        </div>
+        <div class="admin-kpi-card">
+          <div class="admin-kpi-value" id="kpi-disponibles"></div>
+          <div class="admin-kpi-label">Lugares disponibles</div>
+        </div>
+      </div>
+
+      <div class="admin-charts">
+        <div class="admin-chart-card">
+          <div class="admin-chart-title">Ocupación</div>
+          <canvas id="chart-ocupacion"></canvas>
+        </div>
+        <div class="admin-chart-card">
+          <div class="admin-chart-title">Distribución por colonia</div>
+          <canvas id="chart-colonias"></canvas>
+        </div>
+        <div class="admin-chart-card">
+          <div class="admin-chart-title">Servicios</div>
+          <canvas id="chart-servicios"></canvas>
+        </div>
+        <div class="admin-chart-card">
+          <div class="admin-chart-title">Vulnerabilidades</div>
+          <canvas id="chart-vulnerabilidades"></canvas>
+        </div>
+        <div class="admin-chart-card">
+          <div class="admin-chart-title">Perfil recomendado</div>
+          <canvas id="chart-perfiles"></canvas>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script type="module" src="../js/pages/admin-dashboard.js"></script>
+</body>
+</html>

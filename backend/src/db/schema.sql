@@ -12,6 +12,8 @@ ALTER TABLE usuarios ALTER COLUMN role SET NOT NULL;
 ALTER TABLE usuarios DROP CONSTRAINT IF EXISTS usuarios_role_check;
 ALTER TABLE usuarios ADD CONSTRAINT usuarios_role_check CHECK (role IN ('admin', 'agente', 'supervisor'));
 
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS activo BOOLEAN NOT NULL DEFAULT true;
+
 GRANT ALL PRIVILEGES ON TABLE usuarios TO pwa_templo_app;
 GRANT USAGE, SELECT ON SEQUENCE usuarios_id_seq TO pwa_templo_app;
 

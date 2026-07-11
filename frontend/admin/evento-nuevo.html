@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nuevo evento · Anfitriones</title>
+<meta name="theme-color" content="#A8832E">
+<link rel="manifest" href="../manifest.json">
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/tokens.css">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/eventos.css">
+<link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar-title">Hospedaje</div>
+    <nav class="admin-nav">
+      <a href="dashboard.html" class="admin-nav-link">Dashboard</a>
+      <a href="eventos.html" class="admin-nav-link active">Eventos</a>
+      <a href="usuarios.html" class="admin-nav-link">Usuarios</a>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <a href="../eventos.html" class="admin-nav-link">Modo campo</a>
+      <button type="button" class="admin-nav-link" id="logout-btn">Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <main class="admin-main" style="max-width:520px">
+    <div class="admin-page-header">
+      <h1 class="admin-page-title">Nuevo evento</h1>
+    </div>
+
+    <p class="admin-error" id="evento-error" role="alert"></p>
+
+    <form class="admin-inline-form" id="evento-form" style="flex-direction:column; align-items:stretch;">
+      <div class="field">
+        <label class="label-caps" for="nombre">Nombre del evento</label>
+        <input type="text" id="nombre" name="nombre" placeholder="Centenario 2026" required>
+      </div>
+      <div class="field">
+        <label class="label-caps" for="sede">Sede (opcional)</label>
+        <input type="text" id="sede" name="sede" placeholder="Templo Central">
+      </div>
+      <div class="field">
+        <label class="label-caps" for="fecha_inicio">Fecha inicio</label>
+        <input type="date" id="fecha_inicio" name="fecha_inicio" required>
+      </div>
+      <div class="field">
+        <label class="label-caps" for="fecha_fin">Fecha fin</label>
+        <input type="date" id="fecha_fin" name="fecha_fin" required>
+      </div>
+      <div class="admin-page-actions">
+        <a href="eventos.html" class="admin-btn outline">Cancelar</a>
+        <button type="button" class="admin-btn" id="crear-btn">Crear evento</button>
+      </div>
+    </form>
+  </main>
+</div>
+
+<script type="module" src="../js/pages/admin-evento-nuevo.js"></script>
+</body>
+</html>

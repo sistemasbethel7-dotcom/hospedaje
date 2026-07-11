@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eventos · Anfitriones</title>
+<meta name="theme-color" content="#A8832E">
+<link rel="manifest" href="../manifest.json">
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/tokens.css">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/eventos.css">
+<link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar-title">Hospedaje</div>
+    <nav class="admin-nav">
+      <a href="dashboard.html" class="admin-nav-link">Dashboard</a>
+      <a href="eventos.html" class="admin-nav-link active">Eventos</a>
+      <a href="usuarios.html" class="admin-nav-link" id="nav-usuarios">Usuarios</a>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <a href="../eventos.html" class="admin-nav-link">Modo campo</a>
+      <button type="button" class="admin-nav-link" id="logout-btn">Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-page-header">
+      <h1 class="admin-page-title">Eventos</h1>
+      <div class="admin-page-actions">
+        <a href="evento-nuevo.html" class="admin-btn" id="crear-evento-btn" hidden>+ Crear evento</a>
+      </div>
+    </div>
+
+    <p class="admin-error" id="eventos-error" role="alert"></p>
+    <p class="admin-empty" id="eventos-empty" hidden>Aún no hay eventos creados.</p>
+
+    <div class="admin-table-wrap" id="eventos-table-wrap" hidden>
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Sede</th>
+            <th>Fechas</th>
+            <th>Estatus</th>
+            <th>Hogares</th>
+            <th>Ocupación</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="eventos-tbody"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<script type="module" src="../js/pages/admin-eventos.js"></script>
+</body>
+</html>

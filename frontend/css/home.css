@@ -59,6 +59,11 @@
   width: 100%;
 }
 
+.home-evento-links {
+  display: flex;
+  gap: 18px;
+}
+
 .home-evento-cambiar {
   border: none;
   background: none;

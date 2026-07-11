@@ -7,12 +7,8 @@ registerServiceWorker();
 
 const session = getSession();
 if (!session) {
-  window.location.href = 'index.html';
+  window.location.href = '../index.html';
 }
-
-document.getElementById('back-btn').addEventListener('click', () => {
-  window.location.href = 'eventos.html';
-});
 
 document.getElementById('crear-btn').addEventListener('click', async () => {
   const errorEl = document.getElementById('evento-error');
@@ -49,6 +45,12 @@ document.getElementById('crear-btn').addEventListener('click', async () => {
   }
 });
 
+document.getElementById('logout-btn').addEventListener('click', () => {
+  clearSession();
+  clearActiveEventId();
+  window.location.href = '../index.html';
+});
+
 try {
   const { user } = await me(session.token);
   if (user.role !== 'admin') {
@@ -59,5 +61,5 @@ try {
     clearSession();
     clearActiveEventId();
   }
-  window.location.href = 'index.html';
+  window.location.href = '../index.html';
 }

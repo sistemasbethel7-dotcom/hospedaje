@@ -1,5 +1,5 @@
 import { registerServiceWorker } from '../app.js';
-import { me, listarEventos, actualizarEvento } from '../services/api.js';
+import { listarEventos } from '../services/api.js';
 import { getSession, clearSession } from '../services/session.js';
 import { setActiveEventId, clearActiveEventId } from '../services/eventoActivo.js';
 
@@ -27,7 +27,7 @@ function formatFecha(iso) {
   return `${d}/${m}/${y}`;
 }
 
-function renderEventos(eventos, { showStats, showFinalizar }) {
+function renderEventos(eventos) {
   const list = document.getElementById('eventos-list');
 
   if (eventos.length === 0) {
@@ -36,23 +36,8 @@ function renderEventos(eventos, { showStats, showFinalizar }) {
   }
 
   list.innerHTML = eventos
-    .map((e) => {
-      const badge = showStats
-        ? `<span class="estatus-badge ${e.estatus}">${e.estatus === 'abierto' ? 'Abierto' : 'Finalizado'}</span>`
-        : '';
-      const stats = showStats
-        ? `
-          <div class="evento-stats">
-            <div class="evento-stat"><span class="evento-stat-valor">${e.total_hogares}</span><span class="evento-stat-label">Hogares</span></div>
-            <div class="evento-stat"><span class="evento-stat-valor">${e.ocupacion_total}/${e.capacidad_total}</span><span class="evento-stat-label">Ocupación</span></div>
-          </div>
-        `
-        : '';
-      const finalizar =
-        showFinalizar && e.estatus === 'abierto'
-          ? `<button type="button" class="evento-finalizar-btn" data-finalizar="${e.id}">Finalizar evento</button>`
-          : '';
-      return `
+    .map(
+      (e) => `
         <div class="card-bordered evento-card" data-id="${e.id}">
           <div class="evento-card-head">
             <div>
@@ -60,13 +45,10 @@ function renderEventos(eventos, { showStats, showFinalizar }) {
               ${e.sede ? `<div class="evento-sede">${escapeHtml(e.sede)}</div>` : ''}
               <div class="evento-fechas">${formatFecha(e.fecha_inicio)} – ${formatFecha(e.fecha_fin)}</div>
             </div>
-            ${badge}
           </div>
-          ${stats}
-          ${finalizar}
         </div>
-      `;
-    })
+      `
+    )
     .join('');
 
   list.querySelectorAll('.evento-card').forEach((card) => {
@@ -75,64 +57,17 @@ function renderEventos(eventos, { showStats, showFinalizar }) {
       window.location.href = 'home.html';
     });
   });
-
-  list.querySelectorAll('[data-finalizar]').forEach((btn) => {
-    btn.addEventListener('click', async (event) => {
-      event.stopPropagation();
-      btn.disabled = true;
-      try {
-        await actualizarEvento(session.token, btn.dataset.finalizar, { estatus: 'finalizado' });
-        await cargarEventos();
-      } catch (err) {
-        document.getElementById('eventos-error').textContent = err.message || 'No se pudo finalizar el evento.';
-        btn.disabled = false;
-      }
-    });
-  });
-}
-
-let userRole = null;
-
-async function cargarEventos() {
-  const errorEl = document.getElementById('eventos-error');
-  errorEl.textContent = '';
-  try {
-    const esGestor = userRole === 'admin' || userRole === 'supervisor';
-    const { eventos } = await listarEventos(session.token, esGestor ? undefined : 'abierto');
-    renderEventos(eventos, { showStats: esGestor, showFinalizar: userRole === 'admin' });
-  } catch (err) {
-    if (err.status === 401) {
-      clearSession();
-      clearActiveEventId();
-      window.location.href = 'index.html';
-      return;
-    }
-    errorEl.textContent = 'No se pudo cargar la lista de eventos.';
-  }
 }
 
 try {
-  const { user } = await me(session.token);
-  userRole = user.role;
-
-  const esGestor = userRole === 'admin' || userRole === 'supervisor';
-  document.getElementById('eventos-heading').textContent = esGestor ? 'Eventos' : 'Eventos por atender';
-
-  if (userRole === 'admin') {
-    const addBtn = document.getElementById('crear-evento-btn');
-    addBtn.hidden = false;
-    addBtn.addEventListener('click', () => {
-      window.location.href = 'evento-nuevo.html';
-    });
-  }
-
-  await cargarEventos();
+  const { eventos } = await listarEventos(session.token, 'abierto');
+  renderEventos(eventos);
 } catch (err) {
   if (err.status === 401) {
     clearSession();
     clearActiveEventId();
     window.location.href = 'index.html';
   } else {
-    document.getElementById('eventos-error').textContent = 'No se pudo cargar la información de sesión.';
+    document.getElementById('eventos-error').textContent = 'No se pudo cargar la lista de eventos.';
   }
 }

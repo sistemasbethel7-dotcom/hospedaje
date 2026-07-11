@@ -1,4 +1,4 @@
-import { insertEvento, listEventos, getEventoById, updateEvento } from '../services/eventosService.js';
+import { insertEvento, listEventos, getEventoById, getEventoMetricas, updateEvento } from '../services/eventosService.js';
 
 const ESTATUS_VALIDOS = ['abierto', 'finalizado'];
 
@@ -38,6 +38,14 @@ export async function detalle(req, res) {
     return res.status(404).json({ message: 'Evento no encontrado.' });
   }
   res.json({ evento });
+}
+
+export async function metricas(req, res) {
+  const metricas = await getEventoMetricas(req.params.id);
+  if (!metricas) {
+    return res.status(404).json({ message: 'Evento no encontrado.' });
+  }
+  res.json({ metricas });
 }
 
 export async function actualizar(req, res) {

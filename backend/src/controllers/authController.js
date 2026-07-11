@@ -1,4 +1,4 @@
-import { verifyCredentials, generateToken } from '../services/authService.js';
+import { verifyCredentials, generateToken, CuentaDesactivadaError } from '../services/authService.js';
 
 export async function login(req, res) {
   const { email, password } = req.body;
@@ -7,7 +7,15 @@ export async function login(req, res) {
     return res.status(400).json({ message: 'Correo y contraseña son requeridos.' });
   }
 
-  const user = await verifyCredentials(email, password);
+  let user;
+  try {
+    user = await verifyCredentials(email, password);
+  } catch (err) {
+    if (err instanceof CuentaDesactivadaError) {
+      return res.status(403).json({ message: err.message });
+    }
+    throw err;
+  }
   if (!user) {
     return res.status(401).json({ message: 'Correo o contraseña incorrectos.' });
   }
