@@ -3,6 +3,7 @@ import { me, obtenerHogar, actualizarHogar, eliminarHogar } from '../services/ap
 import { getSession, clearSession } from '../services/session.js';
 import { clearActiveEventId } from '../services/eventoActivo.js';
 import { setupMapModal } from '../mapModal.js';
+import { compressImage } from '../imageCompress.js';
 
 registerServiceWorker();
 
@@ -163,12 +164,13 @@ function setupMultiSelect(groupId, key) {
 
 function setupPhotos() {
   const bind = (inputId, labelId, key) => {
-    document.getElementById(inputId).addEventListener('change', (event) => {
+    document.getElementById(inputId).addEventListener('change', async (event) => {
       const file = event.target.files[0];
       if (!file) return;
-      state[key] = file;
+      const compressed = await compressImage(file);
+      state[key] = compressed;
       const label = document.getElementById(labelId);
-      label.style.backgroundImage = `url(${URL.createObjectURL(file)})`;
+      label.style.backgroundImage = `url(${URL.createObjectURL(compressed)})`;
       label.querySelector('span').textContent = '';
     });
   };

@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import multer from 'multer';
 import path from 'node:path';
 import authRoutes from './routes/auth.js';
 import eventosRoutes from './routes/eventos.js';
@@ -23,6 +24,9 @@ export function createApp() {
   app.use('/api/usuarios', usuariosRoutes);
 
   app.use((err, req, res, next) => {
+    if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(413).json({ message: 'La foto es demasiado pesada. Intenta con una imagen más ligera.' });
+    }
     console.error(err);
     res.status(500).json({ message: 'Error interno del servidor.' });
   });

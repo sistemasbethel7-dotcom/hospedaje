@@ -97,6 +97,8 @@
 .map-modal {
   position: fixed;
   inset: 0;
+  height: 100vh;
+  height: 100dvh;
   z-index: 1000;
   background: var(--color-bg);
   display: flex;
@@ -107,7 +109,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 16px 20px;
+  padding: calc(16px + env(safe-area-inset-top)) 20px 16px;
   flex: none;
   border-bottom: 1px solid var(--color-gold-border);
 }
@@ -122,6 +124,7 @@
   letter-spacing: .04em;
   padding: 6px 14px;
   border-radius: 20px;
+  touch-action: manipulation;
 }
 
 .map-modal-body {
@@ -149,7 +152,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 16px 20px 24px;
+  padding: 16px 20px calc(24px + env(safe-area-inset-bottom));
   flex: none;
   border-top: 1px solid var(--color-gold-border);
 }
@@ -165,10 +168,13 @@
   align-items: center;
   justify-content: center;
   flex: none;
+  touch-action: manipulation;
 }
+
 
 .map-modal-footer .btn-gold {
   flex: 1;
+  touch-action: manipulation;
 }
 
 .wizard-photos {
