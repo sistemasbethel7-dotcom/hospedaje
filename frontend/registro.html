@@ -109,39 +109,9 @@
     <section class="wizard-step" data-step="4" hidden>
       <div class="wizard-step-head">
         <h2 class="wizard-step-title">Servicios disponibles</h2>
-        <p class="wizard-step-desc">Indica con qué cuenta la casa y su condición actual</p>
+        <p class="wizard-step-desc">Indica con qué cuenta la casa</p>
       </div>
-      <div class="card-bordered wizard-card">
-        <div class="toggle-row">
-          <label class="toggle">
-            <span class="toggle-label">Agua potable</span>
-            <input type="checkbox" id="agua-toggle">
-            <span class="toggle-track"><span class="toggle-thumb"></span></span>
-          </label>
-          <div class="pill-group water-status" id="water-status">
-            <button type="button" class="pill selected" data-agua="buena">Buena</button>
-            <button type="button" class="pill" data-agua="intermitente">Intermitente</button>
-            <button type="button" class="pill" data-agua="sin_servicio">Sin servicio</button>
-          </div>
-        </div>
-        <input type="hidden" id="agua" name="agua" value="">
-
-        <div class="toggle-row">
-          <label class="toggle">
-            <span class="toggle-label">Luz (iluminación)</span>
-            <input type="checkbox" id="luz" name="luz">
-            <span class="toggle-track"><span class="toggle-thumb"></span></span>
-          </label>
-        </div>
-
-        <div class="toggle-row">
-          <label class="toggle">
-            <span class="toggle-label">Electricidad</span>
-            <input type="checkbox" id="electricidad" name="electricidad">
-            <span class="toggle-track"><span class="toggle-thumb"></span></span>
-          </label>
-        </div>
-      </div>
+      <div class="card-bordered wizard-card" id="servicios-container"></div>
     </section>
 
     <section class="wizard-step" data-step="5" hidden>
@@ -150,13 +120,7 @@
         <p class="wizard-step-desc">Marca las condiciones que apliquen al lugar</p>
       </div>
       <div class="card-bordered wizard-card">
-        <div class="pill-group" id="vulnerabilidades-group">
-          <button type="button" class="pill" data-vuln="Acceso complicado">Acceso complicado</button>
-          <button type="button" class="pill" data-vuln="Zona insegura">Zona insegura</button>
-          <button type="button" class="pill" data-vuln="Sin salida de emergencia">Sin salida de emergencia</button>
-          <button type="button" class="pill" data-vuln="Iluminación deficiente">Iluminación deficiente</button>
-          <button type="button" class="pill" data-vuln="Mascotas sueltas">Mascotas sueltas</button>
-        </div>
+        <div class="pill-group" id="vulnerabilidades-group"></div>
         <textarea class="wizard-textarea" id="notas_vulnerabilidad" name="notas_vulnerabilidad" placeholder="Notas adicionales (opcional)"></textarea>
       </div>
     </section>
@@ -167,11 +131,7 @@
         <p class="wizard-step-desc">¿Qué tipo de hermanos recomiendas para este hogar?</p>
       </div>
       <div class="card-bordered wizard-card">
-        <div class="pill-group" id="perfil-group">
-          <button type="button" class="pill" data-perfil="Familia con niños">Familia con niños</button>
-          <button type="button" class="pill" data-perfil="Adultos mayores">Adultos mayores</button>
-          <button type="button" class="pill" data-perfil="Matrimonios">Matrimonios</button>
-        </div>
+        <div class="pill-group" id="perfil-group"></div>
       </div>
     </section>
 

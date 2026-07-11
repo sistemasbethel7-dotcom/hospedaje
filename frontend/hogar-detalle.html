@@ -39,9 +39,11 @@
         <p class="detalle-notas" id="v-cp" hidden></p>
         <p class="detalle-notas" id="v-referencias" hidden></p>
         <div class="detalle-row"><span class="label-caps">Capacidad</span><span id="v-capacidad"></span></div>
-        <div class="detalle-row"><span class="label-caps">Agua</span><span id="v-agua"></span></div>
-        <div class="detalle-row"><span class="label-caps">Luz</span><span id="v-luz"></span></div>
-        <div class="detalle-row"><span class="label-caps">Electricidad</span><span id="v-electricidad"></span></div>
+      </div>
+
+      <div class="card-bordered detalle-card" id="v-servicios-card" hidden>
+        <span class="label-caps">Servicios</span>
+        <div class="pill-group" id="v-servicios"></div>
       </div>
 
       <div class="card-bordered detalle-card" id="v-vulnerabilidades-card" hidden>
@@ -100,55 +102,20 @@
       </div>
       <input type="hidden" id="capacidad" name="capacidad" value="1">
 
-      <div class="toggle-row">
-        <label class="toggle">
-          <span class="toggle-label">Agua potable</span>
-          <input type="checkbox" id="agua-toggle">
-          <span class="toggle-track"><span class="toggle-thumb"></span></span>
-        </label>
-        <div class="pill-group water-status" id="water-status">
-          <button type="button" class="pill selected" data-agua="buena">Buena</button>
-          <button type="button" class="pill" data-agua="intermitente">Intermitente</button>
-          <button type="button" class="pill" data-agua="sin_servicio">Sin servicio</button>
-        </div>
-      </div>
-      <input type="hidden" id="agua" name="agua" value="">
-
-      <div class="toggle-row">
-        <label class="toggle">
-          <span class="toggle-label">Luz (iluminación)</span>
-          <input type="checkbox" id="luz" name="luz">
-          <span class="toggle-track"><span class="toggle-thumb"></span></span>
-        </label>
-      </div>
-
-      <div class="toggle-row">
-        <label class="toggle">
-          <span class="toggle-label">Electricidad</span>
-          <input type="checkbox" id="electricidad" name="electricidad">
-          <span class="toggle-track"><span class="toggle-thumb"></span></span>
-        </label>
+      <div class="field">
+        <span class="label-caps">Servicios</span>
+        <div class="wizard-card" id="servicios-container"></div>
       </div>
 
       <div class="field">
         <span class="label-caps">Vulnerabilidades</span>
-        <div class="pill-group" id="vulnerabilidades-group">
-          <button type="button" class="pill" data-vuln="Acceso complicado">Acceso complicado</button>
-          <button type="button" class="pill" data-vuln="Zona insegura">Zona insegura</button>
-          <button type="button" class="pill" data-vuln="Sin salida de emergencia">Sin salida de emergencia</button>
-          <button type="button" class="pill" data-vuln="Iluminación deficiente">Iluminación deficiente</button>
-          <button type="button" class="pill" data-vuln="Mascotas sueltas">Mascotas sueltas</button>
-        </div>
+        <div class="pill-group" id="vulnerabilidades-group"></div>
         <textarea class="wizard-textarea" id="notas_vulnerabilidad" name="notas_vulnerabilidad" placeholder="Notas adicionales (opcional)"></textarea>
       </div>
 
       <div class="field">
         <span class="label-caps">Perfil recomendado</span>
-        <div class="pill-group" id="perfil-group">
-          <button type="button" class="pill" data-perfil="Familia con niños">Familia con niños</button>
-          <button type="button" class="pill" data-perfil="Adultos mayores">Adultos mayores</button>
-          <button type="button" class="pill" data-perfil="Matrimonios">Matrimonios</button>
-        </div>
+        <div class="pill-group" id="perfil-group"></div>
       </div>
     </form>
 

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Catálogos · Anfitriones</title>
+<meta name="theme-color" content="#A8832E">
+<link rel="manifest" href="../manifest.json">
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/tokens.css">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/eventos.css">
+<link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar-title">Hospedaje</div>
+    <nav class="admin-nav">
+      <a href="dashboard.html" class="admin-nav-link">Dashboard</a>
+      <a href="eventos.html" class="admin-nav-link">Eventos</a>
+      <a href="catalogos.html" class="admin-nav-link active">Catálogos</a>
+      <a href="usuarios.html" class="admin-nav-link">Usuarios</a>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <a href="../eventos.html" class="admin-nav-link">Modo campo</a>
+      <button type="button" class="admin-nav-link" id="logout-btn">Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-page-header">
+      <h1 class="admin-page-title">Catálogos</h1>
+    </div>
+    <p class="admin-page-desc">Estas listas se usan en el registro de hogares (servicios, vulnerabilidades y perfil recomendado). Desactivar un elemento lo oculta de registros nuevos, pero no borra el historial ya guardado.</p>
+
+    <p class="admin-error" id="catalogos-error" role="alert"></p>
+
+    <section class="admin-catalogo-section">
+      <h2 class="admin-catalogo-title">Servicios</h2>
+      <form class="admin-inline-form" data-tipo-form="servicio">
+        <div class="field">
+          <label class="label-caps" for="nuevo-servicio">Nuevo servicio</label>
+          <input type="text" id="nuevo-servicio" placeholder="Ej. Internet">
+        </div>
+        <button type="button" class="admin-btn" data-tipo-agregar="servicio">Agregar</button>
+      </form>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>Etiqueta</th><th>Estatus</th><th>Acciones</th></tr></thead>
+          <tbody id="tbody-servicio"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="admin-catalogo-section">
+      <h2 class="admin-catalogo-title">Vulnerabilidades</h2>
+      <form class="admin-inline-form" data-tipo-form="vulnerabilidad">
+        <div class="field">
+          <label class="label-caps" for="nueva-vulnerabilidad">Nueva vulnerabilidad</label>
+          <input type="text" id="nueva-vulnerabilidad" placeholder="Ej. Escaleras sin barandal">
+        </div>
+        <button type="button" class="admin-btn" data-tipo-agregar="vulnerabilidad">Agregar</button>
+      </form>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>Etiqueta</th><th>Estatus</th><th>Acciones</th></tr></thead>
+          <tbody id="tbody-vulnerabilidad"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="admin-catalogo-section">
+      <h2 class="admin-catalogo-title">Perfil recomendado</h2>
+      <form class="admin-inline-form" data-tipo-form="perfil">
+        <div class="field">
+          <label class="label-caps" for="nuevo-perfil">Nuevo perfil</label>
+          <input type="text" id="nuevo-perfil" placeholder="Ej. Jóvenes solteros">
+        </div>
+        <button type="button" class="admin-btn" data-tipo-agregar="perfil">Agregar</button>
+      </form>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>Etiqueta</th><th>Estatus</th><th>Acciones</th></tr></thead>
+          <tbody id="tbody-perfil"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script type="module" src="../js/pages/admin-catalogos.js"></script>
+</body>
+</html>

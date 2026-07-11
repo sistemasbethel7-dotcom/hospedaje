@@ -273,16 +273,6 @@
   flex: 1;
 }
 
-.water-status {
-  display: none;
-  gap: 6px;
-  padding-left: 49px;
-}
-
-.water-status.visible {
-  display: flex;
-}
-
 .pill {
   font: 700 10.5px var(--font-body);
   padding: 6px 12px;

@@ -109,16 +109,12 @@ function renderMetricas(metricas) {
     options: { indexAxis: 'y', plugins: { legend: { position: 'bottom' } }, scales: { x: { beginAtZero: true } } },
   });
 
-  const s = metricas.servicios;
   destroyChart('servicios');
   charts.servicios = new Chart(document.getElementById('chart-servicios'), {
     type: 'bar',
     data: {
-      labels: ['Agua buena', 'Agua intermitente', 'Sin agua', 'Con luz', 'Con electricidad'],
-      datasets: [{
-        data: [s.agua_buena, s.agua_intermitente, s.agua_sin_servicio, s.con_luz, s.con_electricidad],
-        backgroundColor: PALETTE,
-      }],
+      labels: metricas.servicios.map((s) => s.etiqueta),
+      datasets: [{ data: metricas.servicios.map((s) => s.total), backgroundColor: PALETTE }],
     },
     options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } },
   });
@@ -169,6 +165,7 @@ try {
   }
   if (user.role !== 'admin') {
     document.getElementById('nav-usuarios').hidden = true;
+    document.getElementById('nav-catalogos').hidden = true;
   }
 
   const { eventos: lista } = await listarEventos(session.token);

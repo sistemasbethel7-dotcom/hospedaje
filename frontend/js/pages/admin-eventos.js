@@ -114,6 +114,7 @@ try {
   esAdmin = user.role === 'admin';
   if (!esAdmin) {
     document.getElementById('nav-usuarios').hidden = true;
+    document.getElementById('nav-catalogos').hidden = true;
   } else {
     document.getElementById('crear-evento-btn').hidden = false;
   }

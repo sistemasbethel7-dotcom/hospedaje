@@ -58,14 +58,9 @@ export async function getEventoMetricas(id) {
       [id]
     ),
     pool.query(
-      `SELECT
-         COUNT(*) FILTER (WHERE agua = 'buena')::int AS agua_buena,
-         COUNT(*) FILTER (WHERE agua = 'intermitente')::int AS agua_intermitente,
-         COUNT(*) FILTER (WHERE agua IS NULL OR agua = 'sin_servicio')::int AS agua_sin_servicio,
-         COUNT(*) FILTER (WHERE luz)::int AS con_luz,
-         COUNT(*) FILTER (WHERE electricidad)::int AS con_electricidad,
-         COUNT(*)::int AS total_hogares
-       FROM hogares WHERE evento_id = $1`,
+      `SELECT UNNEST(servicios) AS etiqueta, COUNT(*)::int AS total
+       FROM hogares WHERE evento_id = $1
+       GROUP BY etiqueta ORDER BY total DESC`,
       [id]
     ),
   ]);
@@ -77,7 +72,7 @@ export async function getEventoMetricas(id) {
     colonias: colonias.rows,
     vulnerabilidades: vulnerabilidades.rows,
     perfiles: perfiles.rows,
-    servicios: servicios.rows[0],
+    servicios: servicios.rows,
   };
 }
 

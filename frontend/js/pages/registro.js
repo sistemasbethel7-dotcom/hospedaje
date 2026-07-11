@@ -1,5 +1,5 @@
 import { registerServiceWorker } from '../app.js';
-import { crearHogar } from '../services/api.js';
+import { crearHogar, obtenerCatalogosActivos } from '../services/api.js';
 import { getSession, clearSession } from '../services/session.js';
 import { getActiveEventId, clearActiveEventId } from '../services/eventoActivo.js';
 import { setupMapModal } from '../mapModal.js';
@@ -24,8 +24,7 @@ const STEP_NAMES = ['Datos del dueño', 'Fotografías', 'Capacidad', 'Servicios'
 const state = {
   step: 1,
   capacidad: 1,
-  aguaActiva: false,
-  agua: '',
+  servicios: [],
   vulnerabilidades: [],
   perfil: [],
   fotoDueno: null,
@@ -58,8 +57,7 @@ function saveDraft() {
     evento_id: eventoId,
     step: state.step,
     capacidad: state.capacidad,
-    aguaActiva: state.aguaActiva,
-    agua: state.agua,
+    servicios: state.servicios,
     vulnerabilidades: state.vulnerabilidades,
     perfil: state.perfil,
     nombre_dueno: document.getElementById('nombre_dueno').value,
@@ -159,42 +157,40 @@ function setupCapacidad() {
   update();
 }
 
-function setupAgua() {
-  const toggle = document.getElementById('agua-toggle');
-  const group = document.getElementById('water-status');
-  const hidden = document.getElementById('agua');
+function renderServicios(items) {
+  const container = document.getElementById('servicios-container');
+  container.innerHTML = items.map((etiqueta) => `
+    <div class="toggle-row">
+      <label class="toggle">
+        <span class="toggle-label">${etiqueta}</span>
+        <input type="checkbox" data-servicio="${etiqueta}">
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+      </label>
+    </div>
+  `).join('');
 
-  toggle.addEventListener('change', () => {
-    state.aguaActiva = toggle.checked;
-    group.classList.toggle('visible', state.aguaActiva);
-    if (state.aguaActiva && !state.agua) {
-      state.agua = 'buena';
-    }
-    hidden.value = state.aguaActiva ? state.agua : '';
-    renderAguaPills();
-    saveDraft();
-  });
-
-  group.querySelectorAll('.pill').forEach((pill) => {
-    pill.addEventListener('click', () => {
-      state.agua = pill.dataset.agua;
-      hidden.value = state.agua;
-      renderAguaPills();
+  container.querySelectorAll('input[data-servicio]').forEach((checkbox) => {
+    checkbox.checked = state.servicios.includes(checkbox.dataset.servicio);
+    checkbox.addEventListener('change', () => {
+      const value = checkbox.dataset.servicio;
+      const idx = state.servicios.indexOf(value);
+      if (checkbox.checked && idx < 0) state.servicios.push(value);
+      if (!checkbox.checked && idx >= 0) state.servicios.splice(idx, 1);
       saveDraft();
     });
   });
 }
 
-function renderAguaPills() {
-  document.querySelectorAll('#water-status .pill').forEach((pill) => {
-    pill.classList.toggle('selected', pill.dataset.agua === state.agua);
-  });
-}
+function renderPillGroup(containerId, items, key) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = items
+    .map((etiqueta) => `<button type="button" class="pill" data-valor="${etiqueta}">${etiqueta}</button>`)
+    .join('');
 
-function setupMultiSelect(groupId, key) {
-  document.querySelectorAll(`#${groupId} .pill`).forEach((pill) => {
+  container.querySelectorAll('.pill').forEach((pill) => {
+    pill.classList.toggle('selected', state[key].includes(pill.dataset.valor));
     pill.addEventListener('click', () => {
-      const value = pill.dataset.vuln || pill.dataset.perfil;
+      const value = pill.dataset.valor;
       const list = state[key];
       const idx = list.indexOf(value);
       if (idx >= 0) {
@@ -207,6 +203,20 @@ function setupMultiSelect(groupId, key) {
       saveDraft();
     });
   });
+}
+
+async function cargarCatalogos() {
+  try {
+    const { catalogos } = await obtenerCatalogosActivos(session.token);
+    return catalogos;
+  } catch (err) {
+    if (err.status === 401) {
+      clearSession();
+      clearActiveEventId();
+      window.location.href = 'index.html';
+    }
+    return { servicio: [], vulnerabilidad: [], perfil: [] };
+  }
 }
 
 async function handleSubmit() {
@@ -223,9 +233,7 @@ async function handleSubmit() {
   if (state.lat) formData.append('lat', state.lat);
   if (state.lng) formData.append('lng', state.lng);
   formData.append('capacidad', state.capacidad);
-  formData.append('agua', state.agua || '');
-  formData.append('luz', document.getElementById('luz').checked);
-  formData.append('electricidad', document.getElementById('electricidad').checked);
+  formData.append('servicios', JSON.stringify(state.servicios));
   formData.append('vulnerabilidades', JSON.stringify(state.vulnerabilidades));
   formData.append('notas_vulnerabilidad', document.getElementById('notas_vulnerabilidad').value.trim());
   formData.append('perfil_sugerido', JSON.stringify(state.perfil));
@@ -301,8 +309,10 @@ setupMapModal({
 });
 setupPhotos();
 setupCapacidad();
-setupAgua();
-setupMultiSelect('vulnerabilidades-group', 'vulnerabilidades');
-setupMultiSelect('perfil-group', 'perfil');
 updateOfflineBadge();
 renderStep();
+
+const catalogos = await cargarCatalogos();
+renderServicios(catalogos.servicio);
+renderPillGroup('vulnerabilidades-group', catalogos.vulnerabilidad, 'vulnerabilidades');
+renderPillGroup('perfil-group', catalogos.perfil, 'perfil');

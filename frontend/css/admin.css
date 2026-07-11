@@ -173,6 +173,22 @@
   padding: 40px 0;
 }
 
+.admin-page-desc {
+  color: var(--color-text-muted);
+  font: 500 13px var(--font-body);
+  margin: -8px 0 24px;
+}
+
+.admin-catalogo-section {
+  margin-bottom: 36px;
+}
+
+.admin-catalogo-title {
+  font: 700 20px var(--font-display);
+  color: var(--color-text);
+  margin-bottom: 12px;
+}
+
 /* KPIs */
 
 .admin-kpis {

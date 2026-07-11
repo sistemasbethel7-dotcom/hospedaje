@@ -152,6 +152,82 @@ export async function actualizarUsuario(token, id, payload) {
   return res.json();
 }
 
+export async function obtenerCatalogosActivos(token) {
+  const res = await fetch(`${API_BASE}/catalogos/activos`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    const error = new Error('No se pudieron cargar los catálogos.');
+    error.status = res.status;
+    throw error;
+  }
+
+  return res.json();
+}
+
+export async function listarCatalogo(token, tipo) {
+  const res = await fetch(`${API_BASE}/catalogos?tipo=${tipo}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    const error = new Error('No se pudo cargar el catálogo.');
+    error.status = res.status;
+    throw error;
+  }
+
+  return res.json();
+}
+
+export async function crearCatalogoItem(token, payload) {
+  const res = await fetch(`${API_BASE}/catalogos`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    const error = new Error(data.message || 'No se pudo agregar el elemento.');
+    error.status = res.status;
+    throw error;
+  }
+
+  return res.json();
+}
+
+export async function actualizarCatalogoItem(token, id, payload) {
+  const res = await fetch(`${API_BASE}/catalogos/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    const error = new Error(data.message || 'No se pudo actualizar el elemento.');
+    error.status = res.status;
+    throw error;
+  }
+
+  return res.json();
+}
+
+export async function eliminarCatalogoItem(token, id) {
+  const res = await fetch(`${API_BASE}/catalogos/${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    const error = new Error(data.message || 'No se pudo eliminar el elemento.');
+    error.status = res.status;
+    throw error;
+  }
+}
+
 export async function crearHogar(token, formData) {
   const res = await fetch(`${API_BASE}/hogares`, {
     method: 'POST',

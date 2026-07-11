@@ -1,5 +1,5 @@
 import { registerServiceWorker } from '../app.js';
-import { me, obtenerHogar, actualizarHogar, eliminarHogar } from '../services/api.js';
+import { me, obtenerHogar, actualizarHogar, eliminarHogar, obtenerCatalogosActivos } from '../services/api.js';
 import { getSession, clearSession } from '../services/session.js';
 import { clearActiveEventId } from '../services/eventoActivo.js';
 import { setupMapModal } from '../mapModal.js';
@@ -19,16 +19,15 @@ if (!hogarId) {
 }
 
 const HOUSE_ICON = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M4 10.5L12 4l8 6.5V20a1 1 0 01-1 1h-4v-6H9v6H5a1 1 0 01-1-1v-9.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
-const AGUA_LABELS = { buena: 'Buena', intermitente: 'Intermitente', sin_servicio: 'Sin servicio' };
 
 let hogar = null;
+let catalogos = { servicio: [], vulnerabilidad: [], perfil: [] };
 
 const state = {
   lat: null,
   lng: null,
   capacidad: 1,
-  aguaActiva: false,
-  agua: '',
+  servicios: [],
   vulnerabilidades: [],
   perfil: [],
   fotoDueno: null,
@@ -63,9 +62,16 @@ function renderView() {
   refEl.textContent = hogar.referencias || '';
 
   document.getElementById('v-capacidad').textContent = `${hogar.ocupacion_actual}/${hogar.capacidad} lugares ocupados`;
-  document.getElementById('v-agua').textContent = hogar.agua ? AGUA_LABELS[hogar.agua] : 'Sin servicio';
-  document.getElementById('v-luz').textContent = hogar.luz ? 'Sí' : 'No';
-  document.getElementById('v-electricidad').textContent = hogar.electricidad ? 'Sí' : 'No';
+
+  const serviciosCard = document.getElementById('v-servicios-card');
+  if (hogar.servicios.length > 0) {
+    serviciosCard.hidden = false;
+    document.getElementById('v-servicios').innerHTML = hogar.servicios
+      .map((s) => `<span class="pill selected">${s}</span>`)
+      .join('');
+  } else {
+    serviciosCard.hidden = true;
+  }
 
   const vulnCard = document.getElementById('v-vulnerabilidades-card');
   if (hogar.vulnerabilidades.length > 0 || hogar.notas_vulnerabilidad) {
@@ -97,9 +103,49 @@ function updateLocationTrigger() {
   text.textContent = hasLocation ? 'Ubicación fijada · Toca para ajustar' : 'Ubicar en el mapa';
 }
 
-function renderAguaPills() {
-  document.querySelectorAll('#water-status .pill').forEach((pill) => {
-    pill.classList.toggle('selected', pill.dataset.agua === state.agua);
+function renderServicios(items) {
+  const container = document.getElementById('servicios-container');
+  container.innerHTML = items.map((etiqueta) => `
+    <div class="toggle-row">
+      <label class="toggle">
+        <span class="toggle-label">${etiqueta}</span>
+        <input type="checkbox" data-servicio="${etiqueta}">
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+      </label>
+    </div>
+  `).join('');
+
+  container.querySelectorAll('input[data-servicio]').forEach((checkbox) => {
+    checkbox.checked = state.servicios.includes(checkbox.dataset.servicio);
+    checkbox.addEventListener('change', () => {
+      const value = checkbox.dataset.servicio;
+      const idx = state.servicios.indexOf(value);
+      if (checkbox.checked && idx < 0) state.servicios.push(value);
+      if (!checkbox.checked && idx >= 0) state.servicios.splice(idx, 1);
+    });
+  });
+}
+
+function renderPillGroup(containerId, items, key) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = items
+    .map((etiqueta) => `<button type="button" class="pill" data-valor="${etiqueta}">${etiqueta}</button>`)
+    .join('');
+
+  container.querySelectorAll('.pill').forEach((pill) => {
+    pill.classList.toggle('selected', state[key].includes(pill.dataset.valor));
+    pill.addEventListener('click', () => {
+      const value = pill.dataset.valor;
+      const list = state[key];
+      const idx = list.indexOf(value);
+      if (idx >= 0) {
+        list.splice(idx, 1);
+        pill.classList.remove('selected');
+      } else {
+        list.push(value);
+        pill.classList.add('selected');
+      }
+    });
   });
 }
 
@@ -130,47 +176,6 @@ function setupCapacidad() {
     input.value = state.capacidad;
   });
   update();
-}
-
-function setupAgua() {
-  const toggle = document.getElementById('agua-toggle');
-  const group = document.getElementById('water-status');
-  const hidden = document.getElementById('agua');
-
-  toggle.addEventListener('change', () => {
-    state.aguaActiva = toggle.checked;
-    group.classList.toggle('visible', state.aguaActiva);
-    if (state.aguaActiva && !state.agua) {
-      state.agua = 'buena';
-    }
-    hidden.value = state.aguaActiva ? state.agua : '';
-    renderAguaPills();
-  });
-
-  group.querySelectorAll('.pill').forEach((pill) => {
-    pill.addEventListener('click', () => {
-      state.agua = pill.dataset.agua;
-      hidden.value = state.agua;
-      renderAguaPills();
-    });
-  });
-}
-
-function setupMultiSelect(groupId, key) {
-  document.querySelectorAll(`#${groupId} .pill`).forEach((pill) => {
-    pill.addEventListener('click', () => {
-      const value = pill.dataset.vuln || pill.dataset.perfil;
-      const list = state[key];
-      const idx = list.indexOf(value);
-      if (idx >= 0) {
-        list.splice(idx, 1);
-        pill.classList.remove('selected');
-      } else {
-        list.push(value);
-        pill.classList.add('selected');
-      }
-    });
-  });
 }
 
 function setupPhotos() {
@@ -215,26 +220,15 @@ function fillEditForm() {
   document.getElementById('capacidad-valor').value = state.capacidad;
   document.getElementById('capacidad').value = state.capacidad;
 
-  state.aguaActiva = !!hogar.agua;
-  state.agua = hogar.agua || 'buena';
-  document.getElementById('agua-toggle').checked = state.aguaActiva;
-  document.getElementById('water-status').classList.toggle('visible', state.aguaActiva);
-  document.getElementById('agua').value = state.aguaActiva ? state.agua : '';
-  renderAguaPills();
-
-  document.getElementById('luz').checked = hogar.luz;
-  document.getElementById('electricidad').checked = hogar.electricidad;
+  state.servicios = [...hogar.servicios];
+  renderServicios(catalogos.servicio);
 
   state.vulnerabilidades = [...hogar.vulnerabilidades];
-  document.querySelectorAll('#vulnerabilidades-group .pill').forEach((pill) => {
-    pill.classList.toggle('selected', state.vulnerabilidades.includes(pill.dataset.vuln));
-  });
+  renderPillGroup('vulnerabilidades-group', catalogos.vulnerabilidad, 'vulnerabilidades');
   document.getElementById('notas_vulnerabilidad').value = hogar.notas_vulnerabilidad || '';
 
   state.perfil = [...hogar.perfil_sugerido];
-  document.querySelectorAll('#perfil-group .pill').forEach((pill) => {
-    pill.classList.toggle('selected', state.perfil.includes(pill.dataset.perfil));
-  });
+  renderPillGroup('perfil-group', catalogos.perfil, 'perfil');
 
   state.fotoDueno = null;
   state.fotoFachada = null;
@@ -280,9 +274,7 @@ async function handleGuardar() {
   if (state.lat) formData.append('lat', state.lat);
   if (state.lng) formData.append('lng', state.lng);
   formData.append('capacidad', state.capacidad);
-  formData.append('agua', state.aguaActiva ? state.agua : '');
-  formData.append('luz', document.getElementById('luz').checked);
-  formData.append('electricidad', document.getElementById('electricidad').checked);
+  formData.append('servicios', JSON.stringify(state.servicios));
   formData.append('vulnerabilidades', JSON.stringify(state.vulnerabilidades));
   formData.append('notas_vulnerabilidad', document.getElementById('notas_vulnerabilidad').value.trim());
   formData.append('perfil_sugerido', JSON.stringify(state.perfil));
@@ -347,13 +339,15 @@ setupMapModal({
 });
 setupPhotos();
 setupCapacidad();
-setupAgua();
-setupMultiSelect('vulnerabilidades-group', 'vulnerabilidades');
-setupMultiSelect('perfil-group', 'perfil');
 
 try {
-  const [{ user }, data] = await Promise.all([me(session.token), obtenerHogar(session.token, hogarId)]);
+  const [{ user }, data, catalogosResp] = await Promise.all([
+    me(session.token),
+    obtenerHogar(session.token, hogarId),
+    obtenerCatalogosActivos(session.token),
+  ]);
   hogar = data.hogar;
+  catalogos = catalogosResp.catalogos;
   renderView();
   showView();
   if (user.role === 'supervisor') {

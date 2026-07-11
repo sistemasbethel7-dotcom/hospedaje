@@ -88,3 +88,63 @@ ALTER TABLE hogares DROP COLUMN IF EXISTS direccion;
 
 GRANT ALL PRIVILEGES ON TABLE hogares TO pwa_templo_app;
 GRANT USAGE, SELECT ON SEQUENCE hogares_id_seq TO pwa_templo_app;
+
+-- Catálogos configurables por el admin (servicios, vulnerabilidades, perfiles) en vez de listas
+-- fijas en el código del wizard. Globales (compartidos por todos los eventos), no por evento.
+CREATE TABLE IF NOT EXISTS catalogos (
+  id SERIAL PRIMARY KEY,
+  tipo TEXT NOT NULL,
+  etiqueta TEXT NOT NULL,
+  orden INTEGER NOT NULL DEFAULT 0,
+  activo BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE catalogos DROP CONSTRAINT IF EXISTS catalogos_tipo_check;
+ALTER TABLE catalogos ADD CONSTRAINT catalogos_tipo_check CHECK (tipo IN ('servicio', 'vulnerabilidad', 'perfil'));
+CREATE INDEX IF NOT EXISTS idx_catalogos_tipo ON catalogos (tipo);
+
+GRANT ALL PRIVILEGES ON TABLE catalogos TO pwa_templo_app;
+GRANT USAGE, SELECT ON SEQUENCE catalogos_id_seq TO pwa_templo_app;
+
+-- Semilla inicial: lo que antes era estático en el wizard. Solo se inserta si ese tipo
+-- está vacío, así el admin puede vaciarlo por completo después sin que se re-semille.
+INSERT INTO catalogos (tipo, etiqueta, orden)
+SELECT 'servicio', etiqueta, orden FROM (VALUES ('Agua', 1), ('Luz', 2), ('Electricidad', 3)) AS s(etiqueta, orden)
+WHERE NOT EXISTS (SELECT 1 FROM catalogos WHERE tipo = 'servicio');
+
+INSERT INTO catalogos (tipo, etiqueta, orden)
+SELECT 'vulnerabilidad', etiqueta, orden FROM (VALUES
+  ('Acceso complicado', 1),
+  ('Zona insegura', 2),
+  ('Sin salida de emergencia', 3),
+  ('Iluminación deficiente', 4),
+  ('Mascotas sueltas', 5)
+) AS v(etiqueta, orden)
+WHERE NOT EXISTS (SELECT 1 FROM catalogos WHERE tipo = 'vulnerabilidad');
+
+INSERT INTO catalogos (tipo, etiqueta, orden)
+SELECT 'perfil', etiqueta, orden FROM (VALUES
+  ('Familia con niños', 1),
+  ('Adultos mayores', 2),
+  ('Matrimonios', 3)
+) AS p(etiqueta, orden)
+WHERE NOT EXISTS (SELECT 1 FROM catalogos WHERE tipo = 'perfil');
+
+-- Servicios de la casa: antes columnas fijas (agua con 3 estados, luz, electricidad),
+-- ahora una lista abierta que el admin define en catalogos. Se guarda como snapshot de
+-- etiquetas (igual patrón que vulnerabilidades/perfil_sugerido), no como referencia.
+ALTER TABLE hogares ADD COLUMN IF NOT EXISTS servicios TEXT[] NOT NULL DEFAULT '{}';
+
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'hogares' AND column_name = 'agua') THEN
+    UPDATE hogares SET servicios = (
+      (CASE WHEN agua IS NOT NULL AND agua <> 'sin_servicio' THEN ARRAY['Agua'] ELSE ARRAY[]::TEXT[] END) ||
+      (CASE WHEN luz THEN ARRAY['Luz'] ELSE ARRAY[]::TEXT[] END) ||
+      (CASE WHEN electricidad THEN ARRAY['Electricidad'] ELSE ARRAY[]::TEXT[] END)
+    ) WHERE servicios = '{}';
+    ALTER TABLE hogares DROP COLUMN agua;
+    ALTER TABLE hogares DROP COLUMN luz;
+    ALTER TABLE hogares DROP COLUMN electricidad;
+  END IF;
+END $$;
