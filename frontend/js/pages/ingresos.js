@@ -19,6 +19,8 @@ document.getElementById('back-btn').addEventListener('click', () => {
   window.location.href = 'home.html';
 });
 
+const HOUSE_ICON = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 10.5L12 4l8 6.5V20a1 1 0 01-1 1h-4v-6H9v6H5a1 1 0 01-1-1v-9.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
+
 let hogares = [];
 let selected = null;
 let cantidad = 1;
@@ -45,8 +47,11 @@ function renderList() {
     .map((h) => {
       const isSelected = selected?.id === h.id;
       const isFull = disponibles(h) <= 0;
+      const thumbStyle = h.foto_fachada ? `style="background-image:url(/uploads/${h.foto_fachada})"` : '';
+      const thumbContent = h.foto_fachada ? '' : HOUSE_ICON;
       return `
         <div class="card-bordered hogar-card selectable ${isSelected ? 'selected' : ''}" data-id="${h.id}" style="${isFull ? 'opacity:.5' : ''}">
+          <div class="hogar-thumb" ${thumbStyle}>${thumbContent}</div>
           <div class="hogar-info">
             <div class="hogar-nombre">${escapeHtml(h.nombre_dueno)}</div>
             <div class="hogar-direccion">${escapeHtml(h.calle_numero)}, ${escapeHtml(h.colonia)}</div>
@@ -78,18 +83,35 @@ function renderPanel() {
   panel.hidden = false;
   document.getElementById('panel-nombre').textContent = selected.nombre_dueno;
   document.getElementById('panel-sub').textContent = `${disponibles(selected)} lugares disponibles de ${selected.capacidad}`;
-  document.getElementById('ingreso-valor').textContent = cantidad;
+  const input = document.getElementById('ingreso-valor');
+  input.value = cantidad;
+  input.max = disponibles(selected);
   document.getElementById('ingreso-error').textContent = '';
 }
 
+function clampCantidad(value) {
+  return Math.min(disponibles(selected), Math.max(1, value));
+}
+
 document.getElementById('ingreso-menos').addEventListener('click', () => {
-  cantidad = Math.max(1, cantidad - 1);
-  document.getElementById('ingreso-valor').textContent = cantidad;
+  cantidad = clampCantidad(cantidad - 1);
+  document.getElementById('ingreso-valor').value = cantidad;
 });
 
 document.getElementById('ingreso-mas').addEventListener('click', () => {
-  cantidad = Math.min(disponibles(selected), cantidad + 1);
-  document.getElementById('ingreso-valor').textContent = cantidad;
+  cantidad = clampCantidad(cantidad + 1);
+  document.getElementById('ingreso-valor').value = cantidad;
+});
+
+document.getElementById('ingreso-valor').addEventListener('input', (event) => {
+  const value = parseInt(event.target.value, 10);
+  if (!Number.isNaN(value)) {
+    cantidad = clampCantidad(value);
+  }
+});
+
+document.getElementById('ingreso-valor').addEventListener('blur', (event) => {
+  event.target.value = cantidad;
 });
 
 document.getElementById('confirmar-btn').addEventListener('click', async () => {

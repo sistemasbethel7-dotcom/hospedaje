@@ -34,7 +34,7 @@
     <div class="ingresos-panel-sub" id="panel-sub"></div>
     <div class="stepper">
       <button type="button" id="ingreso-menos" aria-label="Restar">–</button>
-      <output id="ingreso-valor">1</output>
+      <input type="number" id="ingreso-valor" inputmode="numeric" min="1" value="1" aria-label="Cantidad">
       <button type="button" id="ingreso-mas" aria-label="Sumar">+</button>
     </div>
     <p class="form-error" id="ingreso-error" role="alert"></p>
