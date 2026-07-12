@@ -32,7 +32,7 @@ export async function insertHogar(data) {
 
 export async function listHogares(eventoId) {
   const { rows } = await pool.query(
-    `SELECT id, nombre_dueno, calle_numero, colonia, capacidad, ocupacion_actual, foto_fachada, created_at
+    `SELECT id, nombre_dueno, calle_numero, colonia, capacidad, ocupacion_actual, foto_fachada, lat, lng, created_at
      FROM hogares
      WHERE evento_id = $1
      ORDER BY created_at DESC`,
