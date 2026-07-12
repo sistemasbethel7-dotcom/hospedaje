@@ -1,5 +1,5 @@
 import { registerServiceWorker } from '../app.js';
-import { me, listarEventos, obtenerMetricasEvento } from '../services/api.js';
+import { me, listarEventos, obtenerMetricasEvento, listarHogares } from '../services/api.js';
 import { getSession, clearSession } from '../services/session.js';
 import { getActiveEventId, setActiveEventId, clearActiveEventId } from '../services/eventoActivo.js';
 import { subscribeToEvento } from '../services/eventStream.js';
@@ -23,8 +23,39 @@ const VERDE = '#22C55E';
 const ROJO = '#EF4444';
 const PALETTE = [AZUL, MORADO, ROSA, NARANJA, CIAN, AMARILLO, VERDE, ROJO];
 
+const HOUSE_ICON = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 10.5L12 4l8 6.5V20a1 1 0 01-1 1h-4v-6H9v6H5a1 1 0 01-1-1v-9.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
+
+const KPI_INFO = {
+  hogares: {
+    titulo: 'Hogares registrados',
+    filtro: (h) => true,
+    orden: (a, b) => 0,
+    metrica: (h) => `${h.ocupacion_actual}/${h.capacidad} lugares ocupados`,
+  },
+  capacidad: {
+    titulo: 'Capacidad por hogar',
+    filtro: (h) => true,
+    orden: (a, b) => b.capacidad - a.capacidad,
+    metrica: (h) => `Capacidad: ${h.capacidad} lugares`,
+  },
+  ocupacion: {
+    titulo: 'Hogares con ocupación',
+    filtro: (h) => h.ocupacion_actual > 0,
+    orden: (a, b) => b.ocupacion_actual - a.ocupacion_actual,
+    metrica: (h) => `${h.ocupacion_actual}/${h.capacidad} lugares ocupados`,
+  },
+  disponibles: {
+    titulo: 'Hogares con lugares disponibles',
+    filtro: (h) => h.capacidad - h.ocupacion_actual > 0,
+    orden: (a, b) => (b.capacidad - b.ocupacion_actual) - (a.capacidad - a.ocupacion_actual),
+    metrica: (h) => `${h.capacidad - h.ocupacion_actual} lugares disponibles de ${h.capacidad}`,
+  },
+};
+
 const charts = {};
 let eventos = [];
+let hogaresActuales = [];
+let kpiModalActivo = null;
 let unsubscribeStream = null;
 let refrescoPendiente = null;
 
@@ -38,6 +69,66 @@ document.getElementById('evento-select').addEventListener('change', (event) => {
   setActiveEventId(event.target.value);
   cargarMetricas(event.target.value);
   suscribirEvento(event.target.value);
+});
+
+function escapeHtml(value) {
+  const div = document.createElement('div');
+  div.textContent = value;
+  return div.innerHTML;
+}
+
+function renderKpiModal(tipo) {
+  const info = KPI_INFO[tipo];
+  document.getElementById('kpi-modal-title').textContent = info.titulo;
+
+  const body = document.getElementById('kpi-modal-body');
+  const hogares = hogaresActuales.filter(info.filtro).sort(info.orden);
+
+  if (hogares.length === 0) {
+    body.innerHTML = '<p class="admin-modal-empty">No hay hogares en esta categoría.</p>';
+    return;
+  }
+
+  body.innerHTML = hogares
+    .map((h) => {
+      const thumbStyle = h.foto_fachada ? `style="background-image:url(/uploads/${h.foto_fachada})"` : '';
+      const thumbContent = h.foto_fachada ? '' : HOUSE_ICON;
+      return `
+        <div class="admin-modal-row">
+          <div class="admin-modal-thumb" ${thumbStyle}>${thumbContent}</div>
+          <div class="admin-modal-info">
+            <div class="admin-modal-nombre">${escapeHtml(h.nombre_dueno)}</div>
+            <div class="admin-modal-direccion">${escapeHtml(h.calle_numero)}, ${escapeHtml(h.colonia)}</div>
+            <div class="admin-modal-metric">${info.metrica(h)}</div>
+          </div>
+          <a class="admin-modal-link" href="../hogar-detalle.html?id=${h.id}&from=admin" target="_blank" rel="noopener">Ver / Editar</a>
+        </div>
+      `;
+    })
+    .join('');
+}
+
+function abrirKpiModal(tipo) {
+  kpiModalActivo = tipo;
+  renderKpiModal(tipo);
+  document.getElementById('kpi-modal-backdrop').hidden = false;
+}
+
+function cerrarKpiModal() {
+  kpiModalActivo = null;
+  document.getElementById('kpi-modal-backdrop').hidden = true;
+}
+
+document.querySelectorAll('.admin-kpi-card').forEach((card) => {
+  card.addEventListener('click', () => abrirKpiModal(card.dataset.kpi));
+});
+
+document.getElementById('kpi-modal-close').addEventListener('click', cerrarKpiModal);
+document.getElementById('kpi-modal-backdrop').addEventListener('click', (event) => {
+  if (event.target.id === 'kpi-modal-backdrop') cerrarKpiModal();
+});
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && kpiModalActivo) cerrarKpiModal();
 });
 
 function setLiveStatus(estado) {
@@ -148,9 +239,14 @@ async function cargarMetricas(eventoId) {
   const errorEl = document.getElementById('dashboard-error');
   errorEl.textContent = '';
   try {
-    const { metricas } = await obtenerMetricasEvento(session.token, eventoId);
+    const [{ metricas }, { hogares }] = await Promise.all([
+      obtenerMetricasEvento(session.token, eventoId),
+      listarHogares(session.token, eventoId),
+    ]);
     document.getElementById('dashboard-content').hidden = false;
     renderMetricas(metricas);
+    hogaresActuales = hogares;
+    if (kpiModalActivo) renderKpiModal(kpiModalActivo);
   } catch (err) {
     if (err.status === 401) {
       clearSession();

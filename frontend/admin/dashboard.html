@@ -51,22 +51,22 @@
 
     <div id="dashboard-content" hidden>
       <div class="admin-kpis">
-        <div class="admin-kpi-card">
+        <button type="button" class="admin-kpi-card" data-kpi="hogares">
           <div class="admin-kpi-value" id="kpi-hogares"></div>
           <div class="admin-kpi-label">Hogares registrados</div>
-        </div>
-        <div class="admin-kpi-card">
+        </button>
+        <button type="button" class="admin-kpi-card" data-kpi="capacidad">
           <div class="admin-kpi-value" id="kpi-capacidad"></div>
           <div class="admin-kpi-label">Capacidad total</div>
-        </div>
-        <div class="admin-kpi-card">
+        </button>
+        <button type="button" class="admin-kpi-card" data-kpi="ocupacion">
           <div class="admin-kpi-value" id="kpi-ocupacion"></div>
           <div class="admin-kpi-label">Ocupación actual</div>
-        </div>
-        <div class="admin-kpi-card">
+        </button>
+        <button type="button" class="admin-kpi-card" data-kpi="disponibles">
           <div class="admin-kpi-value" id="kpi-disponibles"></div>
           <div class="admin-kpi-label">Lugares disponibles</div>
-        </div>
+        </button>
       </div>
 
       <div class="admin-charts">
@@ -93,6 +93,16 @@
       </div>
     </div>
   </main>
+</div>
+
+<div class="admin-modal-backdrop" id="kpi-modal-backdrop" hidden>
+  <div class="admin-modal" role="dialog" aria-modal="true" aria-labelledby="kpi-modal-title">
+    <div class="admin-modal-header">
+      <h2 class="admin-modal-title" id="kpi-modal-title"></h2>
+      <button type="button" class="admin-modal-close" id="kpi-modal-close" aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="admin-modal-body" id="kpi-modal-body"></div>
+  </div>
 </div>
 
 <script type="module" src="../js/pages/admin-dashboard.js"></script>
