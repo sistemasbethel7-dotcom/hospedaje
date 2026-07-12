@@ -11,18 +11,17 @@ if (!session) {
   window.location.href = '../index.html';
 }
 
-const GOLD = '#A8832E';
-const GOLD_DEEP = '#7C5E20';
-const GOLD_TINT = '#F4E9CB';
-const WARN = '#B0632E';
-const MUTED = '#7A705B';
-const SUCCESS = '#4B7A5B';
-const PALETTE = [GOLD, GOLD_DEEP, WARN, SUCCESS, MUTED, GOLD_TINT];
-
-// Semáforo estándar a propósito (no la paleta dorada de arriba): la ocupación
-// es información de estatus, debe leerse como verde/rojo real, no como decoración.
-const VERDE_ESTATUS = '#22C55E';
-const ROJO_ESTATUS = '#EF4444';
+// Paleta llamativa a propósito: el dorado del tema se ve bien en botones y
+// texto, pero en gráficas se veía apagado y costaba distinguir series/barras.
+const AZUL = '#3B82F6';
+const MORADO = '#8B5CF6';
+const ROSA = '#EC4899';
+const NARANJA = '#F97316';
+const CIAN = '#06B6D4';
+const AMARILLO = '#FBBF24';
+const VERDE = '#22C55E';
+const ROJO = '#EF4444';
+const PALETTE = [AZUL, MORADO, ROSA, NARANJA, CIAN, AMARILLO, VERDE, ROJO];
 
 const charts = {};
 let eventos = [];
@@ -95,7 +94,7 @@ function renderMetricas(metricas) {
       labels: ['Ocupados', 'Disponibles'],
       datasets: [{
         data: [metricas.ocupacion_total, Math.max(0, metricas.capacidad_total - metricas.ocupacion_total)],
-        backgroundColor: [ROJO_ESTATUS, VERDE_ESTATUS],
+        backgroundColor: [ROJO, VERDE],
       }],
     },
     options: { plugins: { legend: { position: 'bottom' } } },
@@ -107,8 +106,8 @@ function renderMetricas(metricas) {
     data: {
       labels: metricas.colonias.map((c) => c.colonia),
       datasets: [
-        { label: 'Capacidad', data: metricas.colonias.map((c) => c.capacidad), backgroundColor: GOLD_TINT },
-        { label: 'Ocupación', data: metricas.colonias.map((c) => c.ocupacion), backgroundColor: GOLD },
+        { label: 'Capacidad', data: metricas.colonias.map((c) => c.capacidad), backgroundColor: NARANJA },
+        { label: 'Ocupación', data: metricas.colonias.map((c) => c.ocupacion), backgroundColor: AZUL },
       ],
     },
     options: { indexAxis: 'y', plugins: { legend: { position: 'bottom' } }, scales: { x: { beginAtZero: true } } },
@@ -129,7 +128,7 @@ function renderMetricas(metricas) {
     type: 'bar',
     data: {
       labels: metricas.vulnerabilidades.map((v) => v.etiqueta),
-      datasets: [{ data: metricas.vulnerabilidades.map((v) => v.total), backgroundColor: WARN }],
+      datasets: [{ data: metricas.vulnerabilidades.map((v) => v.total), backgroundColor: ROJO }],
     },
     options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } },
   });
@@ -139,7 +138,7 @@ function renderMetricas(metricas) {
     type: 'bar',
     data: {
       labels: metricas.perfiles.map((p) => p.etiqueta),
-      datasets: [{ data: metricas.perfiles.map((p) => p.total), backgroundColor: GOLD_DEEP }],
+      datasets: [{ data: metricas.perfiles.map((p) => p.total), backgroundColor: MORADO }],
     },
     options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } },
   });
