@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anfitriones-v18';
+const CACHE_NAME = 'anfitriones-v19';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -66,7 +66,7 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET' || event.request.url.includes('/api/')) return;
 
   event.respondWith(
-    fetch(event.request)
+    fetch(event.request, { cache: 'no-cache' })
       .then((response) => {
         const copy = response.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
