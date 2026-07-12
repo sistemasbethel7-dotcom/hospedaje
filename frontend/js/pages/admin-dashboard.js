@@ -94,15 +94,15 @@ function renderKpiModal(tipo) {
       const thumbStyle = h.foto_fachada ? `style="background-image:url(/uploads/${h.foto_fachada})"` : '';
       const thumbContent = h.foto_fachada ? '' : HOUSE_ICON;
       return `
-        <div class="admin-modal-row">
+        <a class="admin-modal-row" href="../hogar-detalle.html?id=${h.id}&from=admin&soloLectura=1" target="_blank" rel="noopener">
           <div class="admin-modal-thumb" ${thumbStyle}>${thumbContent}</div>
           <div class="admin-modal-info">
             <div class="admin-modal-nombre">${escapeHtml(h.nombre_dueno)}</div>
             <div class="admin-modal-direccion">${escapeHtml(h.calle_numero)}, ${escapeHtml(h.colonia)}</div>
             <div class="admin-modal-metric">${info.metrica(h)}</div>
           </div>
-          <a class="admin-modal-link" href="../hogar-detalle.html?id=${h.id}&from=admin" target="_blank" rel="noopener">Ver / Editar</a>
-        </div>
+          <svg class="admin-modal-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
       `;
     })
     .join('');

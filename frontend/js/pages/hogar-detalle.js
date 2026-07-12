@@ -351,7 +351,7 @@ try {
   catalogos = catalogosResp.catalogos;
   renderView();
   showView();
-  if (user.role === 'supervisor') {
+  if (user.role === 'supervisor' || params.get('soloLectura') === '1') {
     document.getElementById('editar-btn').hidden = true;
     document.getElementById('eliminar-btn').hidden = true;
   }
