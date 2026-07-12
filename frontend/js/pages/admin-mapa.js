@@ -14,9 +14,11 @@ if (!session) {
 const STREET_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}';
 const DEFAULT_CENTER = [20.6597, -103.3496];
 
-const COLOR_LIBRE = '#4B7A5B';
-const COLOR_PARCIAL = '#A8832E';
-const COLOR_LLENO = '#B0632E';
+// Semáforo estándar (no la paleta dorada del tema): aquí el color es información
+// de estatus, no decoración, así que debe leerse como verde/amarillo/rojo real.
+const COLOR_LIBRE = '#22C55E';
+const COLOR_PARCIAL = '#FBBF24';
+const COLOR_LLENO = '#EF4444';
 
 let map = null;
 let markersLayer = null;

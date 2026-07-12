@@ -19,6 +19,11 @@ const MUTED = '#7A705B';
 const SUCCESS = '#4B7A5B';
 const PALETTE = [GOLD, GOLD_DEEP, WARN, SUCCESS, MUTED, GOLD_TINT];
 
+// Semáforo estándar a propósito (no la paleta dorada de arriba): la ocupación
+// es información de estatus, debe leerse como verde/rojo real, no como decoración.
+const VERDE_ESTATUS = '#22C55E';
+const ROJO_ESTATUS = '#EF4444';
+
 const charts = {};
 let eventos = [];
 let unsubscribeStream = null;
@@ -90,7 +95,7 @@ function renderMetricas(metricas) {
       labels: ['Ocupados', 'Disponibles'],
       datasets: [{
         data: [metricas.ocupacion_total, Math.max(0, metricas.capacidad_total - metricas.ocupacion_total)],
-        backgroundColor: [GOLD, GOLD_TINT],
+        backgroundColor: [ROJO_ESTATUS, VERDE_ESTATUS],
       }],
     },
     options: { plugins: { legend: { position: 'bottom' } } },

@@ -380,16 +380,18 @@
   flex: none;
 }
 
+/* Semáforo estándar a propósito (no la paleta dorada del tema): aquí el
+   color es información de estatus y debe leerse como verde/amarillo/rojo real. */
 .admin-mapa-dot.libre {
-  background: var(--color-success);
+  background: #22C55E;
 }
 
 .admin-mapa-dot.parcial {
-  background: var(--color-gold);
+  background: #FBBF24;
 }
 
 .admin-mapa-dot.lleno {
-  background: var(--color-warn);
+  background: #EF4444;
 }
 
 .admin-mapa-container {
