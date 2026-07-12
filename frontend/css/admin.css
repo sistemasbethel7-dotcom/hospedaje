@@ -369,6 +369,60 @@
   color: var(--color-text);
 }
 
+.admin-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.admin-filtros input {
+  height: 40px;
+  border: 1px solid var(--color-gold-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: 500 13px var(--font-body);
+  padding: 0 12px;
+  min-width: 180px;
+  flex: 1;
+}
+
+.admin-table-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--color-gold-tint) center/cover no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-gold);
+}
+
+/* Semáforo estándar a propósito (no la paleta dorada del tema): aquí el
+   color es información de estatus y debe leerse como verde/amarillo/rojo real. */
+.admin-estado-badge {
+  font: 700 10px var(--font-body);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 20px;
+  color: #fff;
+}
+
+.admin-estado-badge.libre {
+  background: #22C55E;
+}
+
+.admin-estado-badge.parcial {
+  background: #FBBF24;
+  color: #4A3300;
+}
+
+.admin-estado-badge.lleno {
+  background: #EF4444;
+}
+
 .admin-mapa-legend {
   display: flex;
   flex-wrap: wrap;

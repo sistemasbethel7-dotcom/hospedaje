@@ -35,7 +35,14 @@ const state = {
 };
 
 function backToList() {
-  window.location.href = params.get('from') === 'admin' ? 'admin/dashboard.html' : 'hogares.html';
+  const from = params.get('from');
+  if (from === 'admin-hogares') {
+    window.location.href = 'admin/hogares.html';
+  } else if (from === 'admin') {
+    window.location.href = 'admin/dashboard.html';
+  } else {
+    window.location.href = 'hogares.html';
+  }
 }
 
 document.getElementById('back-btn').addEventListener('click', backToList);

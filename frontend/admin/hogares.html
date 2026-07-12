@@ -3,15 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mapa · Anfitriones</title>
+<title>Hogares · Anfitriones</title>
 <meta name="theme-color" content="#A8832E">
 <link rel="manifest" href="../manifest.json">
 <link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <link rel="stylesheet" href="../css/tokens.css">
 <link rel="stylesheet" href="../css/base.css">
 <link rel="stylesheet" href="../css/components.css">
@@ -24,8 +22,8 @@
     <div class="admin-sidebar-title">Hospedaje</div>
     <nav class="admin-nav">
       <a href="dashboard.html" class="admin-nav-link">Dashboard</a>
-      <a href="hogares.html" class="admin-nav-link">Hogares</a>
-      <a href="mapa.html" class="admin-nav-link active">Mapa</a>
+      <a href="hogares.html" class="admin-nav-link active">Hogares</a>
+      <a href="mapa.html" class="admin-nav-link">Mapa</a>
       <a href="eventos.html" class="admin-nav-link">Eventos</a>
       <a href="catalogos.html" class="admin-nav-link" id="nav-catalogos">Catálogos</a>
       <a href="usuarios.html" class="admin-nav-link" id="nav-usuarios">Usuarios</a>
@@ -38,7 +36,7 @@
 
   <main class="admin-main">
     <div class="admin-page-header">
-      <h1 class="admin-page-title">Mapa</h1>
+      <h1 class="admin-page-title">Hogares</h1>
       <div class="admin-page-actions">
         <span class="admin-live-indicator" id="live-indicator" hidden>
           <span class="admin-live-dot"></span>
@@ -47,24 +45,40 @@
         <select class="admin-select" id="evento-select"></select>
       </div>
     </div>
+    <p class="admin-page-desc">Ver, filtrar, editar y eliminar los hogares registrados en este evento.</p>
 
-    <p class="admin-error" id="mapa-error" role="alert"></p>
-    <p class="admin-empty" id="mapa-empty" hidden>Aún no hay eventos creados. <a href="eventos.html">Crea el primero</a>.</p>
+    <p class="admin-error" id="hogares-error" role="alert"></p>
+    <p class="admin-empty" id="hogares-empty" hidden>Aún no hay eventos creados. <a href="eventos.html">Crea el primero</a>.</p>
 
-    <div id="mapa-content" hidden>
-      <div class="admin-mapa-legend">
-        <span class="admin-mapa-legend-item"><span class="admin-mapa-dot libre"></span>Libre</span>
-        <span class="admin-mapa-legend-item"><span class="admin-mapa-dot parcial"></span>Parcialmente ocupada</span>
-        <span class="admin-mapa-legend-item"><span class="admin-mapa-dot lleno"></span>Llena</span>
-        <span class="admin-mapa-legend-item" id="mapa-sin-ubicacion" hidden></span>
+    <div id="hogares-content" hidden>
+      <div class="admin-filtros">
+        <input type="text" id="filtro-colonia" placeholder="Filtrar por colonia">
+        <input type="text" id="filtro-calle" placeholder="Filtrar por calle">
+        <input type="text" id="filtro-cp" placeholder="Filtrar por código postal">
       </div>
-      <div class="admin-mapa-container">
-        <div id="mapa"></div>
+
+      <p class="admin-empty" id="hogares-sin-resultados" hidden>Ningún hogar coincide con el filtro.</p>
+
+      <div class="admin-table-wrap" id="hogares-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Dueño</th>
+              <th>Dirección</th>
+              <th>C.P.</th>
+              <th>Ocupación</th>
+              <th>Estatus</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="hogares-tbody"></tbody>
+        </table>
       </div>
     </div>
   </main>
 </div>
 
-<script type="module" src="../js/pages/admin-mapa.js"></script>
+<script type="module" src="../js/pages/admin-hogares.js"></script>
 </body>
 </html>
