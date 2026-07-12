@@ -114,6 +114,10 @@ document.getElementById('ingreso-valor').addEventListener('blur', (event) => {
   event.target.value = cantidad;
 });
 
+document.getElementById('ingreso-valor').addEventListener('focus', (event) => {
+  event.target.select();
+});
+
 document.getElementById('confirmar-btn').addEventListener('click', async () => {
   const errorEl = document.getElementById('ingreso-error');
   const btn = document.getElementById('confirmar-btn');

@@ -175,6 +175,7 @@ function setupCapacidad() {
   input.addEventListener('blur', () => {
     input.value = state.capacidad;
   });
+  input.addEventListener('focus', () => input.select());
   update();
 }
 
