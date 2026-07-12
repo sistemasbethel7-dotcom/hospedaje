@@ -485,15 +485,23 @@
   z-index: 100;
 }
 
+.admin-modal-backdrop.stacked {
+  z-index: 110;
+}
+
 .admin-modal {
   background: var(--color-bg);
   border-radius: 16px;
   width: 100%;
-  max-width: 760px;
+  max-width: 560px;
   max-height: 85vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+.admin-modal.wide {
+  max-width: 900px;
 }
 
 .admin-modal-header {
@@ -532,65 +540,88 @@
   text-align: center;
 }
 
-.admin-modal-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 8px;
-  margin: 0 -8px;
-  border-bottom: 1px solid var(--color-gold-border);
-  text-decoration: none;
-  color: inherit;
-  border-radius: 10px;
+.admin-table tr.clickable {
+  cursor: pointer;
 }
 
-.admin-modal-row:last-child {
-  border-bottom: none;
-}
-
-.admin-modal-row:hover {
+.admin-table tr.clickable:hover {
   background: var(--color-gold-tint);
-}
-
-.admin-modal-thumb {
-  width: 48px;
-  height: 48px;
-  border-radius: 10px;
-  background: var(--color-gold-tint) center/cover no-repeat;
-  flex: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-gold);
-}
-
-.admin-modal-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.admin-modal-nombre {
-  font: 600 14px var(--font-display);
-  color: var(--color-text);
-}
-
-.admin-modal-direccion {
-  font: 500 11.5px var(--font-body);
-  color: var(--color-text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.admin-modal-metric {
-  font: 700 11px var(--font-body);
-  color: var(--color-gold-deep);
-  margin-top: 3px;
 }
 
 .admin-modal-chevron {
   flex: none;
   color: var(--color-text-faint);
+}
+
+/* Modal de detalle de un hogar (solo lectura, sin ir a hogar-detalle.html) */
+
+.admin-detalle-photo {
+  height: 200px;
+  border-radius: 14px;
+  background: var(--color-gold-tint) center/cover no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-gold);
+  margin-bottom: 16px;
+}
+
+.admin-detalle-nombre {
+  font: 600 20px var(--font-display);
+  color: var(--color-text);
+}
+
+.admin-detalle-direccion {
+  font: 500 13px var(--font-body);
+  color: var(--color-text-muted);
+  margin: 2px 0 14px;
+}
+
+.admin-detalle-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.admin-detalle-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-detalle-grid .valor {
+  font: 600 14px var(--font-body);
+  color: var(--color-text);
+}
+
+.admin-detalle-section {
+  margin-bottom: 18px;
+}
+
+.admin-detalle-section .label-caps {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.admin-pill-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-pill {
+  font: 700 10.5px var(--font-body);
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: var(--color-gold);
+  color: #fff;
+}
+
+.admin-detalle-notas {
+  font: 500 12.5px var(--font-body);
+  color: var(--color-text-muted);
+  margin-top: 8px;
 }
 
 @media (max-width: 860px) {

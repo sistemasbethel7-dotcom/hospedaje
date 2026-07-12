@@ -1,5 +1,5 @@
 import { registerServiceWorker } from '../app.js';
-import { me, listarEventos, obtenerMetricasEvento, listarHogares } from '../services/api.js';
+import { me, listarEventos, obtenerMetricasEvento, listarHogares, obtenerHogar } from '../services/api.js';
 import { getSession, clearSession } from '../services/session.js';
 import { getActiveEventId, setActiveEventId, clearActiveEventId } from '../services/eventoActivo.js';
 import { subscribeToEvento } from '../services/eventStream.js';
@@ -28,27 +28,23 @@ const HOUSE_ICON = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none">
 const KPI_INFO = {
   hogares: {
     titulo: 'Hogares registrados',
-    filtro: (h) => true,
-    orden: (a, b) => 0,
-    metrica: (h) => `${h.ocupacion_actual}/${h.capacidad} lugares ocupados`,
+    filtro: () => true,
+    orden: () => 0,
   },
   capacidad: {
     titulo: 'Capacidad por hogar',
-    filtro: (h) => true,
+    filtro: () => true,
     orden: (a, b) => b.capacidad - a.capacidad,
-    metrica: (h) => `Capacidad: ${h.capacidad} lugares`,
   },
   ocupacion: {
     titulo: 'Hogares con ocupación',
     filtro: (h) => h.ocupacion_actual > 0,
     orden: (a, b) => b.ocupacion_actual - a.ocupacion_actual,
-    metrica: (h) => `${h.ocupacion_actual}/${h.capacidad} lugares ocupados`,
   },
   disponibles: {
     titulo: 'Hogares con lugares disponibles',
     filtro: (h) => h.capacidad - h.ocupacion_actual > 0,
     orden: (a, b) => (b.capacidad - b.ocupacion_actual) - (a.capacidad - a.ocupacion_actual),
-    metrica: (h) => `${h.capacidad - h.ocupacion_actual} lugares disponibles de ${h.capacidad}`,
   },
 };
 
@@ -56,6 +52,7 @@ const charts = {};
 let eventos = [];
 let hogaresActuales = [];
 let kpiModalActivo = null;
+let detalleModalAbierto = false;
 let unsubscribeStream = null;
 let refrescoPendiente = null;
 
@@ -77,6 +74,18 @@ function escapeHtml(value) {
   return div.innerHTML;
 }
 
+function estatusHogar(h) {
+  if (h.ocupacion_actual <= 0) return 'libre';
+  if (h.ocupacion_actual >= h.capacidad) return 'lleno';
+  return 'parcial';
+}
+
+function estatusLabel(estatus) {
+  if (estatus === 'libre') return 'Libre';
+  if (estatus === 'lleno') return 'Lleno';
+  return 'Parcial';
+}
+
 function renderKpiModal(tipo) {
   const info = KPI_INFO[tipo];
   document.getElementById('kpi-modal-title').textContent = info.titulo;
@@ -89,23 +98,45 @@ function renderKpiModal(tipo) {
     return;
   }
 
-  body.innerHTML = hogares
-    .map((h) => {
-      const thumbStyle = h.foto_fachada ? `style="background-image:url(/uploads/${h.foto_fachada})"` : '';
-      const thumbContent = h.foto_fachada ? '' : HOUSE_ICON;
-      return `
-        <a class="admin-modal-row" href="../hogar-detalle.html?id=${h.id}&from=admin&soloLectura=1" target="_blank" rel="noopener">
-          <div class="admin-modal-thumb" ${thumbStyle}>${thumbContent}</div>
-          <div class="admin-modal-info">
-            <div class="admin-modal-nombre">${escapeHtml(h.nombre_dueno)}</div>
-            <div class="admin-modal-direccion">${escapeHtml(h.calle_numero)}, ${escapeHtml(h.colonia)}</div>
-            <div class="admin-modal-metric">${info.metrica(h)}</div>
-          </div>
-          <svg class="admin-modal-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </a>
-      `;
-    })
-    .join('');
+  body.innerHTML = `
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Dueño</th>
+            <th>Dirección</th>
+            <th>C.P.</th>
+            <th>Ocupación</th>
+            <th>Estatus</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${hogares
+            .map((h) => {
+              const thumbStyle = h.foto_fachada ? `style="background-image:url(/uploads/${h.foto_fachada})"` : '';
+              const thumbContent = h.foto_fachada ? '' : HOUSE_ICON;
+              const estatus = estatusHogar(h);
+              return `
+                <tr class="clickable" data-hogar-id="${h.id}">
+                  <td><div class="admin-table-thumb" ${thumbStyle}>${thumbContent}</div></td>
+                  <td>${escapeHtml(h.nombre_dueno)}</td>
+                  <td>${escapeHtml(h.calle_numero)}, ${escapeHtml(h.colonia)}</td>
+                  <td>${h.codigo_postal ? escapeHtml(h.codigo_postal) : '—'}</td>
+                  <td>${h.ocupacion_actual}/${h.capacidad}</td>
+                  <td><span class="admin-estado-badge ${estatus}">${estatusLabel(estatus)}</span></td>
+                </tr>
+              `;
+            })
+            .join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  body.querySelectorAll('tr[data-hogar-id]').forEach((row) => {
+    row.addEventListener('click', () => abrirDetalleHogar(row.dataset.hogarId));
+  });
 }
 
 function abrirKpiModal(tipo) {
@@ -119,6 +150,66 @@ function cerrarKpiModal() {
   document.getElementById('kpi-modal-backdrop').hidden = true;
 }
 
+function renderDetalleHogar(hogar) {
+  document.getElementById('detalle-modal-title').textContent = hogar.nombre_dueno;
+
+  const fotoStyle = hogar.foto_fachada ? `style="background-image:url(/uploads/${hogar.foto_fachada})"` : '';
+  const fotoContent = hogar.foto_fachada ? '' : HOUSE_ICON;
+  const estatus = estatusHogar(hogar);
+
+  const seccion = (titulo, items) => {
+    if (!items || items.length === 0) return '';
+    return `
+      <div class="admin-detalle-section">
+        <span class="label-caps">${titulo}</span>
+        <div class="admin-pill-group">${items.map((i) => `<span class="admin-pill">${escapeHtml(i)}</span>`).join('')}</div>
+      </div>
+    `;
+  };
+
+  document.getElementById('detalle-modal-body').innerHTML = `
+    <div class="admin-detalle-photo" ${fotoStyle}>${fotoContent}</div>
+    <div class="admin-detalle-direccion">${escapeHtml(hogar.calle_numero)}, ${escapeHtml(hogar.colonia)}</div>
+    <div class="admin-detalle-grid">
+      <div>
+        <span class="label-caps">C.P.</span>
+        <span class="valor">${hogar.codigo_postal ? escapeHtml(hogar.codigo_postal) : '—'}</span>
+      </div>
+      <div>
+        <span class="label-caps">Referencias</span>
+        <span class="valor">${hogar.referencias ? escapeHtml(hogar.referencias) : '—'}</span>
+      </div>
+      <div>
+        <span class="label-caps">Ocupación</span>
+        <span class="valor">${hogar.ocupacion_actual}/${hogar.capacidad} <span class="admin-estado-badge ${estatus}">${estatusLabel(estatus)}</span></span>
+      </div>
+    </div>
+    ${seccion('Servicios', hogar.servicios)}
+    ${seccion('Vulnerabilidades', hogar.vulnerabilidades)}
+    ${hogar.notas_vulnerabilidad ? `<p class="admin-detalle-notas">${escapeHtml(hogar.notas_vulnerabilidad)}</p>` : ''}
+    ${seccion('Perfil recomendado', hogar.perfil_sugerido)}
+  `;
+}
+
+async function abrirDetalleHogar(id) {
+  document.getElementById('detalle-modal-title').textContent = 'Cargando…';
+  document.getElementById('detalle-modal-body').innerHTML = '';
+  detalleModalAbierto = true;
+  document.getElementById('detalle-modal-backdrop').hidden = false;
+  try {
+    const { hogar } = await obtenerHogar(session.token, id);
+    renderDetalleHogar(hogar);
+  } catch (err) {
+    document.getElementById('detalle-modal-body').innerHTML =
+      '<p class="admin-modal-empty">No se pudo cargar el detalle de este hogar.</p>';
+  }
+}
+
+function cerrarDetalleModal() {
+  detalleModalAbierto = false;
+  document.getElementById('detalle-modal-backdrop').hidden = true;
+}
+
 document.querySelectorAll('.admin-kpi-card').forEach((card) => {
   card.addEventListener('click', () => abrirKpiModal(card.dataset.kpi));
 });
@@ -127,8 +218,17 @@ document.getElementById('kpi-modal-close').addEventListener('click', cerrarKpiMo
 document.getElementById('kpi-modal-backdrop').addEventListener('click', (event) => {
   if (event.target.id === 'kpi-modal-backdrop') cerrarKpiModal();
 });
+document.getElementById('detalle-modal-close').addEventListener('click', cerrarDetalleModal);
+document.getElementById('detalle-modal-backdrop').addEventListener('click', (event) => {
+  if (event.target.id === 'detalle-modal-backdrop') cerrarDetalleModal();
+});
 document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape' && kpiModalActivo) cerrarKpiModal();
+  if (event.key !== 'Escape') return;
+  if (detalleModalAbierto) {
+    cerrarDetalleModal();
+  } else if (kpiModalActivo) {
+    cerrarKpiModal();
+  }
 });
 
 function setLiveStatus(estado) {
