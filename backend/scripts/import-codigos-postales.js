@@ -21,7 +21,7 @@ async function importar() {
   const filas = parseCsv();
   console.log(`Importando ${filas.length} códigos postales...`);
 
-  await pool.query('TRUNCATE codigos_postales RESTART IDENTITY');
+  await pool.query('TRUNCATE codigos_postales');
 
   for (let i = 0; i < filas.length; i += BATCH_SIZE) {
     const lote = filas.slice(i, i + BATCH_SIZE);
