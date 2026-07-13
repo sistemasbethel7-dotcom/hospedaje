@@ -12,6 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/components.css">
@@ -40,7 +41,18 @@
         <p class="detalle-notas" id="v-telefono" hidden></p>
         <p class="detalle-notas" id="v-cp" hidden></p>
         <p class="detalle-notas" id="v-referencias" hidden></p>
+        <div class="detalle-row"><span class="label-caps">Folio</span><span id="v-folio"></span></div>
         <div class="detalle-row"><span class="label-caps">Capacidad</span><span id="v-capacidad"></span></div>
+      </div>
+
+      <div class="card-bordered detalle-card" id="qr-card">
+        <span class="label-caps">Código QR de la casa</span>
+        <div class="qr-print-info">
+          <div class="qr-folio" id="qr-folio-text"></div>
+          <div class="qr-nombre" id="qr-nombre-text"></div>
+        </div>
+        <div class="qr-wrap" id="qr-container"></div>
+        <button type="button" class="btn-outline" id="imprimir-btn">Imprimir calcomanía</button>
       </div>
 
       <div class="card-bordered detalle-card" id="v-servicios-card" hidden>

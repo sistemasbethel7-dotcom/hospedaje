@@ -20,6 +20,26 @@ if (!hogarId) {
 
 const HOUSE_ICON = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M4 10.5L12 4l8 6.5V20a1 1 0 01-1 1h-4v-6H9v6H5a1 1 0 01-1-1v-9.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
 
+function folioDe(id) {
+  return `H-${String(id).padStart(6, '0')}`;
+}
+
+function renderQR(hogarData) {
+  document.getElementById('v-folio').textContent = folioDe(hogarData.id);
+  document.getElementById('qr-folio-text').textContent = folioDe(hogarData.id);
+  document.getElementById('qr-nombre-text').textContent = `${hogarData.nombre_dueno} · ${hogarData.calle_numero}, ${hogarData.colonia}`;
+
+  const container = document.getElementById('qr-container');
+  container.innerHTML = '';
+  const url = `${window.location.origin}/ingresos.html?hogar=${hogarData.id}`;
+  new QRCode(container, {
+    text: url,
+    width: 180,
+    height: 180,
+    correctLevel: QRCode.CorrectLevel.M,
+  });
+}
+
 let hogar = null;
 let catalogos = { servicio: [], vulnerabilidad: [], perfil: [] };
 
@@ -46,6 +66,7 @@ function backToList() {
 }
 
 document.getElementById('back-btn').addEventListener('click', backToList);
+document.getElementById('imprimir-btn').addEventListener('click', () => window.print());
 
 function renderView() {
   const photo = document.getElementById('detalle-photo');
@@ -56,6 +77,8 @@ function renderView() {
     photo.style.backgroundImage = '';
     photo.innerHTML = HOUSE_ICON;
   }
+
+  renderQR(hogar);
 
   document.getElementById('v-nombre').textContent = hogar.nombre_dueno;
   document.getElementById('v-direccion').textContent = `${hogar.calle_numero}, ${hogar.colonia}`;

@@ -75,6 +75,10 @@ function escapeHtml(value) {
   return div.innerHTML;
 }
 
+function folioDe(id) {
+  return `H-${String(id).padStart(6, '0')}`;
+}
+
 function estatusHogar(h) {
   if (h.ocupacion_actual <= 0) return 'libre';
   if (h.ocupacion_actual >= h.capacidad) return 'lleno';
@@ -123,6 +127,7 @@ function renderTabla() {
       return `
         <tr>
           <td><div class="admin-table-thumb" ${thumbStyle}>${thumbContent}</div></td>
+          <td>${folioDe(h.id)}</td>
           <td>${escapeHtml(h.nombre_dueno)}</td>
           <td>${escapeHtml(h.calle_numero)}, ${escapeHtml(h.colonia)}</td>
           <td>${h.codigo_postal ? escapeHtml(h.codigo_postal) : '—'}</td>

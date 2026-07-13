@@ -71,3 +71,45 @@
   letter-spacing: .14em;
   text-transform: uppercase;
 }
+
+.qr-print-info {
+  text-align: center;
+}
+
+.qr-folio {
+  font: 700 18px var(--font-display);
+  color: var(--color-text);
+  letter-spacing: .04em;
+}
+
+.qr-nombre {
+  font: 500 12px var(--font-body);
+  color: var(--color-text-muted);
+}
+
+.qr-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0;
+}
+
+@media print {
+  .screen-header,
+  .detalle-photo,
+  #view-footer,
+  #edit-footer,
+  #imprimir-btn,
+  .detalle-card:not(#qr-card) {
+    display: none !important;
+  }
+
+  #qr-card {
+    border: none;
+    align-items: center;
+    padding: 40px 0 0;
+  }
+
+  #qr-card .label-caps {
+    display: none;
+  }
+}

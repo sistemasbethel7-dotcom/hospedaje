@@ -86,6 +86,10 @@ function estatusLabel(estatus) {
   return 'Parcial';
 }
 
+function folioDe(id) {
+  return `H-${String(id).padStart(6, '0')}`;
+}
+
 function renderKpiModal(tipo) {
   const info = KPI_INFO[tipo];
   document.getElementById('kpi-modal-title').textContent = info.titulo;
@@ -104,6 +108,7 @@ function renderKpiModal(tipo) {
         <thead>
           <tr>
             <th></th>
+            <th>Folio</th>
             <th>Dueño</th>
             <th>Dirección</th>
             <th>C.P.</th>
@@ -120,6 +125,7 @@ function renderKpiModal(tipo) {
               return `
                 <tr class="clickable" data-hogar-id="${h.id}">
                   <td><div class="admin-table-thumb" ${thumbStyle}>${thumbContent}</div></td>
+                  <td>${folioDe(h.id)}</td>
                   <td>${escapeHtml(h.nombre_dueno)}</td>
                   <td>${escapeHtml(h.calle_numero)}, ${escapeHtml(h.colonia)}</td>
                   <td>${h.codigo_postal ? escapeHtml(h.codigo_postal) : '—'}</td>
@@ -151,7 +157,7 @@ function cerrarKpiModal() {
 }
 
 function renderDetalleHogar(hogar) {
-  document.getElementById('detalle-modal-title').textContent = hogar.nombre_dueno;
+  document.getElementById('detalle-modal-title').textContent = `${hogar.nombre_dueno} · ${folioDe(hogar.id)}`;
 
   const fotoStyle = hogar.foto_fachada ? `style="background-image:url(/uploads/${hogar.foto_fachada})"` : '';
   const fotoContent = hogar.foto_fachada ? '' : HOUSE_ICON;

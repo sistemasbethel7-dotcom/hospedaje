@@ -1,7 +1,7 @@
 import { registerServiceWorker } from '../app.js';
-import { listarHogares, registrarIngreso, obtenerEvento } from '../services/api.js';
+import { listarHogares, registrarIngreso, obtenerEvento, obtenerHogar } from '../services/api.js';
 import { getSession, clearSession } from '../services/session.js';
-import { getActiveEventId, clearActiveEventId } from '../services/eventoActivo.js';
+import { getActiveEventId, setActiveEventId, clearActiveEventId } from '../services/eventoActivo.js';
 
 registerServiceWorker();
 
@@ -10,8 +10,11 @@ if (!session) {
   window.location.href = 'index.html';
 }
 
-const eventoId = getActiveEventId();
-if (!eventoId) {
+const params = new URLSearchParams(window.location.search);
+const hogarEscaneadoId = params.get('hogar');
+
+let eventoId = getActiveEventId();
+if (!hogarEscaneadoId && !eventoId) {
   window.location.href = 'eventos.html';
 }
 
@@ -144,21 +147,57 @@ document.getElementById('confirmar-btn').addEventListener('click', async () => {
   }
 });
 
-try {
-  const data = await listarHogares(session.token, eventoId);
-  hogares = data.hogares;
-  renderList();
-  obtenerEvento(session.token, eventoId)
-    .then(({ evento }) => {
-      document.getElementById('evento-context').textContent = `Evento: ${evento.nombre}`;
-    })
-    .catch(() => {});
-} catch (err) {
-  if (err.status === 401) {
-    clearSession();
-    clearActiveEventId();
-    window.location.href = 'index.html';
-  } else {
-    document.getElementById('ingresos-list-error').textContent = 'No se pudo cargar la lista de hogares.';
+if (hogarEscaneadoId) {
+  // Vino de un QR escaneado: el evento activo puede no coincidir (o no existir
+  // aún en este dispositivo), así que se resuelve a partir del propio hogar.
+  try {
+    const { hogar: hogarEscaneado } = await obtenerHogar(session.token, hogarEscaneadoId);
+    eventoId = String(hogarEscaneado.evento_id);
+    setActiveEventId(eventoId);
+  } catch (err) {
+    if (err.status === 401) {
+      clearSession();
+      clearActiveEventId();
+      window.location.href = 'index.html';
+    } else {
+      document.getElementById('ingresos-list-error').textContent = 'Este código QR ya no es válido o el hogar fue eliminado.';
+      eventoId = null;
+    }
+  }
+}
+
+if (!eventoId) {
+  if (!hogarEscaneadoId) window.location.href = 'eventos.html';
+} else {
+  try {
+    const data = await listarHogares(session.token, eventoId);
+    hogares = data.hogares;
+
+    if (hogarEscaneadoId) {
+      const hogarEscaneado = hogares.find((h) => h.id === Number(hogarEscaneadoId));
+      if (hogarEscaneado && disponibles(hogarEscaneado) > 0) {
+        selected = hogarEscaneado;
+      }
+    }
+
+    renderList();
+    renderPanel();
+    if (selected) {
+      document.getElementById('ingresos-panel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    obtenerEvento(session.token, eventoId)
+      .then(({ evento }) => {
+        document.getElementById('evento-context').textContent = `Evento: ${evento.nombre}`;
+      })
+      .catch(() => {});
+  } catch (err) {
+    if (err.status === 401) {
+      clearSession();
+      clearActiveEventId();
+      window.location.href = 'index.html';
+    } else {
+      document.getElementById('ingresos-list-error').textContent = 'No se pudo cargar la lista de hogares.';
+    }
   }
 }
