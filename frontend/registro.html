@@ -58,12 +58,18 @@
           <input type="text" id="calle_numero" name="calle_numero" placeholder="Av. Juárez 123" required>
         </div>
         <div class="field">
-          <label class="label-caps" for="colonia">Colonia</label>
-          <input type="text" id="colonia" name="colonia" placeholder="Centro" required>
+          <label class="label-caps" for="codigo_postal">Código postal (opcional)</label>
+          <input type="text" id="codigo_postal" name="codigo_postal" placeholder="44100" inputmode="numeric" maxlength="5">
+          <p class="field-hint" id="cp-hint" hidden></p>
         </div>
         <div class="field">
-          <label class="label-caps" for="codigo_postal">Código postal (opcional)</label>
-          <input type="text" id="codigo_postal" name="codigo_postal" placeholder="44100" inputmode="numeric">
+          <label class="label-caps" for="colonia">Colonia</label>
+          <input type="text" id="colonia" name="colonia" placeholder="Centro" list="colonia-options" required>
+          <datalist id="colonia-options"></datalist>
+        </div>
+        <div class="field">
+          <label class="label-caps" for="estado">Estado</label>
+          <input type="text" id="estado" name="estado" placeholder="Jalisco" required>
         </div>
         <div class="field">
           <label class="label-caps" for="referencias">Referencias (opcional)</label>

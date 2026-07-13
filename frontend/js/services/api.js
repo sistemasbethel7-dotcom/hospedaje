@@ -228,6 +228,21 @@ export async function eliminarCatalogoItem(token, id) {
   }
 }
 
+export async function buscarCodigoPostal(token, cp) {
+  const res = await fetch(`${API_BASE}/codigos-postales/${cp}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    const error = new Error('No se pudo consultar el código postal.');
+    error.status = res.status;
+    throw error;
+  }
+
+  return res.json();
+}
+
 export async function crearHogar(token, formData) {
   const res = await fetch(`${API_BASE}/hogares`, {
     method: 'POST',

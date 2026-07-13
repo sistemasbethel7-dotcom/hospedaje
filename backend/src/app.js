@@ -7,6 +7,7 @@ import eventosRoutes from './routes/eventos.js';
 import hogaresRoutes from './routes/hogares.js';
 import usuariosRoutes from './routes/usuarios.js';
 import catalogosRoutes from './routes/catalogos.js';
+import codigosPostalesRoutes from './routes/codigosPostales.js';
 
 export function createApp() {
   const app = express();
@@ -24,6 +25,7 @@ export function createApp() {
   app.use('/api/hogares', hogaresRoutes);
   app.use('/api/usuarios', usuariosRoutes);
   app.use('/api/catalogos', catalogosRoutes);
+  app.use('/api/codigos-postales', codigosPostalesRoutes);
 
   app.use((err, req, res, next) => {
     if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {

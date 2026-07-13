@@ -3,10 +3,10 @@ import { pool } from '../config/db.js';
 export async function insertHogar(data) {
   const { rows } = await pool.query(
     `INSERT INTO hogares
-      (evento_id, nombre_dueno, telefono_dueno, calle_numero, colonia, codigo_postal, referencias, lat, lng, capacidad,
+      (evento_id, nombre_dueno, telefono_dueno, calle_numero, colonia, codigo_postal, estado, referencias, lat, lng, capacidad,
        foto_dueno, foto_fachada, servicios, vulnerabilidades, notas_vulnerabilidad,
        perfil_sugerido, registrado_por)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
      RETURNING id, nombre_dueno, calle_numero, colonia, capacidad, created_at`,
     [
       data.eventoId,
@@ -15,6 +15,7 @@ export async function insertHogar(data) {
       data.calleNumero,
       data.colonia,
       data.codigoPostal,
+      data.estado,
       data.referencias,
       data.lat,
       data.lng,
@@ -52,7 +53,7 @@ export async function getHogarById(id) {
 
 export async function getHogarDetalle(id) {
   const { rows } = await pool.query(
-    `SELECT id, evento_id, nombre_dueno, telefono_dueno, calle_numero, colonia, codigo_postal, referencias, lat, lng,
+    `SELECT id, evento_id, nombre_dueno, telefono_dueno, calle_numero, colonia, codigo_postal, estado, referencias, lat, lng,
             capacidad, ocupacion_actual, foto_dueno, foto_fachada, servicios,
             vulnerabilidades, notas_vulnerabilidad, perfil_sugerido, created_at
      FROM hogares
@@ -70,17 +71,18 @@ export async function updateHogar(id, data) {
        calle_numero = $3,
        colonia = $4,
        codigo_postal = $5,
-       referencias = $6,
-       lat = $7,
-       lng = $8,
-       capacidad = $9,
-       servicios = $10,
-       vulnerabilidades = $11,
-       notas_vulnerabilidad = $12,
-       perfil_sugerido = $13,
-       foto_dueno = COALESCE($14, foto_dueno),
-       foto_fachada = COALESCE($15, foto_fachada)
-     WHERE id = $16
+       estado = $6,
+       referencias = $7,
+       lat = $8,
+       lng = $9,
+       capacidad = $10,
+       servicios = $11,
+       vulnerabilidades = $12,
+       notas_vulnerabilidad = $13,
+       perfil_sugerido = $14,
+       foto_dueno = COALESCE($15, foto_dueno),
+       foto_fachada = COALESCE($16, foto_fachada)
+     WHERE id = $17
      RETURNING id, evento_id, nombre_dueno, calle_numero, colonia, capacidad, created_at`,
     [
       data.nombreDueno,
@@ -88,6 +90,7 @@ export async function updateHogar(id, data) {
       data.calleNumero,
       data.colonia,
       data.codigoPostal,
+      data.estado,
       data.referencias,
       data.lat,
       data.lng,

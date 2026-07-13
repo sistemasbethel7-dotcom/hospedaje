@@ -16,6 +16,7 @@ export async function crear(req, res) {
     calle_numero,
     colonia,
     codigo_postal,
+    estado,
     referencias,
     lat,
     lng,
@@ -30,7 +31,7 @@ export async function crear(req, res) {
   if (!eventoId) {
     return res.status(400).json({ message: 'Falta el evento.' });
   }
-  if (!nombre_dueno || !calle_numero || !colonia || !capacidad) {
+  if (!nombre_dueno || !calle_numero || !colonia || !estado || !capacidad) {
     return res.status(400).json({ message: 'Faltan datos obligatorios de la casa.' });
   }
 
@@ -52,6 +53,7 @@ export async function crear(req, res) {
     calleNumero: calle_numero,
     colonia,
     codigoPostal: codigo_postal || null,
+    estado,
     referencias: referencias || null,
     lat: lat ? Number(lat) : null,
     lng: lng ? Number(lng) : null,
@@ -93,6 +95,7 @@ export async function actualizar(req, res) {
     calle_numero,
     colonia,
     codigo_postal,
+    estado,
     referencias,
     lat,
     lng,
@@ -103,7 +106,7 @@ export async function actualizar(req, res) {
     perfil_sugerido,
   } = req.body;
 
-  if (!nombre_dueno || !calle_numero || !colonia || !capacidad) {
+  if (!nombre_dueno || !calle_numero || !colonia || !estado || !capacidad) {
     return res.status(400).json({ message: 'Faltan datos obligatorios de la casa.' });
   }
 
@@ -116,6 +119,7 @@ export async function actualizar(req, res) {
     calleNumero: calle_numero,
     colonia,
     codigoPostal: codigo_postal || null,
+    estado,
     referencias: referencias || null,
     lat: lat ? Number(lat) : null,
     lng: lng ? Number(lng) : null,

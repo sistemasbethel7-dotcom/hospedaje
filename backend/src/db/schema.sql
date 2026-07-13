@@ -150,3 +150,21 @@ BEGIN
     ALTER TABLE hogares DROP COLUMN electricidad;
   END IF;
 END $$;
+
+ALTER TABLE hogares ADD COLUMN IF NOT EXISTS estado TEXT;
+
+-- Catálogo de códigos postales (SEPOMEX/Correos de México, importado localmente para no
+-- depender de un servicio externo el día del evento). Se puebla con
+-- backend/scripts/import-codigos-postales.js, no con este archivo (150k+ filas).
+CREATE TABLE IF NOT EXISTS codigos_postales (
+  id SERIAL PRIMARY KEY,
+  cp TEXT NOT NULL,
+  colonia TEXT NOT NULL,
+  tipo_asentamiento TEXT,
+  municipio TEXT,
+  estado TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_codigos_postales_cp ON codigos_postales (cp);
+
+GRANT ALL PRIVILEGES ON TABLE codigos_postales TO pwa_templo_app;
+GRANT USAGE, SELECT ON SEQUENCE codigos_postales_id_seq TO pwa_templo_app;

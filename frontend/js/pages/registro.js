@@ -1,5 +1,5 @@
 import { registerServiceWorker } from '../app.js';
-import { crearHogar, obtenerCatalogosActivos } from '../services/api.js';
+import { crearHogar, obtenerCatalogosActivos, buscarCodigoPostal } from '../services/api.js';
 import { getSession, clearSession } from '../services/session.js';
 import { getActiveEventId, clearActiveEventId } from '../services/eventoActivo.js';
 import { setupMapModal } from '../mapModal.js';
@@ -46,6 +46,7 @@ function loadDraft() {
     document.getElementById('calle_numero').value = draft.calle_numero || '';
     document.getElementById('colonia').value = draft.colonia || '';
     document.getElementById('codigo_postal').value = draft.codigo_postal || '';
+    document.getElementById('estado').value = draft.estado || '';
     document.getElementById('referencias').value = draft.referencias || '';
     document.getElementById('notas_vulnerabilidad').value = draft.notas_vulnerabilidad || '';
   } catch {
@@ -66,6 +67,7 @@ function saveDraft() {
     calle_numero: document.getElementById('calle_numero').value,
     colonia: document.getElementById('colonia').value,
     codigo_postal: document.getElementById('codigo_postal').value,
+    estado: document.getElementById('estado').value,
     referencias: document.getElementById('referencias').value,
     notas_vulnerabilidad: document.getElementById('notas_vulnerabilidad').value,
     lat: state.lat,
@@ -93,11 +95,50 @@ function validateStep() {
     const nombre = document.getElementById('nombre_dueno').value.trim();
     const calleNumero = document.getElementById('calle_numero').value.trim();
     const colonia = document.getElementById('colonia').value.trim();
-    if (!nombre || !calleNumero || !colonia) {
-      return 'Completa el nombre del dueño, la calle y número, y la colonia.';
+    const estado = document.getElementById('estado').value.trim();
+    if (!nombre || !calleNumero || !colonia || !estado) {
+      return 'Completa el nombre del dueño, la calle y número, la colonia y el estado.';
     }
   }
   return null;
+}
+
+let cpLookupTimeout = null;
+
+function setupCodigoPostal() {
+  const input = document.getElementById('codigo_postal');
+  const hint = document.getElementById('cp-hint');
+  const datalist = document.getElementById('colonia-options');
+  const estadoInput = document.getElementById('estado');
+
+  input.addEventListener('input', () => {
+    clearTimeout(cpLookupTimeout);
+    const cp = input.value.trim();
+    if (!/^\d{5}$/.test(cp)) {
+      hint.hidden = true;
+      return;
+    }
+    cpLookupTimeout = setTimeout(async () => {
+      try {
+        const resultado = await buscarCodigoPostal(session.token, cp);
+        if (!resultado) {
+          datalist.innerHTML = '';
+          hint.hidden = false;
+          hint.textContent = 'Código postal no encontrado, ingresa la colonia y el estado a mano.';
+          return;
+        }
+        datalist.innerHTML = resultado.colonias
+          .map((c) => `<option value="${c.colonia}"></option>`)
+          .join('');
+        if (!estadoInput.value.trim()) estadoInput.value = resultado.estado;
+        hint.hidden = false;
+        hint.textContent = `${resultado.colonias.length} colonia(s) encontradas para este código postal.`;
+        saveDraft();
+      } catch {
+        hint.hidden = true;
+      }
+    }, 400);
+  });
 }
 
 function updateOfflineBadge() {
@@ -233,6 +274,7 @@ async function handleSubmit() {
   formData.append('calle_numero', document.getElementById('calle_numero').value.trim());
   formData.append('colonia', document.getElementById('colonia').value.trim());
   formData.append('codigo_postal', document.getElementById('codigo_postal').value.trim());
+  formData.append('estado', document.getElementById('estado').value.trim());
   formData.append('referencias', document.getElementById('referencias').value.trim());
   if (state.lat) formData.append('lat', state.lat);
   if (state.lng) formData.append('lng', state.lng);
@@ -313,6 +355,7 @@ setupMapModal({
 });
 setupPhotos();
 setupCapacidad();
+setupCodigoPostal();
 updateOfflineBadge();
 renderStep();
 

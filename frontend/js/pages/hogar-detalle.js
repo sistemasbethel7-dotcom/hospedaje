@@ -1,5 +1,5 @@
 import { registerServiceWorker } from '../app.js';
-import { me, obtenerHogar, actualizarHogar, eliminarHogar, obtenerCatalogosActivos } from '../services/api.js';
+import { me, obtenerHogar, actualizarHogar, eliminarHogar, obtenerCatalogosActivos, buscarCodigoPostal } from '../services/api.js';
 import { getSession, clearSession } from '../services/session.js';
 import { clearActiveEventId } from '../services/eventoActivo.js';
 import { setupMapModal } from '../mapModal.js';
@@ -59,6 +59,10 @@ function renderView() {
 
   document.getElementById('v-nombre').textContent = hogar.nombre_dueno;
   document.getElementById('v-direccion').textContent = `${hogar.calle_numero}, ${hogar.colonia}`;
+
+  const estadoEl = document.getElementById('v-estado');
+  estadoEl.hidden = !hogar.estado;
+  estadoEl.textContent = hogar.estado || '';
 
   const telefonoEl = document.getElementById('v-telefono');
   telefonoEl.hidden = !hogar.telefono_dueno;
@@ -196,6 +200,43 @@ function setupCapacidad() {
   update();
 }
 
+let cpLookupTimeout = null;
+
+function setupCodigoPostal() {
+  const input = document.getElementById('codigo_postal');
+  const hint = document.getElementById('cp-hint');
+  const datalist = document.getElementById('colonia-options');
+  const estadoInput = document.getElementById('estado');
+
+  input.addEventListener('input', () => {
+    clearTimeout(cpLookupTimeout);
+    const cp = input.value.trim();
+    if (!/^\d{5}$/.test(cp)) {
+      hint.hidden = true;
+      return;
+    }
+    cpLookupTimeout = setTimeout(async () => {
+      try {
+        const resultado = await buscarCodigoPostal(session.token, cp);
+        if (!resultado) {
+          datalist.innerHTML = '';
+          hint.hidden = false;
+          hint.textContent = 'Código postal no encontrado, ingresa la colonia y el estado a mano.';
+          return;
+        }
+        datalist.innerHTML = resultado.colonias
+          .map((c) => `<option value="${c.colonia}"></option>`)
+          .join('');
+        if (!estadoInput.value.trim()) estadoInput.value = resultado.estado;
+        hint.hidden = false;
+        hint.textContent = `${resultado.colonias.length} colonia(s) encontradas para este código postal.`;
+      } catch {
+        hint.hidden = true;
+      }
+    }, 400);
+  });
+}
+
 function setupPhotos() {
   const bind = (inputId, labelId, key) => {
     document.getElementById(inputId).addEventListener('change', async (event) => {
@@ -229,6 +270,7 @@ function fillEditForm() {
   document.getElementById('calle_numero').value = hogar.calle_numero;
   document.getElementById('colonia').value = hogar.colonia;
   document.getElementById('codigo_postal').value = hogar.codigo_postal || '';
+  document.getElementById('estado').value = hogar.estado || '';
   document.getElementById('referencias').value = hogar.referencias || '';
 
   state.lat = hogar.lat;
@@ -279,8 +321,9 @@ async function handleGuardar() {
   const nombre = document.getElementById('nombre_dueno').value.trim();
   const calleNumero = document.getElementById('calle_numero').value.trim();
   const colonia = document.getElementById('colonia').value.trim();
-  if (!nombre || !calleNumero || !colonia) {
-    errorEl.textContent = 'Completa el nombre del dueño, la calle y número, y la colonia.';
+  const estado = document.getElementById('estado').value.trim();
+  if (!nombre || !calleNumero || !colonia || !estado) {
+    errorEl.textContent = 'Completa el nombre del dueño, la calle y número, la colonia y el estado.';
     return;
   }
 
@@ -290,6 +333,7 @@ async function handleGuardar() {
   formData.append('calle_numero', calleNumero);
   formData.append('colonia', colonia);
   formData.append('codigo_postal', document.getElementById('codigo_postal').value.trim());
+  formData.append('estado', estado);
   formData.append('referencias', document.getElementById('referencias').value.trim());
   if (state.lat) formData.append('lat', state.lat);
   if (state.lng) formData.append('lng', state.lng);
@@ -359,6 +403,7 @@ setupMapModal({
 });
 setupPhotos();
 setupCapacidad();
+setupCodigoPostal();
 
 try {
   const [{ user }, data, catalogosResp] = await Promise.all([

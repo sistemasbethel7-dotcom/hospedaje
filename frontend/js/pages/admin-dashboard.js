@@ -169,7 +169,7 @@ function renderDetalleHogar(hogar) {
 
   document.getElementById('detalle-modal-body').innerHTML = `
     <div class="admin-detalle-photo" ${fotoStyle}>${fotoContent}</div>
-    <div class="admin-detalle-direccion">${escapeHtml(hogar.calle_numero)}, ${escapeHtml(hogar.colonia)}</div>
+    <div class="admin-detalle-direccion">${escapeHtml(hogar.calle_numero)}, ${escapeHtml(hogar.colonia)}${hogar.estado ? `, ${escapeHtml(hogar.estado)}` : ''}</div>
     <div class="admin-detalle-grid">
       <div>
         <span class="label-caps">Teléfono</span>
