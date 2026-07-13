@@ -34,6 +34,45 @@
   color: var(--color-text-muted);
 }
 
+.field.has-dropdown {
+  position: relative;
+}
+
+.autocomplete-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: var(--color-bg);
+  border: 1px solid var(--color-gold-border);
+  border-radius: 10px;
+  box-shadow: 0 10px 28px rgba(36, 29, 18, .14);
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 30;
+}
+
+.autocomplete-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 13px 14px;
+  border: none;
+  border-bottom: 1px solid var(--color-gold-border);
+  background: none;
+  font: 500 14px var(--font-body);
+  color: var(--color-text);
+}
+
+.autocomplete-option:last-child {
+  border-bottom: none;
+}
+
+.autocomplete-option:hover,
+.autocomplete-option:active {
+  background: var(--color-gold-tint);
+}
+
 .btn-gold {
   width: 100%;
   height: 52px;

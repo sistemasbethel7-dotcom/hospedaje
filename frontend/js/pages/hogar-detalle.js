@@ -202,10 +202,45 @@ function setupCapacidad() {
 
 let cpLookupTimeout = null;
 
+let coloniasDisponibles = [];
+
+function renderColoniaDropdown(filtro) {
+  const dropdown = document.getElementById('colonia-dropdown');
+  dropdown.innerHTML = '';
+
+  if (coloniasDisponibles.length === 0) {
+    dropdown.hidden = true;
+    return;
+  }
+
+  const filtradas = coloniasDisponibles.filter((c) =>
+    c.colonia.toLowerCase().includes(filtro.trim().toLowerCase())
+  );
+  if (filtradas.length === 0) {
+    dropdown.hidden = true;
+    return;
+  }
+
+  filtradas.forEach((c) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'autocomplete-option';
+    btn.textContent = c.colonia;
+    btn.addEventListener('click', () => {
+      document.getElementById('colonia').value = c.colonia;
+      dropdown.hidden = true;
+      dropdown.innerHTML = '';
+    });
+    dropdown.appendChild(btn);
+  });
+  dropdown.hidden = false;
+}
+
 function setupCodigoPostal() {
   const input = document.getElementById('codigo_postal');
   const hint = document.getElementById('cp-hint');
-  const datalist = document.getElementById('colonia-options');
+  const coloniaInput = document.getElementById('colonia');
+  const dropdown = document.getElementById('colonia-dropdown');
   const estadoInput = document.getElementById('estado');
 
   input.addEventListener('input', () => {
@@ -213,27 +248,38 @@ function setupCodigoPostal() {
     const cp = input.value.trim();
     if (!/^\d{5}$/.test(cp)) {
       hint.hidden = true;
+      coloniasDisponibles = [];
+      dropdown.hidden = true;
       return;
     }
     cpLookupTimeout = setTimeout(async () => {
       try {
         const resultado = await buscarCodigoPostal(session.token, cp);
         if (!resultado) {
-          datalist.innerHTML = '';
+          coloniasDisponibles = [];
+          dropdown.hidden = true;
           hint.hidden = false;
           hint.textContent = 'Código postal no encontrado, ingresa la colonia y el estado a mano.';
           return;
         }
-        datalist.innerHTML = resultado.colonias
-          .map((c) => `<option value="${c.colonia}"></option>`)
-          .join('');
+        coloniasDisponibles = resultado.colonias;
         if (!estadoInput.value.trim()) estadoInput.value = resultado.estado;
         hint.hidden = false;
         hint.textContent = `${resultado.colonias.length} colonia(s) encontradas para este código postal.`;
+        renderColoniaDropdown(coloniaInput.value);
       } catch {
         hint.hidden = true;
       }
     }, 400);
+  });
+
+  coloniaInput.addEventListener('input', () => renderColoniaDropdown(coloniaInput.value));
+  coloniaInput.addEventListener('focus', () => renderColoniaDropdown(coloniaInput.value));
+
+  document.addEventListener('click', (event) => {
+    if (!event.target.closest('.field.has-dropdown')) {
+      dropdown.hidden = true;
+    }
   });
 }
 
