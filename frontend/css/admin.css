@@ -93,6 +93,28 @@
   gap: 12px;
 }
 
+.admin-evento-filtro {
+  display: flex;
+  border: 1px solid var(--color-gold-border);
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.admin-filtro-tab {
+  height: 40px;
+  padding: 0 14px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  font: 600 12px var(--font-body);
+  cursor: pointer;
+}
+
+.admin-filtro-tab.active {
+  background: var(--color-gold-tint);
+  color: var(--color-gold-deep);
+}
+
 .admin-select {
   height: 40px;
   border: 1px solid var(--color-gold-border);
@@ -115,6 +137,14 @@
 
 .admin-live-indicator.reconectando {
   color: var(--color-warn);
+}
+
+.admin-live-indicator.inactivo {
+  color: #EF4444;
+}
+
+.admin-live-indicator.inactivo .admin-live-dot {
+  animation: none;
 }
 
 .admin-live-dot {

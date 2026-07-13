@@ -55,6 +55,7 @@ let kpiModalActivo = null;
 let detalleModalAbierto = false;
 let unsubscribeStream = null;
 let refrescoPendiente = null;
+let filtroEstatus = 'abierto';
 
 document.getElementById('logout-btn').addEventListener('click', () => {
   clearSession();
@@ -63,9 +64,23 @@ document.getElementById('logout-btn').addEventListener('click', () => {
 });
 
 document.getElementById('evento-select').addEventListener('change', (event) => {
-  setActiveEventId(event.target.value);
-  cargarMetricas(event.target.value);
-  suscribirEvento(event.target.value);
+  if (!event.target.value) return;
+  seleccionarEvento(event.target.value);
+});
+
+document.querySelectorAll('.admin-filtro-tab').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    filtroEstatus = btn.dataset.filtro;
+    actualizarTabs();
+    poblarSelect();
+    const filtrados = eventosFiltrados();
+    if (filtrados.length > 0) {
+      document.getElementById('evento-select').value = filtrados[0].id;
+      seleccionarEvento(filtrados[0].id);
+    } else {
+      mostrarSinSeleccion();
+    }
+  });
 });
 
 function escapeHtml(value) {
@@ -246,7 +261,14 @@ function setLiveStatus(estado) {
   const text = document.getElementById('live-indicator-text');
   indicator.hidden = false;
   indicator.classList.toggle('reconectando', estado === 'reconectando');
-  text.textContent = estado === 'reconectando' ? 'Reconectando…' : 'En vivo';
+  indicator.classList.toggle('inactivo', estado === 'inactivo');
+  if (estado === 'inactivo') {
+    text.textContent = 'Evento finalizado';
+  } else if (estado === 'reconectando') {
+    text.textContent = 'Reconectando…';
+  } else {
+    text.textContent = 'En vivo';
+  }
 }
 
 function suscribirEvento(eventoId) {
@@ -268,11 +290,56 @@ function formatFecha(iso) {
   return `${d}/${m}/${y}`;
 }
 
+function eventosFiltrados() {
+  return eventos.filter((e) => e.estatus === filtroEstatus);
+}
+
+function actualizarTabs() {
+  const abiertos = eventos.filter((e) => e.estatus === 'abierto').length;
+  const finalizados = eventos.filter((e) => e.estatus === 'finalizado').length;
+  document.querySelectorAll('.admin-filtro-tab').forEach((btn) => {
+    btn.textContent = btn.dataset.filtro === 'abierto' ? `Vigentes (${abiertos})` : `Finalizados (${finalizados})`;
+    btn.classList.toggle('active', btn.dataset.filtro === filtroEstatus);
+  });
+}
+
 function poblarSelect() {
   const select = document.getElementById('evento-select');
-  select.innerHTML = eventos
-    .map((e) => `<option value="${e.id}">${e.nombre} (${formatFecha(e.fecha_inicio)} · ${e.estatus})</option>`)
+  const filtrados = eventosFiltrados();
+  if (filtrados.length === 0) {
+    const etiqueta = filtroEstatus === 'abierto' ? 'vigentes' : 'finalizados';
+    select.innerHTML = `<option value="" disabled selected>Sin eventos ${etiqueta}</option>`;
+    return;
+  }
+  select.innerHTML = filtrados
+    .map((e) => `<option value="${e.id}">${e.nombre} (${formatFecha(e.fecha_inicio)})</option>`)
     .join('');
+}
+
+function mostrarSinSeleccion() {
+  if (unsubscribeStream) {
+    unsubscribeStream();
+    unsubscribeStream = null;
+  }
+  document.getElementById('dashboard-content').hidden = true;
+  document.getElementById('dashboard-sin-seleccion').hidden = false;
+  document.getElementById('live-indicator').hidden = true;
+}
+
+async function seleccionarEvento(eventoId) {
+  setActiveEventId(eventoId);
+  document.getElementById('dashboard-sin-seleccion').hidden = true;
+  await cargarMetricas(eventoId);
+  const evento = eventos.find((e) => String(e.id) === String(eventoId));
+  if (evento && evento.estatus === 'abierto') {
+    suscribirEvento(eventoId);
+  } else {
+    if (unsubscribeStream) {
+      unsubscribeStream();
+      unsubscribeStream = null;
+    }
+    setLiveStatus('inactivo');
+  }
 }
 
 function destroyChart(key) {
@@ -384,13 +451,22 @@ try {
   if (eventos.length === 0) {
     document.getElementById('dashboard-empty').hidden = false;
   } else {
-    poblarSelect();
-    const activo = getActiveEventId();
-    const inicial = eventos.find((e) => String(e.id) === activo) || eventos.find((e) => e.estatus === 'abierto') || eventos[0];
-    document.getElementById('evento-select').value = inicial.id;
-    setActiveEventId(inicial.id);
-    await cargarMetricas(inicial.id);
-    suscribirEvento(inicial.id);
+    const vigentes = eventos.filter((e) => e.estatus === 'abierto');
+
+    if (vigentes.length > 0) {
+      filtroEstatus = 'abierto';
+      actualizarTabs();
+      poblarSelect();
+      const activo = getActiveEventId();
+      const inicial = vigentes.find((e) => String(e.id) === activo) || vigentes[0];
+      document.getElementById('evento-select').value = inicial.id;
+      await seleccionarEvento(inicial.id);
+    } else {
+      filtroEstatus = 'abierto';
+      actualizarTabs();
+      poblarSelect();
+      mostrarSinSeleccion();
+    }
   }
 } catch (err) {
   if (err.status === 401) {

@@ -43,12 +43,17 @@
           <span class="admin-live-dot"></span>
           <span id="live-indicator-text">En vivo</span>
         </span>
+        <div class="admin-evento-filtro" id="evento-filtro">
+          <button type="button" class="admin-filtro-tab" data-filtro="abierto">Vigentes</button>
+          <button type="button" class="admin-filtro-tab" data-filtro="finalizado">Finalizados</button>
+        </div>
         <select class="admin-select" id="evento-select"></select>
       </div>
     </div>
 
     <p class="admin-error" id="dashboard-error" role="alert"></p>
     <p class="admin-empty" id="dashboard-empty" hidden>Aún no hay eventos creados. <a href="eventos.html">Crea el primero</a>.</p>
+    <p class="admin-empty" id="dashboard-sin-seleccion" hidden>Selecciona un evento para ver su información.</p>
 
     <div id="dashboard-content" hidden>
       <div class="admin-kpis">
