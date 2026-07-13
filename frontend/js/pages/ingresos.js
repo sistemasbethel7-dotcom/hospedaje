@@ -28,6 +28,12 @@ let hogares = [];
 let selected = null;
 let cantidad = 1;
 
+let filtroFolio = '';
+let filtroColonia = '';
+let filtroCp = '';
+let filtroEstado = '';
+let filtroOcupacion = '';
+
 function escapeHtml(value) {
   const div = document.createElement('div');
   div.textContent = value;
@@ -38,15 +44,47 @@ function disponibles(h) {
   return h.capacidad - h.ocupacion_actual;
 }
 
+function folioDe(id) {
+  return `H-${String(id).padStart(6, '0')}`;
+}
+
+function estatusHogar(h) {
+  if (h.ocupacion_actual <= 0) return 'libre';
+  if (h.ocupacion_actual >= h.capacidad) return 'lleno';
+  return 'parcial';
+}
+
+function hogaresFiltrados() {
+  return hogares.filter((h) => {
+    if (filtroFolio && !folioDe(h.id).toLowerCase().includes(filtroFolio)) return false;
+    if (filtroColonia && !h.colonia.toLowerCase().includes(filtroColonia)) return false;
+    if (filtroCp && !(h.codigo_postal || '').toLowerCase().includes(filtroCp)) return false;
+    if (filtroEstado && !(h.estado || '').toLowerCase().includes(filtroEstado)) return false;
+    if (filtroOcupacion && estatusHogar(h) !== filtroOcupacion) return false;
+    return true;
+  });
+}
+
 function renderList() {
   const list = document.getElementById('hogares-list');
+  const sinResultados = document.getElementById('ingresos-sin-resultados');
 
   if (hogares.length === 0) {
     list.innerHTML = '<p class="hogares-empty">Aún no hay hogares registrados.</p>';
+    sinResultados.hidden = true;
     return;
   }
 
-  list.innerHTML = hogares
+  const filtrados = hogaresFiltrados();
+
+  if (filtrados.length === 0) {
+    list.innerHTML = '';
+    sinResultados.hidden = false;
+    return;
+  }
+  sinResultados.hidden = true;
+
+  list.innerHTML = filtrados
     .map((h) => {
       const isSelected = selected?.id === h.id;
       const isFull = disponibles(h) <= 0;
@@ -57,7 +95,7 @@ function renderList() {
           <div class="hogar-thumb" ${thumbStyle}>${thumbContent}</div>
           <div class="hogar-info">
             <div class="hogar-nombre">${escapeHtml(h.nombre_dueno)}</div>
-            <div class="hogar-direccion">${escapeHtml(h.calle_numero)}, ${escapeHtml(h.colonia)}</div>
+            <div class="hogar-direccion">${folioDe(h.id)} · ${escapeHtml(h.calle_numero)}, ${escapeHtml(h.colonia)}</div>
             <div class="hogar-ocupacion">${isFull ? 'Sin lugares disponibles' : `${disponibles(h)} lugares disponibles`}</div>
           </div>
         </div>
@@ -76,6 +114,72 @@ function renderList() {
     });
   });
 }
+
+document.getElementById('filtros-toggle-btn').addEventListener('click', () => {
+  const panel = document.getElementById('ingresos-filtros');
+  panel.hidden = !panel.hidden;
+  document.getElementById('filtros-toggle-btn').classList.toggle('active', !panel.hidden);
+});
+
+document.getElementById('filtro-folio').addEventListener('input', (event) => {
+  filtroFolio = event.target.value.trim().toLowerCase();
+  renderList();
+});
+document.getElementById('filtro-colonia').addEventListener('input', (event) => {
+  filtroColonia = event.target.value.trim().toLowerCase();
+  renderList();
+});
+document.getElementById('filtro-cp').addEventListener('input', (event) => {
+  filtroCp = event.target.value.trim().toLowerCase();
+  renderList();
+});
+document.getElementById('filtro-estado').addEventListener('input', (event) => {
+  filtroEstado = event.target.value.trim().toLowerCase();
+  renderList();
+});
+document.getElementById('filtro-ocupacion').addEventListener('change', (event) => {
+  filtroOcupacion = event.target.value;
+  renderList();
+});
+
+let qrScanner = null;
+
+function cerrarEscaner() {
+  document.getElementById('qr-modal').hidden = true;
+  if (qrScanner) {
+    const instancia = qrScanner;
+    qrScanner = null;
+    instancia.stop().then(() => instancia.clear()).catch(() => {});
+  }
+}
+
+function manejarQrEscaneado(decodedText) {
+  if (decodedText.startsWith(window.location.origin) && decodedText.includes('ingresos.html')) {
+    cerrarEscaner();
+    window.location.href = decodedText;
+    return;
+  }
+  document.getElementById('qr-error').textContent = 'Este código QR no corresponde a un hogar de Anfitriones.';
+}
+
+function abrirEscaner() {
+  document.getElementById('qr-error').textContent = '';
+  document.getElementById('qr-modal').hidden = false;
+  qrScanner = new Html5Qrcode('qr-reader');
+  qrScanner
+    .start(
+      { facingMode: 'environment' },
+      { fps: 10, qrbox: { width: 240, height: 240 } },
+      (decodedText) => manejarQrEscaneado(decodedText),
+      () => {}
+    )
+    .catch(() => {
+      document.getElementById('qr-error').textContent = 'No se pudo acceder a la cámara. Revisa los permisos del navegador.';
+    });
+}
+
+document.getElementById('escanear-btn').addEventListener('click', abrirEscaner);
+document.getElementById('qr-modal-close').addEventListener('click', cerrarEscaner);
 
 function renderPanel() {
   const panel = document.getElementById('ingresos-panel');

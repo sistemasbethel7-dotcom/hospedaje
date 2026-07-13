@@ -15,6 +15,7 @@
 <link rel="stylesheet" href="css/components.css">
 <link rel="stylesheet" href="css/hogares.css">
 <link rel="stylesheet" href="css/ingresos.css">
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
 <body>
 <div class="screen">
@@ -26,7 +27,32 @@
   </header>
   <p class="evento-context" id="evento-context"></p>
 
+  <div class="ingresos-toolbar">
+    <button type="button" class="ingresos-toolbar-btn" id="filtros-toggle-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Filtros
+    </button>
+    <button type="button" class="ingresos-toolbar-btn" id="escanear-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 8V5a1 1 0 011-1h3M20 8V5a1 1 0 00-1-1h-3M4 16v3a1 1 0 001 1h3M20 16v3a1 1 0 01-1 1h-3M4 12h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Escanear QR
+    </button>
+  </div>
+
+  <div class="ingresos-filtros" id="ingresos-filtros" hidden>
+    <input type="text" id="filtro-folio" placeholder="Folio">
+    <input type="text" id="filtro-colonia" placeholder="Colonia">
+    <input type="text" id="filtro-cp" placeholder="Código postal">
+    <input type="text" id="filtro-estado" placeholder="Estado">
+    <select id="filtro-ocupacion">
+      <option value="">Todas las ocupaciones</option>
+      <option value="libre">Libre</option>
+      <option value="parcial">Parcial</option>
+      <option value="lleno">Lleno</option>
+    </select>
+  </div>
+
   <p class="form-error" id="ingresos-list-error" role="alert"></p>
+  <p class="hogares-empty" id="ingresos-sin-resultados" hidden>Ningún hogar coincide con el filtro.</p>
   <div class="hogares-list" id="hogares-list"></div>
 
   <div class="ingresos-panel" id="ingresos-panel" hidden>
@@ -40,6 +66,17 @@
     <p class="form-error" id="ingreso-error" role="alert"></p>
     <button type="button" class="btn-gold" id="confirmar-btn">Registrar ingreso</button>
   </div>
+</div>
+
+<div class="qr-modal" id="qr-modal" hidden>
+  <div class="qr-modal-header">
+    <button type="button" class="screen-back" id="qr-modal-close" aria-label="Cerrar">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <span class="screen-heading">Escanear QR de la casa</span>
+  </div>
+  <div id="qr-reader"></div>
+  <p class="form-error" id="qr-error" role="alert"></p>
 </div>
 
 <script type="module" src="js/pages/ingresos.js"></script>
