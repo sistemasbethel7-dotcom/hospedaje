@@ -36,6 +36,7 @@
       <div class="card-bordered detalle-card">
         <h2 class="detalle-nombre" id="v-nombre"></h2>
         <p class="detalle-direccion" id="v-direccion"></p>
+        <p class="detalle-notas" id="v-telefono" hidden></p>
         <p class="detalle-notas" id="v-cp" hidden></p>
         <p class="detalle-notas" id="v-referencias" hidden></p>
         <div class="detalle-row"><span class="label-caps">Capacidad</span><span id="v-capacidad"></span></div>
@@ -62,6 +63,10 @@
       <div class="field">
         <label class="label-caps" for="nombre_dueno">Nombre del dueño</label>
         <input type="text" id="nombre_dueno" name="nombre_dueno" required>
+      </div>
+      <div class="field">
+        <label class="label-caps" for="telefono_dueno">Teléfono celular (opcional)</label>
+        <input type="tel" id="telefono_dueno" name="telefono_dueno" inputmode="tel">
       </div>
       <div class="field">
         <label class="label-caps" for="calle_numero">Calle y número</label>

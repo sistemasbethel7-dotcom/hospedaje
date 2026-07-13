@@ -172,6 +172,10 @@ function renderDetalleHogar(hogar) {
     <div class="admin-detalle-direccion">${escapeHtml(hogar.calle_numero)}, ${escapeHtml(hogar.colonia)}</div>
     <div class="admin-detalle-grid">
       <div>
+        <span class="label-caps">Teléfono</span>
+        <span class="valor">${hogar.telefono_dueno ? `<a href="tel:${escapeHtml(hogar.telefono_dueno)}">${escapeHtml(hogar.telefono_dueno)}</a>` : '—'}</span>
+      </div>
+      <div>
         <span class="label-caps">C.P.</span>
         <span class="valor">${hogar.codigo_postal ? escapeHtml(hogar.codigo_postal) : '—'}</span>
       </div>

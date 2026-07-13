@@ -60,6 +60,16 @@ function renderView() {
   document.getElementById('v-nombre').textContent = hogar.nombre_dueno;
   document.getElementById('v-direccion').textContent = `${hogar.calle_numero}, ${hogar.colonia}`;
 
+  const telefonoEl = document.getElementById('v-telefono');
+  telefonoEl.hidden = !hogar.telefono_dueno;
+  telefonoEl.textContent = '';
+  if (hogar.telefono_dueno) {
+    const link = document.createElement('a');
+    link.href = `tel:${hogar.telefono_dueno}`;
+    link.textContent = hogar.telefono_dueno;
+    telefonoEl.appendChild(link);
+  }
+
   const cpEl = document.getElementById('v-cp');
   cpEl.hidden = !hogar.codigo_postal;
   cpEl.textContent = hogar.codigo_postal ? `C.P. ${hogar.codigo_postal}` : '';
@@ -215,6 +225,7 @@ function resetPhotoPreview(labelId, filename, placeholder) {
 
 function fillEditForm() {
   document.getElementById('nombre_dueno').value = hogar.nombre_dueno;
+  document.getElementById('telefono_dueno').value = hogar.telefono_dueno || '';
   document.getElementById('calle_numero').value = hogar.calle_numero;
   document.getElementById('colonia').value = hogar.colonia;
   document.getElementById('codigo_postal').value = hogar.codigo_postal || '';
@@ -275,6 +286,7 @@ async function handleGuardar() {
 
   const formData = new FormData();
   formData.append('nombre_dueno', nombre);
+  formData.append('telefono_dueno', document.getElementById('telefono_dueno').value.trim());
   formData.append('calle_numero', calleNumero);
   formData.append('colonia', colonia);
   formData.append('codigo_postal', document.getElementById('codigo_postal').value.trim());

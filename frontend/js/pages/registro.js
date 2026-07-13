@@ -42,6 +42,7 @@ function loadDraft() {
     }
     Object.assign(state, draft);
     document.getElementById('nombre_dueno').value = draft.nombre_dueno || '';
+    document.getElementById('telefono_dueno').value = draft.telefono_dueno || '';
     document.getElementById('calle_numero').value = draft.calle_numero || '';
     document.getElementById('colonia').value = draft.colonia || '';
     document.getElementById('codigo_postal').value = draft.codigo_postal || '';
@@ -61,6 +62,7 @@ function saveDraft() {
     vulnerabilidades: state.vulnerabilidades,
     perfil: state.perfil,
     nombre_dueno: document.getElementById('nombre_dueno').value,
+    telefono_dueno: document.getElementById('telefono_dueno').value,
     calle_numero: document.getElementById('calle_numero').value,
     colonia: document.getElementById('colonia').value,
     codigo_postal: document.getElementById('codigo_postal').value,
@@ -227,6 +229,7 @@ async function handleSubmit() {
   const formData = new FormData();
   formData.append('evento_id', eventoId);
   formData.append('nombre_dueno', document.getElementById('nombre_dueno').value.trim());
+  formData.append('telefono_dueno', document.getElementById('telefono_dueno').value.trim());
   formData.append('calle_numero', document.getElementById('calle_numero').value.trim());
   formData.append('colonia', document.getElementById('colonia').value.trim());
   formData.append('codigo_postal', document.getElementById('codigo_postal').value.trim());

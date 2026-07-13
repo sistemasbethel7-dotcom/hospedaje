@@ -86,6 +86,8 @@ ALTER TABLE hogares ADD COLUMN IF NOT EXISTS codigo_postal TEXT;
 ALTER TABLE hogares ADD COLUMN IF NOT EXISTS referencias TEXT;
 ALTER TABLE hogares DROP COLUMN IF EXISTS direccion;
 
+ALTER TABLE hogares ADD COLUMN IF NOT EXISTS telefono_dueno TEXT;
+
 GRANT ALL PRIVILEGES ON TABLE hogares TO pwa_templo_app;
 GRANT USAGE, SELECT ON SEQUENCE hogares_id_seq TO pwa_templo_app;
 

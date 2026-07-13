@@ -12,6 +12,7 @@ export async function crear(req, res) {
   const {
     evento_id,
     nombre_dueno,
+    telefono_dueno,
     calle_numero,
     colonia,
     codigo_postal,
@@ -47,6 +48,7 @@ export async function crear(req, res) {
   const hogar = await insertHogar({
     eventoId,
     nombreDueno: nombre_dueno,
+    telefonoDueno: telefono_dueno || null,
     calleNumero: calle_numero,
     colonia,
     codigoPostal: codigo_postal || null,
@@ -87,6 +89,7 @@ export async function detalle(req, res) {
 export async function actualizar(req, res) {
   const {
     nombre_dueno,
+    telefono_dueno,
     calle_numero,
     colonia,
     codigo_postal,
@@ -109,6 +112,7 @@ export async function actualizar(req, res) {
 
   const hogar = await updateHogar(req.params.id, {
     nombreDueno: nombre_dueno,
+    telefonoDueno: telefono_dueno || null,
     calleNumero: calle_numero,
     colonia,
     codigoPostal: codigo_postal || null,
