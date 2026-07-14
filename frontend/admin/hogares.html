@@ -83,6 +83,82 @@
   </main>
 </div>
 
+<div class="admin-modal-backdrop" id="editar-modal-backdrop" hidden>
+  <div class="admin-modal wide" role="dialog" aria-modal="true" aria-labelledby="editar-modal-title">
+    <div class="admin-modal-header">
+      <h2 class="admin-modal-title" id="editar-modal-title">Editar hogar</h2>
+      <button type="button" class="admin-modal-close" id="editar-modal-close" aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="admin-modal-body">
+      <form class="admin-edit-form" id="editar-form" novalidate>
+        <div class="admin-edit-grid">
+          <div class="admin-edit-field">
+            <label class="label-caps" for="e-nombre">Nombre del dueño</label>
+            <input type="text" id="e-nombre">
+          </div>
+          <div class="admin-edit-field">
+            <label class="label-caps" for="e-telefono">Teléfono celular</label>
+            <input type="tel" id="e-telefono">
+          </div>
+          <div class="admin-edit-field">
+            <label class="label-caps" for="e-calle">Calle y número</label>
+            <input type="text" id="e-calle">
+          </div>
+          <div class="admin-edit-field">
+            <label class="label-caps" for="e-cp">Código postal</label>
+            <input type="text" id="e-cp" maxlength="5">
+          </div>
+          <div class="admin-edit-field">
+            <label class="label-caps" for="e-colonia">Colonia</label>
+            <input type="text" id="e-colonia">
+          </div>
+          <div class="admin-edit-field">
+            <label class="label-caps" for="e-estado">Estado</label>
+            <input type="text" id="e-estado">
+          </div>
+          <div class="admin-edit-field span-2">
+            <label class="label-caps" for="e-referencias">Referencias</label>
+            <input type="text" id="e-referencias">
+          </div>
+          <div class="admin-edit-field">
+            <label class="label-caps" for="e-capacidad">Capacidad</label>
+            <input type="number" id="e-capacidad" min="1" max="500" inputmode="numeric">
+          </div>
+          <div class="admin-edit-field">
+            <span class="label-caps">La casa es</span>
+            <div class="pill-group" id="e-tenencia-group">
+              <button type="button" class="pill" data-tenencia="Propia">Propia</button>
+              <button type="button" class="pill" data-tenencia="Rentada">Rentada</button>
+            </div>
+          </div>
+          <div class="admin-edit-field span-2">
+            <span class="label-caps">Servicios</span>
+            <div class="pill-group" id="e-servicios-group"></div>
+          </div>
+          <div class="admin-edit-field span-2">
+            <span class="label-caps">Vulnerabilidades</span>
+            <div class="pill-group" id="e-vulnerabilidades-group"></div>
+            <textarea id="e-notas" placeholder="Notas adicionales (opcional)"></textarea>
+          </div>
+          <div class="admin-edit-field span-2">
+            <span class="label-caps">Perfil recomendado</span>
+            <div class="pill-group" id="e-perfil-group"></div>
+          </div>
+          <div class="admin-edit-field span-2">
+            <label class="label-caps" for="e-comentarios">Comentarios</label>
+            <textarea id="e-comentarios"></textarea>
+          </div>
+        </div>
+        <p class="admin-error" id="editar-error" role="alert"></p>
+        <div class="admin-edit-actions">
+          <button type="button" class="admin-btn outline" id="editar-cancelar">Cancelar</button>
+          <button type="submit" class="admin-btn" id="editar-guardar">Guardar cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <script type="module" src="../js/pages/admin-hogares.js"></script>
 </body>
 </html>

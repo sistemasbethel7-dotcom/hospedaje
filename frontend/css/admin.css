@@ -339,7 +339,46 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+}
+
+.admin-edit-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 18px;
+  padding-top: 12px;
+}
+
+.admin-edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-edit-field.span-2 {
+  grid-column: 1 / -1;
+}
+
+.admin-edit-field input,
+.admin-edit-field textarea {
+  border: 1px solid var(--color-gold-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: 500 14px var(--font-body);
+  padding: 10px 12px;
+}
+
+.admin-edit-field textarea {
+  min-height: 70px;
+  resize: vertical;
+}
+
+.admin-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
 }
 
 .badge-success {

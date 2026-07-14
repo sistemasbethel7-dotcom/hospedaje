@@ -1,5 +1,5 @@
 import { registerServiceWorker } from '../app.js';
-import { me, listarEventos, listarHogares, eliminarHogar } from '../services/api.js';
+import { me, listarEventos, listarHogares, eliminarHogar, obtenerHogar, actualizarHogar, obtenerCatalogosActivos } from '../services/api.js';
 import { getSession, clearSession } from '../services/session.js';
 import { getActiveEventId, setActiveEventId, clearActiveEventId } from '../services/eventoActivo.js';
 import { subscribeToEvento } from '../services/eventStream.js';
@@ -14,6 +14,7 @@ if (!session) {
 const HOUSE_ICON = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 10.5L12 4l8 6.5V20a1 1 0 01-1 1h-4v-6H9v6H5a1 1 0 01-1-1v-9.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
 const EYE_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg>`;
 const TRASH_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m-9 0l1 13a1 1 0 001 1h8a1 1 0 001-1l1-13M10 11v6M14 11v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const PENCIL_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 20h4L19.5 8.5a2.1 2.1 0 00-3-3L5 17v3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M13.5 6.5l3 3" stroke="currentColor" stroke-width="1.8"/></svg>`;
 
 let eventos = [];
 let hogaresActuales = [];
@@ -141,6 +142,9 @@ function renderTabla() {
       const thumbStyle = h.foto_fachada ? `style="background-image:url(/uploads/${h.foto_fachada})"` : '';
       const thumbContent = h.foto_fachada ? '' : HOUSE_ICON;
       const estatus = estatusHogar(h);
+      const editarBtn = esAdmin
+        ? `<button type="button" class="admin-btn outline icon" title="Editar" aria-label="Editar" data-editar="${h.id}">${PENCIL_ICON}</button>`
+        : '';
       const eliminarBtn = esAdmin
         ? `<button type="button" class="admin-btn danger icon" title="Eliminar" aria-label="Eliminar" data-eliminar="${h.id}" data-nombre="${escapeHtml(h.nombre_dueno)}">${TRASH_ICON}</button>`
         : '';
@@ -158,6 +162,7 @@ function renderTabla() {
           <td>
             <div class="admin-table-actions">
               <a class="admin-btn outline icon" title="Ver detalle" aria-label="Ver detalle" href="../hogar-detalle.html?id=${h.id}&from=admin-hogares">${EYE_ICON}</a>
+              ${editarBtn}
               ${eliminarBtn}
             </div>
           </td>
@@ -165,6 +170,10 @@ function renderTabla() {
       `;
     })
     .join('');
+
+  tbody.querySelectorAll('[data-editar]').forEach((btn) => {
+    btn.addEventListener('click', () => abrirEditar(btn.dataset.editar));
+  });
 
   tbody.querySelectorAll('[data-eliminar]').forEach((btn) => {
     btn.addEventListener('click', async () => {
@@ -182,6 +191,164 @@ function renderTabla() {
     });
   });
 }
+
+// ---- Modal de edición (escritorio) ----
+// El PUT de hogares sobreescribe todos los campos, así que el modal siempre
+// envía el registro completo (incluidos lat/lng y notas) para no borrar nada.
+
+let catalogosEdit = null;
+let hogarEditando = null;
+const editState = { tenencia: null, servicios: [], vulnerabilidades: [], perfil: [] };
+
+function renderTenenciaEdit() {
+  document.querySelectorAll('#e-tenencia-group .pill').forEach((pill) => {
+    pill.classList.toggle('selected', editState.tenencia === pill.dataset.tenencia);
+  });
+}
+
+function renderPillsEdit(containerId, items, key) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  items.forEach((etiqueta) => {
+    const pill = document.createElement('button');
+    pill.type = 'button';
+    pill.className = 'pill';
+    pill.textContent = etiqueta;
+    pill.classList.toggle('selected', editState[key].includes(etiqueta));
+    pill.addEventListener('click', () => {
+      const idx = editState[key].indexOf(etiqueta);
+      if (idx >= 0) {
+        editState[key].splice(idx, 1);
+        pill.classList.remove('selected');
+      } else {
+        editState[key].push(etiqueta);
+        pill.classList.add('selected');
+      }
+    });
+    container.appendChild(pill);
+  });
+}
+
+function cerrarEditar() {
+  document.getElementById('editar-modal-backdrop').hidden = true;
+  hogarEditando = null;
+}
+
+async function abrirEditar(id) {
+  const errorEl = document.getElementById('hogares-error');
+  errorEl.textContent = '';
+  try {
+    if (!catalogosEdit) {
+      const { catalogos } = await obtenerCatalogosActivos(session.token);
+      catalogosEdit = catalogos;
+    }
+    const { hogar } = await obtenerHogar(session.token, id);
+    hogarEditando = hogar;
+  } catch (err) {
+    if (err.status === 401) {
+      clearSession();
+      clearActiveEventId();
+      window.location.href = '../index.html';
+      return;
+    }
+    errorEl.textContent = 'No se pudo cargar el hogar para editar.';
+    return;
+  }
+
+  document.getElementById('editar-modal-title').textContent = `Editar hogar · ${folioDe(hogarEditando.id)}`;
+  document.getElementById('e-nombre').value = hogarEditando.nombre_dueno;
+  document.getElementById('e-telefono').value = hogarEditando.telefono_dueno || '';
+  document.getElementById('e-calle').value = hogarEditando.calle_numero;
+  document.getElementById('e-cp').value = hogarEditando.codigo_postal || '';
+  document.getElementById('e-colonia').value = hogarEditando.colonia;
+  document.getElementById('e-estado').value = hogarEditando.estado || '';
+  document.getElementById('e-referencias').value = hogarEditando.referencias || '';
+  document.getElementById('e-capacidad').value = hogarEditando.capacidad;
+  document.getElementById('e-notas').value = hogarEditando.notas_vulnerabilidad || '';
+  document.getElementById('e-comentarios').value = hogarEditando.comentarios || '';
+
+  editState.tenencia = hogarEditando.tenencia || null;
+  editState.servicios = [...hogarEditando.servicios];
+  editState.vulnerabilidades = [...hogarEditando.vulnerabilidades];
+  editState.perfil = [...hogarEditando.perfil_sugerido];
+  renderTenenciaEdit();
+  renderPillsEdit('e-servicios-group', catalogosEdit.servicio, 'servicios');
+  renderPillsEdit('e-vulnerabilidades-group', catalogosEdit.vulnerabilidad, 'vulnerabilidades');
+  renderPillsEdit('e-perfil-group', catalogosEdit.perfil, 'perfil');
+
+  document.getElementById('editar-error').textContent = '';
+  document.getElementById('editar-modal-backdrop').hidden = false;
+}
+
+async function guardarEdicion(event) {
+  event.preventDefault();
+  if (!hogarEditando) return;
+  const errorEl = document.getElementById('editar-error');
+  errorEl.textContent = '';
+
+  const nombre = document.getElementById('e-nombre').value.trim();
+  const calle = document.getElementById('e-calle').value.trim();
+  const colonia = document.getElementById('e-colonia').value.trim();
+  const estado = document.getElementById('e-estado').value.trim();
+  const capacidad = parseInt(document.getElementById('e-capacidad').value, 10);
+  if (!nombre || !calle || !colonia || !estado) {
+    errorEl.textContent = 'Completa el nombre del dueño, la calle y número, la colonia y el estado.';
+    return;
+  }
+  if (Number.isNaN(capacidad) || capacidad < 1 || capacidad > 500) {
+    errorEl.textContent = 'La capacidad debe ser un número entre 1 y 500.';
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('nombre_dueno', nombre);
+  formData.append('telefono_dueno', document.getElementById('e-telefono').value.trim());
+  formData.append('calle_numero', calle);
+  formData.append('colonia', colonia);
+  formData.append('codigo_postal', document.getElementById('e-cp').value.trim());
+  formData.append('estado', estado);
+  formData.append('referencias', document.getElementById('e-referencias').value.trim());
+  if (hogarEditando.lat != null) formData.append('lat', hogarEditando.lat);
+  if (hogarEditando.lng != null) formData.append('lng', hogarEditando.lng);
+  formData.append('capacidad', capacidad);
+  formData.append('tenencia', editState.tenencia || '');
+  formData.append('comentarios', document.getElementById('e-comentarios').value.trim());
+  formData.append('servicios', JSON.stringify(editState.servicios));
+  formData.append('vulnerabilidades', JSON.stringify(editState.vulnerabilidades));
+  formData.append('notas_vulnerabilidad', document.getElementById('e-notas').value.trim());
+  formData.append('perfil_sugerido', JSON.stringify(editState.perfil));
+
+  const guardarBtn = document.getElementById('editar-guardar');
+  guardarBtn.disabled = true;
+  try {
+    await actualizarHogar(session.token, hogarEditando.id, formData);
+    cerrarEditar();
+    await cargarHogares(document.getElementById('evento-select').value);
+  } catch (err) {
+    if (err.status === 401) {
+      clearSession();
+      clearActiveEventId();
+      window.location.href = '../index.html';
+      return;
+    }
+    errorEl.textContent = err.message || 'No se pudo guardar el hogar.';
+  } finally {
+    guardarBtn.disabled = false;
+  }
+}
+
+document.querySelectorAll('#e-tenencia-group .pill').forEach((pill) => {
+  pill.addEventListener('click', () => {
+    editState.tenencia = editState.tenencia === pill.dataset.tenencia ? null : pill.dataset.tenencia;
+    renderTenenciaEdit();
+  });
+});
+document.getElementById('editar-form').addEventListener('submit', guardarEdicion);
+document.getElementById('editar-cancelar').addEventListener('click', cerrarEditar);
+document.getElementById('editar-modal-close').addEventListener('click', cerrarEditar);
+document.getElementById('editar-modal-backdrop').addEventListener('click', (event) => {
+  if (event.target === event.currentTarget) cerrarEditar();
+});
 
 async function cargarHogares(eventoId) {
   const errorEl = document.getElementById('hogares-error');
