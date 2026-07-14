@@ -3,6 +3,7 @@ import { me, listarEventos, listarHogares, eliminarHogar, obtenerHogar, actualiz
 import { getSession, clearSession } from '../services/session.js';
 import { getActiveEventId, setActiveEventId, clearActiveEventId } from '../services/eventoActivo.js';
 import { subscribeToEvento } from '../services/eventStream.js';
+import { setupMapModal } from '../mapModal.js';
 
 registerServiceWorker();
 
@@ -198,7 +199,15 @@ function renderTabla() {
 
 let catalogosEdit = null;
 let hogarEditando = null;
-const editState = { tenencia: null, servicios: [], vulnerabilidades: [], perfil: [] };
+const editState = { tenencia: null, servicios: [], vulnerabilidades: [], perfil: [], lat: null, lng: null };
+
+function updateLocationTrigger() {
+  const btn = document.getElementById('ubicar-btn');
+  const text = document.getElementById('ubicar-trigger-text');
+  const hasLocation = typeof editState.lat === 'number' && typeof editState.lng === 'number';
+  btn.classList.toggle('set', hasLocation);
+  text.textContent = hasLocation ? 'Ubicación fijada · Clic para ajustar' : 'Ubicar en el mapa';
+}
 
 function renderTenenciaEdit() {
   document.querySelectorAll('#e-tenencia-group .pill').forEach((pill) => {
@@ -271,6 +280,9 @@ async function abrirEditar(id) {
   editState.servicios = [...hogarEditando.servicios];
   editState.vulnerabilidades = [...hogarEditando.vulnerabilidades];
   editState.perfil = [...hogarEditando.perfil_sugerido];
+  editState.lat = hogarEditando.lat;
+  editState.lng = hogarEditando.lng;
+  updateLocationTrigger();
   renderTenenciaEdit();
   renderPillsEdit('e-servicios-group', catalogosEdit.servicio, 'servicios');
   renderPillsEdit('e-vulnerabilidades-group', catalogosEdit.vulnerabilidad, 'vulnerabilidades');
@@ -308,8 +320,8 @@ async function guardarEdicion(event) {
   formData.append('codigo_postal', document.getElementById('e-cp').value.trim());
   formData.append('estado', estado);
   formData.append('referencias', document.getElementById('e-referencias').value.trim());
-  if (hogarEditando.lat != null) formData.append('lat', hogarEditando.lat);
-  if (hogarEditando.lng != null) formData.append('lng', hogarEditando.lng);
+  if (editState.lat != null) formData.append('lat', editState.lat);
+  if (editState.lng != null) formData.append('lng', editState.lng);
   formData.append('capacidad', capacidad);
   formData.append('tenencia', editState.tenencia || '');
   formData.append('comentarios', document.getElementById('e-comentarios').value.trim());
@@ -342,6 +354,15 @@ document.querySelectorAll('#e-tenencia-group .pill').forEach((pill) => {
     editState.tenencia = editState.tenencia === pill.dataset.tenencia ? null : pill.dataset.tenencia;
     renderTenenciaEdit();
   });
+});
+setupMapModal({
+  getLocation: () =>
+    (typeof editState.lat === 'number' && typeof editState.lng === 'number' ? { lat: editState.lat, lng: editState.lng } : null),
+  onConfirm: (lat, lng) => {
+    editState.lat = lat;
+    editState.lng = lng;
+    updateLocationTrigger();
+  },
 });
 document.getElementById('editar-form').addEventListener('submit', guardarEdicion);
 document.getElementById('editar-cancelar').addEventListener('click', cerrarEditar);

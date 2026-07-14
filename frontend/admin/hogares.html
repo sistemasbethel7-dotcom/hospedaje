@@ -10,9 +10,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <link rel="stylesheet" href="../css/tokens.css">
 <link rel="stylesheet" href="../css/base.css">
 <link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/registro.css">
 <link rel="stylesheet" href="../css/eventos.css">
 <link rel="stylesheet" href="../css/admin.css">
 </head>
@@ -148,6 +151,13 @@
             <label class="label-caps" for="e-comentarios">Comentarios</label>
             <textarea id="e-comentarios"></textarea>
           </div>
+          <div class="admin-edit-field span-2">
+            <span class="label-caps">Ubicación</span>
+            <button type="button" class="wizard-location-trigger" id="ubicar-btn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-7.58 7-12a7 7 0 10-14 0c0 4.42 7 12 7 12z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.8"/></svg>
+              <span id="ubicar-trigger-text">Ubicar en el mapa</span>
+            </button>
+          </div>
         </div>
         <p class="admin-error" id="editar-error" role="alert"></p>
         <div class="admin-edit-actions">
@@ -156,6 +166,37 @@
         </div>
       </form>
     </div>
+  </div>
+</div>
+
+<div class="map-modal" id="map-modal" hidden>
+  <div class="map-modal-header">
+    <button type="button" class="screen-back" id="map-modal-close" aria-label="Cerrar">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <span class="screen-heading">Fijar ubicación</span>
+    <button type="button" class="map-modal-toggle" id="map-toggle-view">Satélite</button>
+  </div>
+  <div class="map-modal-body">
+    <div id="modal-map"></div>
+    <div class="map-search">
+      <div class="map-search-bar">
+        <input type="text" id="map-search-input" placeholder="Buscar dirección…" autocomplete="off" enterkeyhint="search">
+        <button type="button" id="map-search-btn" aria-label="Buscar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="map-search-results" id="map-search-results" hidden></div>
+    </div>
+    <div class="map-modal-pin">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 00-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 00-7-7z"/></svg>
+    </div>
+  </div>
+  <div class="map-modal-footer">
+    <button type="button" class="map-modal-locate" id="map-locate-btn" aria-label="Usar mi ubicación">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="6" stroke="currentColor" stroke-width="2"/></svg>
+    </button>
+    <button type="button" class="btn-gold" id="map-confirm-btn">Confirmar ubicación</button>
   </div>
 </div>
 
