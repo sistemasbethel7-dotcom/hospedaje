@@ -114,6 +114,21 @@ function renderView() {
   document.getElementById('v-tenencia-row').hidden = !hogar.tenencia;
   document.getElementById('v-tenencia').textContent = hogar.tenencia || '';
 
+  const ubicacionEl = document.getElementById('v-ubicacion');
+  ubicacionEl.textContent = '';
+  if (hogar.lat != null && hogar.lng != null) {
+    const lat = Number(hogar.lat).toFixed(5);
+    const lng = Number(hogar.lng).toFixed(5);
+    const link = document.createElement('a');
+    link.href = `https://www.google.com/maps?q=${lat},${lng}`;
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.textContent = `${lat}, ${lng}`;
+    ubicacionEl.appendChild(link);
+  } else {
+    ubicacionEl.textContent = 'Sin ubicación';
+  }
+
   const serviciosCard = document.getElementById('v-servicios-card');
   if (hogar.servicios.length > 0) {
     serviciosCard.hidden = false;

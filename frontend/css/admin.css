@@ -289,8 +289,15 @@
 .admin-table-wrap {
   border: 1px solid var(--color-gold-border);
   border-radius: 14px;
-  overflow: hidden;
+  overflow-x: auto;
   background: var(--color-bg);
+}
+
+.admin-td-comentarios {
+  max-width: 240px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .admin-table {

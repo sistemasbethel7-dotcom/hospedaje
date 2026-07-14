@@ -31,7 +31,7 @@ document.getElementById('evento-select').addEventListener('change', (event) => {
   suscribirEvento(event.target.value);
 });
 
-['filtro-colonia', 'filtro-calle', 'filtro-cp'].forEach((id) => {
+['filtro-dueno', 'filtro-colonia', 'filtro-calle', 'filtro-cp'].forEach((id) => {
   document.getElementById(id).addEventListener('input', renderTabla);
 });
 
@@ -91,12 +91,28 @@ function estatusLabel(estatus) {
   return 'Parcial';
 }
 
+function comentariosCelda(h) {
+  const texto = (h.comentarios || '').trim();
+  if (!texto) return '—';
+  const corto = texto.length > 60 ? `${texto.slice(0, 60)}…` : texto;
+  return `<span title="${escapeHtml(texto)}">${escapeHtml(corto)}</span>`;
+}
+
+function ubicacionCelda(h) {
+  if (h.lat == null || h.lng == null) return '—';
+  const lat = Number(h.lat).toFixed(5);
+  const lng = Number(h.lng).toFixed(5);
+  return `<a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" rel="noopener">${lat}, ${lng}</a>`;
+}
+
 function renderTabla() {
+  const filtroDueno = document.getElementById('filtro-dueno').value.trim().toLowerCase();
   const filtroColonia = document.getElementById('filtro-colonia').value.trim().toLowerCase();
   const filtroCalle = document.getElementById('filtro-calle').value.trim().toLowerCase();
   const filtroCp = document.getElementById('filtro-cp').value.trim().toLowerCase();
 
   const hogares = hogaresActuales.filter((h) => {
+    if (filtroDueno && !h.nombre_dueno.toLowerCase().includes(filtroDueno)) return false;
     if (filtroColonia && !h.colonia.toLowerCase().includes(filtroColonia)) return false;
     if (filtroCalle && !h.calle_numero.toLowerCase().includes(filtroCalle)) return false;
     if (filtroCp && !(h.codigo_postal || '').toLowerCase().includes(filtroCp)) return false;
@@ -133,6 +149,8 @@ function renderTabla() {
           <td>${h.codigo_postal ? escapeHtml(h.codigo_postal) : '—'}</td>
           <td>${h.ocupacion_actual}/${h.capacidad}</td>
           <td><span class="admin-estado-badge ${estatus}">${estatusLabel(estatus)}</span></td>
+          <td class="admin-td-comentarios">${comentariosCelda(h)}</td>
+          <td>${ubicacionCelda(h)}</td>
           <td>
             <div class="admin-table-actions">
               <a class="admin-btn outline" href="../hogar-detalle.html?id=${h.id}&from=admin-hogares">Ver detalle</a>
