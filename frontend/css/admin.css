@@ -294,10 +294,18 @@
 }
 
 .admin-td-comentarios {
-  max-width: 240px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  max-width: 300px;
+  min-width: 200px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.admin-btn.icon {
+  padding: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
 }
 
 .admin-table {

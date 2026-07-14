@@ -12,6 +12,8 @@ if (!session) {
 }
 
 const HOUSE_ICON = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 10.5L12 4l8 6.5V20a1 1 0 01-1 1h-4v-6H9v6H5a1 1 0 01-1-1v-9.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
+const EYE_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg>`;
+const TRASH_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m-9 0l1 13a1 1 0 001 1h8a1 1 0 001-1l1-13M10 11v6M14 11v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
 let eventos = [];
 let hogaresActuales = [];
@@ -94,8 +96,10 @@ function estatusLabel(estatus) {
 function comentariosCelda(h) {
   const texto = (h.comentarios || '').trim();
   if (!texto) return '—';
-  const corto = texto.length > 60 ? `${texto.slice(0, 60)}…` : texto;
-  return `<span title="${escapeHtml(texto)}">${escapeHtml(corto)}</span>`;
+  return escapeHtml(texto).replace(
+    /(https?:\/\/[^\s]+)/g,
+    '<a href="$1" target="_blank" rel="noopener">$1</a>'
+  );
 }
 
 function ubicacionCelda(h) {
@@ -138,7 +142,7 @@ function renderTabla() {
       const thumbContent = h.foto_fachada ? '' : HOUSE_ICON;
       const estatus = estatusHogar(h);
       const eliminarBtn = esAdmin
-        ? `<button type="button" class="admin-btn danger" data-eliminar="${h.id}" data-nombre="${escapeHtml(h.nombre_dueno)}">Eliminar</button>`
+        ? `<button type="button" class="admin-btn danger icon" title="Eliminar" aria-label="Eliminar" data-eliminar="${h.id}" data-nombre="${escapeHtml(h.nombre_dueno)}">${TRASH_ICON}</button>`
         : '';
       return `
         <tr>
@@ -153,7 +157,7 @@ function renderTabla() {
           <td>${ubicacionCelda(h)}</td>
           <td>
             <div class="admin-table-actions">
-              <a class="admin-btn outline" href="../hogar-detalle.html?id=${h.id}&from=admin-hogares">Ver detalle</a>
+              <a class="admin-btn outline icon" title="Ver detalle" aria-label="Ver detalle" href="../hogar-detalle.html?id=${h.id}&from=admin-hogares">${EYE_ICON}</a>
               ${eliminarBtn}
             </div>
           </td>
