@@ -47,6 +47,7 @@ const state = {
   lat: null,
   lng: null,
   capacidad: 1,
+  tenencia: null,
   servicios: [],
   vulnerabilidades: [],
   perfil: [],
@@ -106,6 +107,9 @@ function renderView() {
   refEl.textContent = hogar.referencias || '';
 
   document.getElementById('v-capacidad').textContent = `${hogar.ocupacion_actual}/${hogar.capacidad} lugares ocupados`;
+
+  document.getElementById('v-tenencia-row').hidden = !hogar.tenencia;
+  document.getElementById('v-tenencia').textContent = hogar.tenencia || '';
 
   const serviciosCard = document.getElementById('v-servicios-card');
   if (hogar.servicios.length > 0) {
@@ -189,6 +193,21 @@ function renderPillGroup(containerId, items, key) {
         list.push(value);
         pill.classList.add('selected');
       }
+    });
+  });
+}
+
+function renderTenencia() {
+  document.querySelectorAll('#tenencia-group .pill').forEach((pill) => {
+    pill.classList.toggle('selected', state.tenencia === pill.dataset.tenencia);
+  });
+}
+
+function setupTenencia() {
+  document.querySelectorAll('#tenencia-group .pill').forEach((pill) => {
+    pill.addEventListener('click', () => {
+      state.tenencia = pill.dataset.tenencia;
+      renderTenencia();
     });
   });
 }
@@ -350,6 +369,9 @@ function fillEditForm() {
   document.getElementById('capacidad-valor').value = state.capacidad;
   document.getElementById('capacidad').value = state.capacidad;
 
+  state.tenencia = hogar.tenencia || null;
+  renderTenencia();
+
   state.servicios = [...hogar.servicios];
   renderServicios(catalogos.servicio);
 
@@ -407,6 +429,7 @@ async function handleGuardar() {
   if (state.lat) formData.append('lat', state.lat);
   if (state.lng) formData.append('lng', state.lng);
   formData.append('capacidad', state.capacidad);
+  formData.append('tenencia', state.tenencia || '');
   formData.append('servicios', JSON.stringify(state.servicios));
   formData.append('vulnerabilidades', JSON.stringify(state.vulnerabilidades));
   formData.append('notas_vulnerabilidad', document.getElementById('notas_vulnerabilidad').value.trim());
@@ -472,6 +495,7 @@ setupMapModal({
 });
 setupPhotos();
 setupCapacidad();
+setupTenencia();
 setupCodigoPostal();
 
 try {

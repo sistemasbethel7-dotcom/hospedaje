@@ -24,6 +24,7 @@ const STEP_NAMES = ['Datos del dueño', 'Fotografías', 'Capacidad', 'Servicios'
 const state = {
   step: 1,
   capacidad: 1,
+  tenencia: null,
   servicios: [],
   vulnerabilidades: [],
   perfil: [],
@@ -59,6 +60,7 @@ function saveDraft() {
     evento_id: eventoId,
     step: state.step,
     capacidad: state.capacidad,
+    tenencia: state.tenencia,
     servicios: state.servicios,
     vulnerabilidades: state.vulnerabilidades,
     perfil: state.perfil,
@@ -99,8 +101,27 @@ function validateStep() {
     if (!nombre || !calleNumero || !colonia || !estado) {
       return 'Completa el nombre del dueño, la calle y número, la colonia y el estado.';
     }
+    if (!state.tenencia) {
+      return 'Indica si la casa es propia o rentada.';
+    }
   }
   return null;
+}
+
+function renderTenencia() {
+  document.querySelectorAll('#tenencia-group .pill').forEach((pill) => {
+    pill.classList.toggle('selected', state.tenencia === pill.dataset.tenencia);
+  });
+}
+
+function setupTenencia() {
+  document.querySelectorAll('#tenencia-group .pill').forEach((pill) => {
+    pill.addEventListener('click', () => {
+      state.tenencia = pill.dataset.tenencia;
+      renderTenencia();
+      saveDraft();
+    });
+  });
 }
 
 let cpLookupTimeout = null;
@@ -325,6 +346,7 @@ async function handleSubmit() {
   if (state.lat) formData.append('lat', state.lat);
   if (state.lng) formData.append('lng', state.lng);
   formData.append('capacidad', state.capacidad);
+  formData.append('tenencia', state.tenencia || '');
   formData.append('servicios', JSON.stringify(state.servicios));
   formData.append('vulnerabilidades', JSON.stringify(state.vulnerabilidades));
   formData.append('notas_vulnerabilidad', document.getElementById('notas_vulnerabilidad').value.trim());
@@ -401,6 +423,8 @@ setupMapModal({
 });
 setupPhotos();
 setupCapacidad();
+setupTenencia();
+renderTenencia();
 setupCodigoPostal();
 updateOfflineBadge();
 renderStep();

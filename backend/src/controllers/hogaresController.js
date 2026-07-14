@@ -8,6 +8,8 @@ import {
 import { getEventoById } from '../services/eventosService.js';
 import { eventBus } from '../services/eventBus.js';
 
+const TENENCIAS = ['Propia', 'Rentada'];
+
 export async function crear(req, res) {
   const {
     evento_id,
@@ -21,6 +23,7 @@ export async function crear(req, res) {
     lat,
     lng,
     capacidad,
+    tenencia,
     servicios,
     vulnerabilidades,
     notas_vulnerabilidad,
@@ -33,6 +36,9 @@ export async function crear(req, res) {
   }
   if (!nombre_dueno || !calle_numero || !colonia || !estado || !capacidad) {
     return res.status(400).json({ message: 'Faltan datos obligatorios de la casa.' });
+  }
+  if (tenencia && !TENENCIAS.includes(tenencia)) {
+    return res.status(400).json({ message: 'La tenencia debe ser Propia o Rentada.' });
   }
 
   const evento = await getEventoById(eventoId);
@@ -58,6 +64,7 @@ export async function crear(req, res) {
     lat: lat ? Number(lat) : null,
     lng: lng ? Number(lng) : null,
     capacidad: Number(capacidad),
+    tenencia: tenencia || null,
     fotoDueno,
     fotoFachada,
     servicios: servicios ? JSON.parse(servicios) : [],
@@ -100,6 +107,7 @@ export async function actualizar(req, res) {
     lat,
     lng,
     capacidad,
+    tenencia,
     servicios,
     vulnerabilidades,
     notas_vulnerabilidad,
@@ -108,6 +116,9 @@ export async function actualizar(req, res) {
 
   if (!nombre_dueno || !calle_numero || !colonia || !estado || !capacidad) {
     return res.status(400).json({ message: 'Faltan datos obligatorios de la casa.' });
+  }
+  if (tenencia && !TENENCIAS.includes(tenencia)) {
+    return res.status(400).json({ message: 'La tenencia debe ser Propia o Rentada.' });
   }
 
   const fotoDueno = req.files?.foto_dueno?.[0]?.filename || null;
@@ -124,6 +135,7 @@ export async function actualizar(req, res) {
     lat: lat ? Number(lat) : null,
     lng: lng ? Number(lng) : null,
     capacidad: Number(capacidad),
+    tenencia: tenencia || null,
     fotoDueno,
     fotoFachada,
     servicios: servicios ? JSON.parse(servicios) : [],

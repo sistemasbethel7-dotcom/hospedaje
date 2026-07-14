@@ -153,6 +153,11 @@ END $$;
 
 ALTER TABLE hogares ADD COLUMN IF NOT EXISTS estado TEXT;
 
+-- Tenencia de la casa. NULL permitido para hogares registrados antes de este campo.
+ALTER TABLE hogares ADD COLUMN IF NOT EXISTS tenencia TEXT;
+ALTER TABLE hogares DROP CONSTRAINT IF EXISTS hogares_tenencia_check;
+ALTER TABLE hogares ADD CONSTRAINT hogares_tenencia_check CHECK (tenencia IN ('Propia', 'Rentada'));
+
 -- Catálogo de códigos postales (SEPOMEX/Correos de México, importado localmente para no
 -- depender de un servicio externo el día del evento). Se puebla con
 -- backend/scripts/import-codigos-postales.js, no con este archivo (150k+ filas).

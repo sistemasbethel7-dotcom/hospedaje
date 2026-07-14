@@ -75,6 +75,13 @@
           <label class="label-caps" for="referencias">Referencias (opcional)</label>
           <input type="text" id="referencias" name="referencias" placeholder="Portón azul, casa de dos pisos">
         </div>
+        <div class="field">
+          <span class="label-caps">La casa es</span>
+          <div class="pill-group" id="tenencia-group">
+            <button type="button" class="pill" data-tenencia="Propia">Propia</button>
+            <button type="button" class="pill" data-tenencia="Rentada">Rentada</button>
+          </div>
+        </div>
         <button type="button" class="wizard-location-trigger" id="ubicar-btn">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-7.58 7-12a7 7 0 10-14 0c0 4.42 7 12 7 12z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.8"/></svg>
           <span id="ubicar-trigger-text">Ubicar en el mapa</span>

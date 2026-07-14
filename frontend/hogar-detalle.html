@@ -43,6 +43,7 @@
         <p class="detalle-notas" id="v-referencias" hidden></p>
         <div class="detalle-row"><span class="label-caps">Folio</span><span id="v-folio"></span></div>
         <div class="detalle-row"><span class="label-caps">Capacidad</span><span id="v-capacidad"></span></div>
+        <div class="detalle-row" id="v-tenencia-row" hidden><span class="label-caps">La casa es</span><span id="v-tenencia"></span></div>
       </div>
 
       <div class="card-bordered detalle-card" id="qr-card">
@@ -102,6 +103,13 @@
       <div class="field">
         <label class="label-caps" for="referencias">Referencias (opcional)</label>
         <input type="text" id="referencias" name="referencias">
+      </div>
+      <div class="field">
+        <span class="label-caps">La casa es</span>
+        <div class="pill-group" id="tenencia-group">
+          <button type="button" class="pill" data-tenencia="Propia">Propia</button>
+          <button type="button" class="pill" data-tenencia="Rentada">Rentada</button>
+        </div>
       </div>
       <button type="button" class="wizard-location-trigger" id="ubicar-btn">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-7.58 7-12a7 7 0 10-14 0c0 4.42 7 12 7 12z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.8"/></svg>
