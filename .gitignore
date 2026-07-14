@@ -4,3 +4,6 @@ node_modules/
 .env
 *.zip
 *.pdf
+
+# Datos personales de anfitriones (Excel de zonas y derivados)
+Inputs/
