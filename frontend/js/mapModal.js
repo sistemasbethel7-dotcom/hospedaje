@@ -18,7 +18,9 @@ export function setupMapModal({ getLocation, onConfirm }) {
     const initialCenter = location ? [location.lat, location.lng] : DEFAULT_CENTER;
     const initialZoom = location ? 19 : 12;
 
-    modalMap = L.map('modal-map').setView(initialCenter, initialZoom);
+    // Zoom abajo a la izquierda: la esquina superior la ocupa el buscador de direcciones.
+    modalMap = L.map('modal-map', { zoomControl: false }).setView(initialCenter, initialZoom);
+    L.control.zoom({ position: 'bottomleft' }).addTo(modalMap);
     activeLayer = streetLayer;
     activeLayer.addTo(modalMap);
   }
@@ -93,5 +95,70 @@ export function setupMapModal({ getLocation, onConfirm }) {
     const center = modalMap.getCenter();
     onConfirm(center.lat, center.lng);
     closeMapModal();
+  });
+
+  // Buscador de direcciones (Nominatim/OpenStreetMap, sin API key). Los resultados se
+  // sesgan al área visible del mapa; elegir uno solo centra el mapa — el pin sigue
+  // siendo el centro y el usuario lo ajusta y confirma como siempre.
+  const searchInput = document.getElementById('map-search-input');
+  const searchResults = document.getElementById('map-search-results');
+
+  function mensajeBusqueda(texto) {
+    searchResults.innerHTML = '';
+    const p = document.createElement('p');
+    p.className = 'map-search-msg';
+    p.textContent = texto;
+    searchResults.appendChild(p);
+    searchResults.hidden = false;
+  }
+
+  async function buscarDireccion() {
+    const q = searchInput.value.trim();
+    if (!q) return;
+    ensureModalMap();
+    mensajeBusqueda('Buscando…');
+    const b = modalMap.getBounds();
+    const params = new URLSearchParams({
+      format: 'json',
+      limit: '6',
+      countrycodes: 'mx',
+      viewbox: `${b.getWest()},${b.getNorth()},${b.getEast()},${b.getSouth()}`,
+      q,
+    });
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?${params}`);
+      const lugares = await res.json();
+      if (!Array.isArray(lugares) || lugares.length === 0) {
+        mensajeBusqueda('Sin resultados. Intenta con calle, colonia y ciudad.');
+        return;
+      }
+      searchResults.innerHTML = '';
+      lugares.forEach((lugar) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'map-search-result';
+        btn.textContent = lugar.display_name;
+        btn.addEventListener('click', () => {
+          modalMap.setView([Number(lugar.lat), Number(lugar.lon)], 18);
+          searchResults.hidden = true;
+          searchInput.blur();
+        });
+        searchResults.appendChild(btn);
+      });
+      searchResults.hidden = false;
+    } catch {
+      mensajeBusqueda('No se pudo buscar. Revisa tu conexión.');
+    }
+  }
+
+  document.getElementById('map-search-btn').addEventListener('click', buscarDireccion);
+  searchInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      buscarDireccion();
+    }
+  });
+  searchInput.addEventListener('input', () => {
+    if (!searchInput.value.trim()) searchResults.hidden = true;
   });
 }
