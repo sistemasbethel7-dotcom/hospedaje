@@ -50,7 +50,8 @@ Login → admin y supervisor van directo a `admin/dashboard.html`; agente va a `
 - **eventos** — nombre, sede, fecha_inicio, fecha_fin, estatus (abierto/finalizado), creado_por
 - **hogares** — evento_id, nombre_dueno, calle_numero, colonia, codigo_postal, referencias, lat/lng,
   capacidad, ocupacion_actual, tenencia (CHECK 'Propia'|'Rentada', NULL en registros previos al campo),
-  comentarios, foto_dueno, foto_fachada, **servicios[]**, vulnerabilidades[], notas_vulnerabilidad,
+  comentarios, folio_anterior (folio del sistema de origen en importaciones, ej. MIRH-123; solo lectura
+  en la UI), foto_dueno, foto_fachada, **servicios[]**, vulnerabilidades[], notas_vulnerabilidad,
   perfil_sugerido[], registrado_por
 - **ingresos** — hogar_id, cantidad, registrado_por (historial de llegadas; ocupacion_actual en hogares es
   el acumulado, con `SELECT ... FOR UPDATE OF h` para evitar condiciones de carrera)

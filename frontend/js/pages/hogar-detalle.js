@@ -81,6 +81,9 @@ function renderView() {
 
   renderQR(hogar);
 
+  document.getElementById('v-folio-anterior-row').hidden = !hogar.folio_anterior;
+  document.getElementById('v-folio-anterior').textContent = hogar.folio_anterior || '';
+
   document.getElementById('v-nombre').textContent = hogar.nombre_dueno;
   document.getElementById('v-direccion').textContent = `${hogar.calle_numero}, ${hogar.colonia}`;
 

@@ -161,6 +161,10 @@ ALTER TABLE hogares ADD CONSTRAINT hogares_tenencia_check CHECK (tenencia IN ('P
 -- Comentarios libres sobre el hogar (observaciones generales del agente).
 ALTER TABLE hogares ADD COLUMN IF NOT EXISTS comentarios TEXT;
 
+-- Folio del sistema de origen cuando el hogar viene de una importación (ej. MIRH-123 del
+-- Excel de zona). No sustituye al folio propio (H-000123, derivado del id).
+ALTER TABLE hogares ADD COLUMN IF NOT EXISTS folio_anterior TEXT;
+
 -- Catálogo de códigos postales (SEPOMEX/Correos de México, importado localmente para no
 -- depender de un servicio externo el día del evento). Se puebla con
 -- backend/scripts/import-codigos-postales.js, no con este archivo (150k+ filas).
