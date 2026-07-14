@@ -141,6 +141,9 @@ function renderView() {
   } else {
     perfilCard.hidden = true;
   }
+
+  document.getElementById('v-comentarios-card').hidden = !hogar.comentarios;
+  document.getElementById('v-comentarios').textContent = hogar.comentarios || '';
 }
 
 function updateLocationTrigger() {
@@ -372,6 +375,8 @@ function fillEditForm() {
   state.tenencia = hogar.tenencia || null;
   renderTenencia();
 
+  document.getElementById('comentarios').value = hogar.comentarios || '';
+
   state.servicios = [...hogar.servicios];
   renderServicios(catalogos.servicio);
 
@@ -430,6 +435,7 @@ async function handleGuardar() {
   if (state.lng) formData.append('lng', state.lng);
   formData.append('capacidad', state.capacidad);
   formData.append('tenencia', state.tenencia || '');
+  formData.append('comentarios', document.getElementById('comentarios').value.trim());
   formData.append('servicios', JSON.stringify(state.servicios));
   formData.append('vulnerabilidades', JSON.stringify(state.vulnerabilidades));
   formData.append('notas_vulnerabilidad', document.getElementById('notas_vulnerabilidad').value.trim());

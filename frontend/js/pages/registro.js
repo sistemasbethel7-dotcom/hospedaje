@@ -49,6 +49,7 @@ function loadDraft() {
     document.getElementById('codigo_postal').value = draft.codigo_postal || '';
     document.getElementById('estado').value = draft.estado || '';
     document.getElementById('referencias').value = draft.referencias || '';
+    document.getElementById('comentarios').value = draft.comentarios || '';
     document.getElementById('notas_vulnerabilidad').value = draft.notas_vulnerabilidad || '';
   } catch {
     localStorage.removeItem(DRAFT_KEY);
@@ -71,6 +72,7 @@ function saveDraft() {
     codigo_postal: document.getElementById('codigo_postal').value,
     estado: document.getElementById('estado').value,
     referencias: document.getElementById('referencias').value,
+    comentarios: document.getElementById('comentarios').value,
     notas_vulnerabilidad: document.getElementById('notas_vulnerabilidad').value,
     lat: state.lat,
     lng: state.lng,
@@ -347,6 +349,7 @@ async function handleSubmit() {
   if (state.lng) formData.append('lng', state.lng);
   formData.append('capacidad', state.capacidad);
   formData.append('tenencia', state.tenencia || '');
+  formData.append('comentarios', document.getElementById('comentarios').value.trim());
   formData.append('servicios', JSON.stringify(state.servicios));
   formData.append('vulnerabilidades', JSON.stringify(state.vulnerabilidades));
   formData.append('notas_vulnerabilidad', document.getElementById('notas_vulnerabilidad').value.trim());
