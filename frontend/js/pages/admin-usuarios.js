@@ -1,5 +1,5 @@
 import { registerServiceWorker } from '../app.js';
-import { me, listarUsuarios, crearUsuario, actualizarUsuario } from '../services/api.js';
+import { me, listarUsuarios, crearUsuario, actualizarUsuario, reenviarInvitacion } from '../services/api.js';
 import { getSession, clearSession } from '../services/session.js';
 import { clearActiveEventId } from '../services/eventoActivo.js';
 
@@ -28,25 +28,20 @@ document.getElementById('guardar-usuario-btn').addEventListener('click', async (
   errorEl.textContent = '';
 
   const email = document.getElementById('nuevo-email').value.trim();
-  const password = document.getElementById('nuevo-password').value;
   const role = document.getElementById('nuevo-role').value;
 
-  if (!email || !password) {
-    errorEl.textContent = 'Completa correo y contraseña.';
-    return;
-  }
-  if (password.length < 6) {
-    errorEl.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+  if (!email) {
+    errorEl.textContent = 'Completa el correo.';
     return;
   }
 
   const btn = document.getElementById('guardar-usuario-btn');
   btn.disabled = true;
   try {
-    await crearUsuario(session.token, { email, password, role });
+    const { avisoCorreo } = await crearUsuario(session.token, { email, role });
     document.getElementById('nuevo-email').value = '';
-    document.getElementById('nuevo-password').value = '';
     document.getElementById('usuario-form').hidden = true;
+    if (avisoCorreo) errorEl.textContent = avisoCorreo;
     await cargarUsuarios();
   } catch (err) {
     errorEl.textContent = err.message || 'No se pudo crear el usuario.';
@@ -71,6 +66,10 @@ function renderUsuarios(usuarios) {
   tbody.innerHTML = usuarios
     .map((u) => {
       const isSelf = u.id === usuarioActualId;
+      const accionPendiente = u.pendiente
+        ? `<button type="button" class="admin-btn outline" data-reenviar="${u.id}" data-email="${escapeHtml(u.email)}">Reenviar invitación</button>`
+        : `<button type="button" class="admin-btn outline" data-reset="${u.id}" data-email="${escapeHtml(u.email)}">Restablecer contraseña</button>`;
+
       return `
         <tr>
           <td>${escapeHtml(u.email)}</td>
@@ -87,12 +86,11 @@ function renderUsuarios(usuarios) {
                 <span class="admin-toggle-thumb"></span>
               </button>
               <span class="estatus-badge ${u.activo ? '' : 'finalizado'}">${u.activo ? 'Activo' : 'Inactivo'}</span>
+              ${u.pendiente ? '<span class="estatus-badge finalizado">Pendiente</span>' : ''}
             </div>
           </td>
           <td>${formatFecha(u.created_at)}</td>
-          <td>
-            <button type="button" class="admin-btn outline" data-reset="${u.id}" data-email="${escapeHtml(u.email)}">Restablecer contraseña</button>
-          </td>
+          <td>${accionPendiente}</td>
         </tr>
       `;
     })
@@ -120,6 +118,20 @@ function renderUsuarios(usuarios) {
         await cargarUsuarios();
       } catch (err) {
         document.getElementById('usuarios-error').textContent = err.message || 'No se pudo actualizar el estatus.';
+        btn.disabled = false;
+      }
+    });
+  });
+
+  tbody.querySelectorAll('[data-reenviar]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      try {
+        await reenviarInvitacion(session.token, btn.dataset.reenviar);
+        alert(`Invitación reenviada a ${btn.dataset.email}.`);
+      } catch (err) {
+        document.getElementById('usuarios-error').textContent = err.message || 'No se pudo reenviar la invitación.';
+      } finally {
         btn.disabled = false;
       }
     });

@@ -1,7 +1,8 @@
-const CACHE_NAME = 'anfitriones-v41';
+const CACHE_NAME = 'anfitriones-v42';
 const APP_SHELL = [
   '/',
   '/index.html',
+  '/set-password.html',
   '/home.html',
   '/eventos.html',
   '/registro.html',
@@ -32,6 +33,7 @@ const APP_SHELL = [
   '/js/imageCompress.js',
   '/js/services/eventStream.js',
   '/js/pages/login.js',
+  '/js/pages/set-password.js',
   '/js/pages/home.js',
   '/js/pages/eventos.js',
   '/js/pages/registro.js',

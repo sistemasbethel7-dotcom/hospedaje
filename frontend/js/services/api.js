@@ -135,6 +135,50 @@ export async function crearUsuario(token, payload) {
   return res.json();
 }
 
+export async function reenviarInvitacion(token, id) {
+  const res = await fetch(`${API_BASE}/usuarios/${id}/reenviar-invitacion`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    const error = new Error(data.message || 'No se pudo reenviar la invitación.');
+    error.status = res.status;
+    throw error;
+  }
+
+  return res.json();
+}
+
+export async function validarTokenInvitacion(token) {
+  const res = await fetch(`${API_BASE}/auth/set-password/${token}`);
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    const error = new Error(data.message || 'El link de invitación es inválido o ya expiró.');
+    error.status = res.status;
+    throw error;
+  }
+
+  return res.json();
+}
+
+export async function establecerPassword(token, password) {
+  const res = await fetch(`${API_BASE}/auth/set-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token, password }),
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.message || 'No se pudo crear tu contraseña.');
+  }
+
+  return res.json();
+}
+
 export async function actualizarUsuario(token, id, payload) {
   const res = await fetch(`${API_BASE}/usuarios/${id}`, {
     method: 'PUT',

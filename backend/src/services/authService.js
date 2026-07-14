@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { pool } from '../config/db.js';
 
 export class CuentaDesactivadaError extends Error {}
+export class PasswordNoConfiguradaError extends Error {}
 
 export async function verifyCredentials(email, password) {
   const { rows } = await pool.query(
@@ -11,6 +12,10 @@ export async function verifyCredentials(email, password) {
   );
   const user = rows[0];
   if (!user) return null;
+
+  if (!user.password_hash) {
+    throw new PasswordNoConfiguradaError('Todavía no has creado tu contraseña. Revisa el correo de invitación.');
+  }
 
   const valid = await bcrypt.compare(password, user.password_hash);
   if (!valid) return null;

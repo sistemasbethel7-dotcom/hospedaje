@@ -14,6 +14,12 @@ ALTER TABLE usuarios ADD CONSTRAINT usuarios_role_check CHECK (role IN ('admin',
 
 ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS activo BOOLEAN NOT NULL DEFAULT true;
 
+-- Alta por invitación: el admin crea el usuario sin contraseña, se manda un correo con un
+-- link de un solo uso (token con expiración) para que el usuario defina su propia contraseña.
+ALTER TABLE usuarios ALTER COLUMN password_hash DROP NOT NULL;
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS setup_token_hash TEXT;
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS setup_token_expires TIMESTAMPTZ;
+
 GRANT ALL PRIVILEGES ON TABLE usuarios TO pwa_templo_app;
 GRANT USAGE, SELECT ON SEQUENCE usuarios_id_seq TO pwa_templo_app;
 
