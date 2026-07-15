@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Instalar App · Hospedaje Anfitriones</title>
+<meta name="description" content="Tutorial paso a paso para instalar la aplicación Hospedaje Anfitriones en tu celular iPhone, Android o Huawei.">
+<meta name="theme-color" content="#A8832E">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #A8832E;
+    --gold-light: #D4A843;
+    --gold-bg: #FDF8EF;
+    --dark: #1a1a1a;
+    --gray: #555;
+    --gray-light: #888;
+    --white: #fff;
+    --radius: 16px;
+    --shadow: 0 4px 24px rgba(0,0,0,.08);
+    --font-heading: 'Cormorant Garamond', Georgia, serif;
+    --font-body: 'Manrope', system-ui, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-body);
+    background: linear-gradient(135deg, #FFFAF2 0%, #F5EFE4 100%);
+    color: var(--dark);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Header ── */
+  .hero {
+    text-align: center;
+    padding: 48px 24px 32px;
+    background: linear-gradient(180deg, var(--gold) 0%, var(--gold-light) 100%);
+    color: var(--white);
+  }
+  .hero h1 {
+    font-family: var(--font-heading);
+    font-size: clamp(28px, 6vw, 42px);
+    font-weight: 700;
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+  .hero p {
+    font-size: 15px;
+    opacity: .9;
+    max-width: 420px;
+    margin: 0 auto;
+    line-height: 1.5;
+  }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--white);
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+  }
+  .tab-btn {
+    flex: 1;
+    max-width: 160px;
+    padding: 14px 8px;
+    border: none;
+    background: none;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-light);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: color .2s, border-color .2s;
+  }
+  .tab-btn.active {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+  }
+  .tab-btn .tab-icon {
+    display: block;
+    font-size: 22px;
+    margin-bottom: 4px;
+  }
+
+  /* ── Content ── */
+  .content {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 24px 16px 64px;
+  }
+
+  .platform-section { display: none; }
+  .platform-section.active { display: block; }
+
+  .platform-title {
+    font-family: var(--font-heading);
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--gold);
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  .platform-subtitle {
+    font-size: 14px;
+    color: var(--gray);
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  /* ── Image ── */
+  .tutorial-image {
+    width: 100%;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 28px;
+  }
+
+  /* ── Steps ── */
+  .step {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    background: var(--white);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.04);
+    border-left: 4px solid var(--gold);
+  }
+  .step-number {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: var(--white);
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 16px;
+  }
+  .step-text {
+    flex: 1;
+  }
+  .step-text strong {
+    display: block;
+    font-size: 15px;
+    margin-bottom: 4px;
+    color: var(--dark);
+  }
+  .step-text p {
+    font-size: 14px;
+    color: var(--gray);
+    line-height: 1.5;
+  }
+
+  /* ── Tip box ── */
+  .tip-box {
+    margin-top: 24px;
+    padding: 16px;
+    background: var(--gold-bg);
+    border-radius: 12px;
+    border: 1px solid rgba(168, 131, 46, .2);
+  }
+  .tip-box .tip-title {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .tip-box p {
+    font-size: 13px;
+    color: var(--gray);
+    line-height: 1.5;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    padding: 24px;
+    font-size: 13px;
+    color: var(--gray-light);
+  }
+  .footer a {
+    color: var(--gold);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  /* ── URL box ── */
+  .url-box {
+    text-align: center;
+    margin-bottom: 28px;
+    padding: 14px;
+    background: var(--white);
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.04);
+  }
+  .url-box span {
+    font-size: 13px;
+    color: var(--gray);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .url-box strong {
+    font-size: 16px;
+    color: var(--gold);
+    letter-spacing: .5px;
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <h1>Instalar la App</h1>
+  <p>Sigue estos sencillos pasos para agregar Hospedaje Anfitriones a la pantalla de inicio de tu celular.</p>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="ios">
+    <span class="tab-icon">🍎</span>
+    iPhone
+  </button>
+  <button class="tab-btn" data-tab="android">
+    <span class="tab-icon">🤖</span>
+    Android
+  </button>
+  <button class="tab-btn" data-tab="huawei">
+    <span class="tab-icon">📱</span>
+    Huawei
+  </button>
+</nav>
+
+<div class="content">
+
+  <!-- ═══════ iOS ═══════ -->
+  <section class="platform-section active" id="ios">
+    <h2 class="platform-title">iPhone (iOS)</h2>
+    <p class="platform-subtitle">Usando Safari — el navegador predeterminado de Apple</p>
+
+    <div class="url-box">
+      <span>Primero abre esta dirección en Safari:</span>
+      <strong>lldmhospedaje.tech</strong>
+    </div>
+
+    <img src="assets/tutorial/ios.png" alt="Tutorial de instalación en iPhone paso a paso" class="tutorial-image" loading="lazy">
+
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-text">
+        <strong>Toca el botón de Compartir</strong>
+        <p>Es el ícono cuadrado con una flecha hacia arriba (⬆️) que aparece en la barra inferior de Safari.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-text">
+        <strong>Selecciona "Agregar a Inicio"</strong>
+        <p>Desliza el menú hacia abajo hasta encontrar la opción <strong>"Agregar a pantalla de inicio"</strong> y tócala.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-text">
+        <strong>Toca "Agregar"</strong>
+        <p>Aparecerá el nombre de la app. Toca <strong>"Agregar"</strong> en la esquina superior derecha y ¡listo!</p>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <p class="tip-title">⚠️ Importante</p>
+      <p>En iPhone <strong>debes usar Safari</strong>. Chrome, Firefox u otros navegadores en iOS no permiten instalar apps web en la pantalla de inicio.</p>
+    </div>
+  </section>
+
+  <!-- ═══════ Android ═══════ -->
+  <section class="platform-section" id="android">
+    <h2 class="platform-title">Android</h2>
+    <p class="platform-subtitle">Usando Google Chrome</p>
+
+    <div class="url-box">
+      <span>Primero abre esta dirección en Chrome:</span>
+      <strong>lldmhospedaje.tech</strong>
+    </div>
+
+    <img src="assets/tutorial/android.png" alt="Tutorial de instalación en Android paso a paso" class="tutorial-image" loading="lazy">
+
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-text">
+        <strong>Toca el menú (⋮)</strong>
+        <p>Son los <strong>tres puntos verticales</strong> que aparecen en la esquina superior derecha de Chrome.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-text">
+        <strong>Selecciona "Instalar aplicación"</strong>
+        <p>En el menú que se abre, busca la opción <strong>"Instalar aplicación"</strong> o <strong>"Agregar a pantalla de inicio"</strong>.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-text">
+        <strong>Confirma tocando "Instalar"</strong>
+        <p>Aparecerá un diálogo de confirmación. Toca <strong>"Instalar"</strong> y la app aparecerá en tu pantalla de inicio.</p>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <p class="tip-title">💡 Consejo</p>
+      <p>Si no ves la opción "Instalar aplicación", intenta con <strong>"Agregar a pantalla de inicio"</strong>. Ambas opciones funcionan igual.</p>
+    </div>
+  </section>
+
+  <!-- ═══════ Huawei ═══════ -->
+  <section class="platform-section" id="huawei">
+    <h2 class="platform-title">Huawei</h2>
+    <p class="platform-subtitle">Usando el Navegador Huawei o Chrome</p>
+
+    <div class="url-box">
+      <span>Primero abre esta dirección en tu navegador:</span>
+      <strong>lldmhospedaje.tech</strong>
+    </div>
+
+    <img src="assets/tutorial/huawei.png" alt="Tutorial de instalación en Huawei paso a paso" class="tutorial-image" loading="lazy">
+
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-text">
+        <strong>Toca el menú (⋮)</strong>
+        <p>Son los <strong>tres puntos</strong> que aparecen en la esquina inferior derecha (Navegador Huawei) o superior derecha (Chrome).</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-text">
+        <strong>Selecciona "Agregar a Inicio"</strong>
+        <p>Busca la opción <strong>"Agregar a pantalla de inicio"</strong> (o "Add to Home screen" si tu teléfono está en inglés).</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-text">
+        <strong>Confirma</strong>
+        <p>Toca <strong>"Agregar"</strong> o <strong>"Añadir"</strong> en el diálogo de confirmación. El ícono aparecerá en tu pantalla de inicio.</p>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <p class="tip-title">📌 Nota para Huawei sin Google</p>
+      <p>Si tu Huawei no tiene Google Play, usa el <strong>Navegador Huawei</strong> (viene preinstalado). Si tienes Chrome instalado, también funciona con los mismos pasos que Android.</p>
+    </div>
+  </section>
+
+</div>
+
+<footer class="footer">
+  <p>¿Ya instalaste la app? <a href="index.html">Inicia sesión aquí</a></p>
+</footer>
+
+<script>
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.platform-section').forEach(s => s.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
