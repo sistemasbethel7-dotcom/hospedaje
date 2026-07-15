@@ -9,19 +9,19 @@ function hashToken(token) {
 
 export async function listUsuarios() {
   const { rows } = await pool.query(
-    `SELECT id, email, role, activo, created_at, (password_hash IS NULL) AS pendiente
+    `SELECT id, email, nombre, telefono, role, activo, created_at, (password_hash IS NULL) AS pendiente
      FROM usuarios ORDER BY created_at DESC`
   );
   return rows;
 }
 
-export async function insertUsuarioInvitado({ email, role }) {
+export async function insertUsuarioInvitado({ email, role, nombre, telefono }) {
   const token = crypto.randomBytes(32).toString('hex');
   const { rows } = await pool.query(
-    `INSERT INTO usuarios (email, password_hash, role, setup_token_hash, setup_token_expires)
-     VALUES ($1, NULL, $2, $3, $4)
-     RETURNING id, email, role, activo, created_at`,
-    [email, role, hashToken(token), new Date(Date.now() + TOKEN_TTL_MS)]
+    `INSERT INTO usuarios (email, password_hash, role, nombre, telefono, setup_token_hash, setup_token_expires)
+     VALUES ($1, NULL, $2, $3, $4, $5, $6)
+     RETURNING id, email, nombre, telefono, role, activo, created_at`,
+    [email, role, nombre || null, telefono || null, hashToken(token), new Date(Date.now() + TOKEN_TTL_MS)]
   );
   return { usuario: rows[0], token };
 }
@@ -62,10 +62,20 @@ export async function updateUsuario(id, data) {
     `UPDATE usuarios SET
        role = COALESCE($1, role),
        activo = COALESCE($2, activo),
-       password_hash = COALESCE($3, password_hash)
-     WHERE id = $4
-     RETURNING id, email, role, activo, created_at`,
-    [data.role, data.activo, data.passwordHash, id]
+       password_hash = COALESCE($3, password_hash),
+       nombre = COALESCE($4, nombre),
+       telefono = COALESCE($5, telefono)
+     WHERE id = $6
+     RETURNING id, email, nombre, telefono, role, activo, created_at`,
+    [data.role, data.activo, data.passwordHash, data.nombre, data.telefono, id]
   );
   return rows[0] || null;
+}
+
+export async function deleteUsuario(id) {
+  const { rowCount } = await pool.query(
+    `DELETE FROM usuarios WHERE id = $1`,
+    [id]
+  );
+  return rowCount > 0;
 }

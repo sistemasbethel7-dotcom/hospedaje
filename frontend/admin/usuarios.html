@@ -46,8 +46,16 @@
 
     <form class="admin-inline-form" id="usuario-form" hidden>
       <div class="field">
+        <label class="label-caps" for="nuevo-nombre">Nombre</label>
+        <input type="text" id="nuevo-nombre" placeholder="Opcional">
+      </div>
+      <div class="field">
         <label class="label-caps" for="nuevo-email">Correo</label>
         <input type="email" id="nuevo-email" required>
+      </div>
+      <div class="field">
+        <label class="label-caps" for="nuevo-telefono">Teléfono</label>
+        <input type="tel" id="nuevo-telefono" placeholder="Opcional">
       </div>
       <div class="field">
         <label class="label-caps" for="nuevo-role">Rol</label>
@@ -64,7 +72,9 @@
       <table class="admin-table">
         <thead>
           <tr>
+            <th>Nombre</th>
             <th>Correo</th>
+            <th>Teléfono</th>
             <th>Rol</th>
             <th>Estatus</th>
             <th>Creado</th>

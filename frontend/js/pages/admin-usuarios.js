@@ -1,5 +1,5 @@
 import { registerServiceWorker } from '../app.js';
-import { me, listarUsuarios, crearUsuario, actualizarUsuario, reenviarInvitacion } from '../services/api.js';
+import { me, listarUsuarios, crearUsuario, actualizarUsuario, reenviarInvitacion, eliminarUsuario } from '../services/api.js';
 import { getSession, clearSession } from '../services/session.js';
 import { clearActiveEventId } from '../services/eventoActivo.js';
 
@@ -27,7 +27,9 @@ document.getElementById('guardar-usuario-btn').addEventListener('click', async (
   const errorEl = document.getElementById('usuarios-error');
   errorEl.textContent = '';
 
+  const nombre = document.getElementById('nuevo-nombre').value.trim();
   const email = document.getElementById('nuevo-email').value.trim();
+  const telefono = document.getElementById('nuevo-telefono').value.trim();
   const role = document.getElementById('nuevo-role').value;
 
   if (!email) {
@@ -38,8 +40,15 @@ document.getElementById('guardar-usuario-btn').addEventListener('click', async (
   const btn = document.getElementById('guardar-usuario-btn');
   btn.disabled = true;
   try {
-    const { avisoCorreo } = await crearUsuario(session.token, { email, role });
+    const { avisoCorreo } = await crearUsuario(session.token, {
+      email,
+      role,
+      nombre: nombre || undefined,
+      telefono: telefono || undefined,
+    });
+    document.getElementById('nuevo-nombre').value = '';
     document.getElementById('nuevo-email').value = '';
+    document.getElementById('nuevo-telefono').value = '';
     document.getElementById('usuario-form').hidden = true;
     if (avisoCorreo) errorEl.textContent = avisoCorreo;
     await cargarUsuarios();
@@ -70,9 +79,15 @@ function renderUsuarios(usuarios) {
         ? `<button type="button" class="admin-btn outline" data-reenviar="${u.id}" data-email="${escapeHtml(u.email)}">Reenviar invitación</button>`
         : `<button type="button" class="admin-btn outline" data-reset="${u.id}" data-email="${escapeHtml(u.email)}">Restablecer contraseña</button>`;
 
+      const botonEliminar = isSelf
+        ? ''
+        : `<button type="button" class="admin-btn outline danger" data-eliminar="${u.id}" data-email="${escapeHtml(u.email)}">Eliminar</button>`;
+
       return `
         <tr>
+          <td>${escapeHtml(u.nombre || '—')}</td>
           <td>${escapeHtml(u.email)}</td>
+          <td>${escapeHtml(u.telefono || '—')}</td>
           <td>
             <select class="admin-select" data-role-select="${u.id}" ${isSelf ? 'disabled' : ''}>
               <option value="agente" ${u.role === 'agente' ? 'selected' : ''}>Agente</option>
@@ -90,7 +105,12 @@ function renderUsuarios(usuarios) {
             </div>
           </td>
           <td>${formatFecha(u.created_at)}</td>
-          <td>${accionPendiente}</td>
+          <td>
+            <div class="admin-table-actions">
+              ${accionPendiente}
+              ${botonEliminar}
+            </div>
+          </td>
         </tr>
       `;
     })
@@ -152,6 +172,21 @@ function renderUsuarios(usuarios) {
       } catch (err) {
         document.getElementById('usuarios-error').textContent = err.message || 'No se pudo restablecer la contraseña.';
       } finally {
+        btn.disabled = false;
+      }
+    });
+  });
+
+  tbody.querySelectorAll('[data-eliminar]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const confirmar = confirm(`¿Eliminar al usuario ${btn.dataset.email}? Esta acción no se puede deshacer.`);
+      if (!confirmar) return;
+      btn.disabled = true;
+      try {
+        await eliminarUsuario(session.token, btn.dataset.eliminar);
+        await cargarUsuarios();
+      } catch (err) {
+        document.getElementById('usuarios-error').textContent = err.message || 'No se pudo eliminar el usuario.';
         btn.disabled = false;
       }
     });

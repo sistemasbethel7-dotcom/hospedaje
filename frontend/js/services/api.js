@@ -196,6 +196,20 @@ export async function actualizarUsuario(token, id, payload) {
   return res.json();
 }
 
+export async function eliminarUsuario(token, id) {
+  const res = await fetch(`${API_BASE}/usuarios/${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    const error = new Error(data.message || 'No se pudo eliminar el usuario.');
+    error.status = res.status;
+    throw error;
+  }
+}
+
 export async function obtenerCatalogosActivos(token) {
   const res = await fetch(`${API_BASE}/catalogos/activos`, {
     headers: { Authorization: `Bearer ${token}` },

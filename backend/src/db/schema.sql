@@ -14,6 +14,10 @@ ALTER TABLE usuarios ADD CONSTRAINT usuarios_role_check CHECK (role IN ('admin',
 
 ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS activo BOOLEAN NOT NULL DEFAULT true;
 
+-- Nombre y teléfono del usuario (opcionales, agregados para identificación rápida en el dashboard).
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS nombre TEXT;
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS telefono TEXT;
+
 -- Alta por invitación: el admin crea el usuario sin contraseña, se manda un correo con un
 -- link de un solo uso (token con expiración) para que el usuario defina su propia contraseña.
 ALTER TABLE usuarios ALTER COLUMN password_hash DROP NOT NULL;
@@ -186,3 +190,16 @@ CREATE INDEX IF NOT EXISTS idx_codigos_postales_cp ON codigos_postales (cp);
 
 GRANT ALL PRIVILEGES ON TABLE codigos_postales TO pwa_templo_app;
 GRANT USAGE, SELECT ON SEQUENCE codigos_postales_id_seq TO pwa_templo_app;
+
+-- Permitir eliminar usuarios sin romper datos históricos: SET NULL en las FK.
+ALTER TABLE eventos DROP CONSTRAINT IF EXISTS eventos_creado_por_fkey;
+ALTER TABLE eventos ADD CONSTRAINT eventos_creado_por_fkey
+  FOREIGN KEY (creado_por) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE hogares DROP CONSTRAINT IF EXISTS hogares_registrado_por_fkey;
+ALTER TABLE hogares ADD CONSTRAINT hogares_registrado_por_fkey
+  FOREIGN KEY (registrado_por) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ingresos DROP CONSTRAINT IF EXISTS ingresos_registrado_por_fkey;
+ALTER TABLE ingresos ADD CONSTRAINT ingresos_registrado_por_fkey
+  FOREIGN KEY (registrado_por) REFERENCES usuarios(id) ON DELETE SET NULL;

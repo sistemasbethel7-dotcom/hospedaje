@@ -3,6 +3,7 @@ import {
   insertUsuarioInvitado,
   regenerarTokenInvitacion,
   updateUsuario,
+  deleteUsuario,
 } from '../services/usuariosService.js';
 import { enviarInvitacion } from '../services/emailService.js';
 import bcrypt from 'bcryptjs';
@@ -19,7 +20,7 @@ export async function listar(req, res) {
 }
 
 export async function crear(req, res) {
-  const { email, role } = req.body;
+  const { email, role, nombre, telefono } = req.body;
 
   if (!email || !role) {
     return res.status(400).json({ message: 'Correo y rol son requeridos.' });
@@ -30,7 +31,7 @@ export async function crear(req, res) {
 
   let usuario, token;
   try {
-    ({ usuario, token } = await insertUsuarioInvitado({ email, role }));
+    ({ usuario, token } = await insertUsuarioInvitado({ email, role, nombre, telefono }));
   } catch (err) {
     if (err.code === '23505') {
       return res.status(409).json({ message: 'Ese correo ya está registrado.' });
@@ -64,7 +65,7 @@ export async function reenviarInvitacion(req, res) {
 }
 
 export async function actualizar(req, res) {
-  const { role, activo, password } = req.body;
+  const { role, activo, password, nombre, telefono } = req.body;
   const id = Number(req.params.id);
 
   if (role && !ROLES_VALIDOS.includes(role)) {
@@ -83,6 +84,8 @@ export async function actualizar(req, res) {
     role: role || null,
     activo: typeof activo === 'boolean' ? activo : null,
     passwordHash,
+    nombre: typeof nombre === 'string' ? nombre : null,
+    telefono: typeof telefono === 'string' ? telefono : null,
   });
 
   if (!usuario) {
@@ -90,4 +93,20 @@ export async function actualizar(req, res) {
   }
 
   res.json({ usuario });
+}
+
+export async function eliminar(req, res) {
+  const id = Number(req.params.id);
+
+  if (id === req.user.sub) {
+    return res.status(400).json({ message: 'No puedes eliminar tu propia cuenta.' });
+  }
+
+  const eliminado = await deleteUsuario(id);
+
+  if (!eliminado) {
+    return res.status(404).json({ message: 'Usuario no encontrado.' });
+  }
+
+  res.json({ ok: true });
 }
