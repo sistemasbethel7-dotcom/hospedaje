@@ -9,40 +9,12 @@
   text-align: center;
 }
 
-.login-emblem {
-  width: 104px;
-  height: 104px;
-  border-radius: var(--radius-round);
-  border: 1px solid var(--color-gold);
-  padding: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.login-logo {
+  width: 140px;
+  height: auto;
   margin-bottom: 20px;
   flex: none;
-}
-
-.login-emblem-inner {
-  width: 100%;
-  height: 100%;
-  border-radius: var(--radius-round);
-  border: 1px solid var(--color-gold);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.login-emblem-inner span {
-  font: 600 30px var(--font-display);
-  color: var(--color-gold-deep);
-}
-
-.login-kicker {
-  font: 600 13px var(--font-display);
-  color: var(--color-gold-deep);
-  letter-spacing: .22em;
-  text-transform: uppercase;
-  margin: 0;
+  object-fit: contain;
 }
 
 .login-title {

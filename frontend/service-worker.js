@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anfitriones-v45';
+const CACHE_NAME = 'anfitriones-v46';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -20,6 +20,7 @@ const APP_SHELL = [
   '/assets/tutorial/ios.png',
   '/assets/tutorial/android.png',
   '/assets/tutorial/huawei.png',
+  '/assets/logoSinFondo.png',
   '/manifest.json',
   '/css/tokens.css',
   '/css/base.css',
