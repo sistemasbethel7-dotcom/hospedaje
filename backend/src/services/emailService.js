@@ -10,15 +10,23 @@ export async function enviarInvitacion(email, link) {
       <p style="color:#666;font-size:13px;">Este link expira en 48 horas. Si no esperabas este correo, puedes ignorarlo.</p>
     </div>
   `;
+  const text = `Hospedaje · Centenario
+
+Se creó una cuenta para ti en el sistema de Anfitriones del Centenario.
+
+Para activarla, define tu contraseña aquí: ${link}
+
+Este link expira en 48 horas. Si no esperabas este correo, puedes ignorarlo.`;
 
   await enviarCorreo({
     to: email,
     subject: 'Activa tu cuenta · Hospedaje Centenario',
     html,
+    text,
   });
 }
 
-async function enviarCorreo({ to, subject, html }) {
+async function enviarCorreo({ to, subject, html, text }) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.RESEND_FROM_EMAIL;
 
@@ -32,7 +40,7 @@ async function enviarCorreo({ to, subject, html }) {
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ from, to, subject, html }),
+    body: JSON.stringify({ from, to, subject, html, text }),
   });
 
   if (!res.ok) {
