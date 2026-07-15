@@ -47,6 +47,13 @@ export function setupMapModal({ getLocation, onConfirm }) {
   window.visualViewport?.addEventListener('resize', syncModalViewport);
   window.visualViewport?.addEventListener('scroll', syncModalViewport);
 
+  function limpiar() {
+    window.visualViewport?.removeEventListener('resize', syncModalViewport);
+    window.visualViewport?.removeEventListener('scroll', syncModalViewport);
+    modalMap?.remove();
+    modalMap = null;
+  }
+
   function openMapModal() {
     ensureModalMap();
 
@@ -161,4 +168,6 @@ export function setupMapModal({ getLocation, onConfirm }) {
   searchInput.addEventListener('input', () => {
     if (!searchInput.value.trim()) searchResults.hidden = true;
   });
+
+  return limpiar;
 }

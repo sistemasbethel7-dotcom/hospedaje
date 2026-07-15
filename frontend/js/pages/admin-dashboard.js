@@ -1,17 +1,7 @@
-import { registerServiceWorker } from '../app.js';
 import { me, listarEventos, obtenerMetricasEvento, listarHogares, obtenerHogar } from '../services/api.js';
 import { getSession, clearSession } from '../services/session.js';
 import { getActiveEventId, setActiveEventId, clearActiveEventId } from '../services/eventoActivo.js';
 import { subscribeToEvento } from '../services/eventStream.js';
-import { setupAgentPanel } from '../agentPanel.js';
-
-registerServiceWorker();
-setupAgentPanel({ onAbrirHogar: (id) => abrirDetalleHogar(id) });
-
-const session = getSession();
-if (!session) {
-  window.location.href = '../index.html';
-}
 
 // Paleta llamativa a propósito: el dorado del tema se ve bien en botones y
 // texto, pero en gráficas se veía apagado y costaba distinguir series/barras.
@@ -50,6 +40,7 @@ const KPI_INFO = {
   },
 };
 
+let session = null;
 const charts = {};
 let eventos = [];
 let hogaresActuales = [];
@@ -58,32 +49,7 @@ let detalleModalAbierto = false;
 let unsubscribeStream = null;
 let refrescoPendiente = null;
 let filtroEstatus = 'abierto';
-
-document.getElementById('logout-btn').addEventListener('click', () => {
-  clearSession();
-  clearActiveEventId();
-  window.location.href = '../index.html';
-});
-
-document.getElementById('evento-select').addEventListener('change', (event) => {
-  if (!event.target.value) return;
-  seleccionarEvento(event.target.value);
-});
-
-document.querySelectorAll('.admin-filtro-tab').forEach((btn) => {
-  btn.addEventListener('click', () => {
-    filtroEstatus = btn.dataset.filtro;
-    actualizarTabs();
-    poblarSelect();
-    const filtrados = eventosFiltrados();
-    if (filtrados.length > 0) {
-      document.getElementById('evento-select').value = filtrados[0].id;
-      seleccionarEvento(filtrados[0].id);
-    } else {
-      mostrarSinSeleccion();
-    }
-  });
-});
+let onKeydown = null;
 
 function escapeHtml(value) {
   const div = document.createElement('div');
@@ -158,7 +124,7 @@ function renderKpiModal(tipo) {
   `;
 
   body.querySelectorAll('tr[data-hogar-id]').forEach((row) => {
-    row.addEventListener('click', () => abrirDetalleHogar(row.dataset.hogarId));
+    row.addEventListener('click', () => abrirHogar(row.dataset.hogarId));
   });
 }
 
@@ -218,7 +184,7 @@ function renderDetalleHogar(hogar) {
   `;
 }
 
-async function abrirDetalleHogar(id) {
+export async function abrirHogar(id) {
   document.getElementById('detalle-modal-title').textContent = 'Cargando…';
   document.getElementById('detalle-modal-body').innerHTML = '';
   detalleModalAbierto = true;
@@ -236,27 +202,6 @@ function cerrarDetalleModal() {
   detalleModalAbierto = false;
   document.getElementById('detalle-modal-backdrop').hidden = true;
 }
-
-document.querySelectorAll('.admin-kpi-card').forEach((card) => {
-  card.addEventListener('click', () => abrirKpiModal(card.dataset.kpi));
-});
-
-document.getElementById('kpi-modal-close').addEventListener('click', cerrarKpiModal);
-document.getElementById('kpi-modal-backdrop').addEventListener('click', (event) => {
-  if (event.target.id === 'kpi-modal-backdrop') cerrarKpiModal();
-});
-document.getElementById('detalle-modal-close').addEventListener('click', cerrarDetalleModal);
-document.getElementById('detalle-modal-backdrop').addEventListener('click', (event) => {
-  if (event.target.id === 'detalle-modal-backdrop') cerrarDetalleModal();
-});
-document.addEventListener('keydown', (event) => {
-  if (event.key !== 'Escape') return;
-  if (detalleModalAbierto) {
-    cerrarDetalleModal();
-  } else if (kpiModalActivo) {
-    cerrarKpiModal();
-  }
-});
 
 function setLiveStatus(estado) {
   const indicator = document.getElementById('live-indicator');
@@ -437,45 +382,115 @@ async function cargarMetricas(eventoId) {
   }
 }
 
-try {
-  const { user } = await me(session.token);
-  if (user.role !== 'admin' && user.role !== 'supervisor') {
-    window.location.href = '../eventos.html';
-  }
-  if (user.role !== 'admin') {
-    document.getElementById('nav-usuarios').hidden = true;
-    document.getElementById('nav-catalogos').hidden = true;
+export async function mount() {
+  session = getSession();
+  if (!session) {
+    window.location.href = '../index.html';
+    return;
   }
 
-  const { eventos: lista } = await listarEventos(session.token);
-  eventos = lista;
+  eventos = [];
+  hogaresActuales = [];
+  kpiModalActivo = null;
+  detalleModalAbierto = false;
+  filtroEstatus = 'abierto';
 
-  if (eventos.length === 0) {
-    document.getElementById('dashboard-empty').hidden = false;
-  } else {
-    const vigentes = eventos.filter((e) => e.estatus === 'abierto');
+  document.getElementById('evento-select').addEventListener('change', (event) => {
+    if (!event.target.value) return;
+    seleccionarEvento(event.target.value);
+  });
 
-    if (vigentes.length > 0) {
-      filtroEstatus = 'abierto';
+  document.querySelectorAll('.admin-filtro-tab').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      filtroEstatus = btn.dataset.filtro;
       actualizarTabs();
       poblarSelect();
-      const activo = getActiveEventId();
-      const inicial = vigentes.find((e) => String(e.id) === activo) || vigentes[0];
-      document.getElementById('evento-select').value = inicial.id;
-      await seleccionarEvento(inicial.id);
+      const filtrados = eventosFiltrados();
+      if (filtrados.length > 0) {
+        document.getElementById('evento-select').value = filtrados[0].id;
+        seleccionarEvento(filtrados[0].id);
+      } else {
+        mostrarSinSeleccion();
+      }
+    });
+  });
+
+  document.querySelectorAll('.admin-kpi-card').forEach((card) => {
+    card.addEventListener('click', () => abrirKpiModal(card.dataset.kpi));
+  });
+  document.getElementById('kpi-modal-close').addEventListener('click', cerrarKpiModal);
+  document.getElementById('kpi-modal-backdrop').addEventListener('click', (event) => {
+    if (event.target.id === 'kpi-modal-backdrop') cerrarKpiModal();
+  });
+  document.getElementById('detalle-modal-close').addEventListener('click', cerrarDetalleModal);
+  document.getElementById('detalle-modal-backdrop').addEventListener('click', (event) => {
+    if (event.target.id === 'detalle-modal-backdrop') cerrarDetalleModal();
+  });
+
+  onKeydown = (event) => {
+    if (event.key !== 'Escape') return;
+    if (detalleModalAbierto) {
+      cerrarDetalleModal();
+    } else if (kpiModalActivo) {
+      cerrarKpiModal();
+    }
+  };
+  document.addEventListener('keydown', onKeydown);
+
+  try {
+    const { user } = await me(session.token);
+    if (user.role !== 'admin' && user.role !== 'supervisor') {
+      window.location.href = '../eventos.html';
+      return;
+    }
+    if (user.role !== 'admin') {
+      document.getElementById('nav-usuarios').hidden = true;
+      document.getElementById('nav-catalogos').hidden = true;
+    }
+
+    const { eventos: lista } = await listarEventos(session.token);
+    eventos = lista;
+
+    if (eventos.length === 0) {
+      document.getElementById('dashboard-empty').hidden = false;
     } else {
-      filtroEstatus = 'abierto';
-      actualizarTabs();
-      poblarSelect();
-      mostrarSinSeleccion();
+      const vigentes = eventos.filter((e) => e.estatus === 'abierto');
+
+      if (vigentes.length > 0) {
+        filtroEstatus = 'abierto';
+        actualizarTabs();
+        poblarSelect();
+        const activo = getActiveEventId();
+        const inicial = vigentes.find((e) => String(e.id) === activo) || vigentes[0];
+        document.getElementById('evento-select').value = inicial.id;
+        await seleccionarEvento(inicial.id);
+      } else {
+        filtroEstatus = 'abierto';
+        actualizarTabs();
+        poblarSelect();
+        mostrarSinSeleccion();
+      }
+    }
+  } catch (err) {
+    if (err.status === 401) {
+      clearSession();
+      clearActiveEventId();
+      window.location.href = '../index.html';
+    } else {
+      document.getElementById('dashboard-error').textContent = 'No se pudo cargar la información del dashboard.';
     }
   }
-} catch (err) {
-  if (err.status === 401) {
-    clearSession();
-    clearActiveEventId();
-    window.location.href = '../index.html';
-  } else {
-    document.getElementById('dashboard-error').textContent = 'No se pudo cargar la información del dashboard.';
+}
+
+export function unmount() {
+  if (unsubscribeStream) {
+    unsubscribeStream();
+    unsubscribeStream = null;
+  }
+  clearTimeout(refrescoPendiente);
+  ['ocupacion', 'colonias', 'servicios', 'vulnerabilidades', 'perfiles'].forEach(destroyChart);
+  if (onKeydown) {
+    document.removeEventListener('keydown', onKeydown);
+    onKeydown = null;
   }
 }

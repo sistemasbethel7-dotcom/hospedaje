@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anfitriones-v49';
+const CACHE_NAME = 'anfitriones-v50';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -35,6 +35,8 @@ const APP_SHELL = [
   '/css/admin.css',
   '/css/agent.css',
   '/js/app.js',
+  '/js/adminShell.js',
+  '/js/router.js',
   '/js/agentPanel.js',
   '/js/agentClient.js',
   '/js/mapModal.js',

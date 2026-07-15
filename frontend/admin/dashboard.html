@@ -99,11 +99,6 @@
         </div>
       </div>
     </div>
-  </main>
-
-  <div class="agent-column" id="agent-column"></div>
-</div>
-
 <div class="admin-modal-backdrop" id="kpi-modal-backdrop" hidden>
   <div class="admin-modal wide" role="dialog" aria-modal="true" aria-labelledby="kpi-modal-title">
     <div class="admin-modal-header">
@@ -123,7 +118,15 @@
     <div class="admin-modal-body" id="detalle-modal-body"></div>
   </div>
 </div>
+  </main>
 
+  <div class="agent-column" id="agent-column"></div>
+</div>
+
+<script type="module">
+  import { mountShellOnce } from '../js/adminShell.js';
+  mountShellOnce();
+</script>
 <script type="module" src="../js/pages/admin-dashboard.js"></script>
 </body>
 </html>

@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <link rel="stylesheet" href="../css/tokens.css">
@@ -18,6 +19,7 @@
 <link rel="stylesheet" href="../css/registro.css">
 <link rel="stylesheet" href="../css/eventos.css">
 <link rel="stylesheet" href="../css/admin.css">
+<link rel="stylesheet" href="../css/agent.css">
 </head>
 <body>
 <div class="admin-shell">
@@ -83,9 +85,6 @@
         </table>
       </div>
     </div>
-  </main>
-</div>
-
 <div class="admin-modal-backdrop" id="editar-modal-backdrop" hidden>
   <div class="admin-modal wide" role="dialog" aria-modal="true" aria-labelledby="editar-modal-title">
     <div class="admin-modal-header">
@@ -199,7 +198,15 @@
     <button type="button" class="btn-gold" id="map-confirm-btn">Confirmar ubicación</button>
   </div>
 </div>
+  </main>
 
+  <div class="agent-column" id="agent-column"></div>
+</div>
+
+<script type="module">
+  import { mountShellOnce } from '../js/adminShell.js';
+  mountShellOnce();
+</script>
 <script type="module" src="../js/pages/admin-hogares.js"></script>
 </body>
 </html>

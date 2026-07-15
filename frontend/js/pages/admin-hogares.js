@@ -1,43 +1,21 @@
-import { registerServiceWorker } from '../app.js';
 import { me, listarEventos, listarHogares, eliminarHogar, obtenerHogar, actualizarHogar, obtenerCatalogosActivos } from '../services/api.js';
 import { getSession, clearSession } from '../services/session.js';
 import { getActiveEventId, setActiveEventId, clearActiveEventId } from '../services/eventoActivo.js';
 import { subscribeToEvento } from '../services/eventStream.js';
 import { setupMapModal } from '../mapModal.js';
 
-registerServiceWorker();
-
-const session = getSession();
-if (!session) {
-  window.location.href = '../index.html';
-}
-
 const HOUSE_ICON = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 10.5L12 4l8 6.5V20a1 1 0 01-1 1h-4v-6H9v6H5a1 1 0 01-1-1v-9.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
 const EYE_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg>`;
 const TRASH_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m-9 0l1 13a1 1 0 001 1h8a1 1 0 001-1l1-13M10 11v6M14 11v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const PENCIL_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 20h4L19.5 8.5a2.1 2.1 0 00-3-3L5 17v3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M13.5 6.5l3 3" stroke="currentColor" stroke-width="1.8"/></svg>`;
 
+let session = null;
 let eventos = [];
 let hogaresActuales = [];
 let esAdmin = false;
 let unsubscribeStream = null;
 let refrescoPendiente = null;
-
-document.getElementById('logout-btn').addEventListener('click', () => {
-  clearSession();
-  clearActiveEventId();
-  window.location.href = '../index.html';
-});
-
-document.getElementById('evento-select').addEventListener('change', (event) => {
-  setActiveEventId(event.target.value);
-  cargarHogares(event.target.value);
-  suscribirEvento(event.target.value);
-});
-
-['filtro-dueno', 'filtro-colonia', 'filtro-calle', 'filtro-cp'].forEach((id) => {
-  document.getElementById(id).addEventListener('input', renderTabla);
-});
+let limpiarMapModal = null;
 
 function setLiveStatus(estado) {
   const indicator = document.getElementById('live-indicator');
@@ -303,6 +281,10 @@ async function abrirEditar(id, soloLectura = false) {
   document.getElementById('editar-modal-backdrop').hidden = false;
 }
 
+export function abrirHogar(id) {
+  return abrirEditar(id, true);
+}
+
 async function guardarEdicion(event) {
   event.preventDefault();
   if (!hogarEditando) return;
@@ -361,28 +343,6 @@ async function guardarEdicion(event) {
   }
 }
 
-document.querySelectorAll('#e-tenencia-group .pill').forEach((pill) => {
-  pill.addEventListener('click', () => {
-    editState.tenencia = editState.tenencia === pill.dataset.tenencia ? null : pill.dataset.tenencia;
-    renderTenenciaEdit();
-  });
-});
-setupMapModal({
-  getLocation: () =>
-    (typeof editState.lat === 'number' && typeof editState.lng === 'number' ? { lat: editState.lat, lng: editState.lng } : null),
-  onConfirm: (lat, lng) => {
-    editState.lat = lat;
-    editState.lng = lng;
-    updateLocationTrigger();
-  },
-});
-document.getElementById('editar-form').addEventListener('submit', guardarEdicion);
-document.getElementById('editar-cancelar').addEventListener('click', cerrarEditar);
-document.getElementById('editar-modal-close').addEventListener('click', cerrarEditar);
-document.getElementById('editar-modal-backdrop').addEventListener('click', (event) => {
-  if (event.target === event.currentTarget) cerrarEditar();
-});
-
 async function cargarHogares(eventoId) {
   const errorEl = document.getElementById('hogares-error');
   errorEl.textContent = '';
@@ -402,40 +362,98 @@ async function cargarHogares(eventoId) {
   }
 }
 
-try {
-  const { user } = await me(session.token);
-  if (user.role !== 'admin' && user.role !== 'supervisor') {
-    window.location.href = '../eventos.html';
-  }
-  esAdmin = user.role === 'admin';
-  if (!esAdmin) {
-    document.getElementById('nav-usuarios').hidden = true;
-    document.getElementById('nav-catalogos').hidden = true;
-  }
-
-  const { eventos: lista } = await listarEventos(session.token);
-  eventos = lista;
-
-  if (eventos.length === 0) {
-    document.getElementById('hogares-empty').hidden = false;
-  } else {
-    poblarSelect();
-    const activo = getActiveEventId();
-    const inicial = eventos.find((e) => String(e.id) === activo) || eventos.find((e) => e.estatus === 'abierto') || eventos[0];
-    document.getElementById('evento-select').value = inicial.id;
-    setActiveEventId(inicial.id);
-    await cargarHogares(inicial.id);
-    suscribirEvento(inicial.id);
-
-    const verId = new URLSearchParams(window.location.search).get('ver');
-    if (verId) abrirEditar(Number(verId), true);
-  }
-} catch (err) {
-  if (err.status === 401) {
-    clearSession();
-    clearActiveEventId();
+export async function mount() {
+  session = getSession();
+  if (!session) {
     window.location.href = '../index.html';
-  } else {
-    document.getElementById('hogares-error').textContent = 'No se pudo cargar la información de hogares.';
+    return;
   }
+
+  eventos = [];
+  hogaresActuales = [];
+  esAdmin = false;
+  catalogosEdit = null;
+  hogarEditando = null;
+
+  document.getElementById('evento-select').addEventListener('change', (event) => {
+    setActiveEventId(event.target.value);
+    cargarHogares(event.target.value);
+    suscribirEvento(event.target.value);
+  });
+
+  ['filtro-dueno', 'filtro-colonia', 'filtro-calle', 'filtro-cp'].forEach((id) => {
+    document.getElementById(id).addEventListener('input', renderTabla);
+  });
+
+  document.querySelectorAll('#e-tenencia-group .pill').forEach((pill) => {
+    pill.addEventListener('click', () => {
+      editState.tenencia = editState.tenencia === pill.dataset.tenencia ? null : pill.dataset.tenencia;
+      renderTenenciaEdit();
+    });
+  });
+
+  limpiarMapModal = setupMapModal({
+    getLocation: () =>
+      (typeof editState.lat === 'number' && typeof editState.lng === 'number' ? { lat: editState.lat, lng: editState.lng } : null),
+    onConfirm: (lat, lng) => {
+      editState.lat = lat;
+      editState.lng = lng;
+      updateLocationTrigger();
+    },
+  });
+  document.getElementById('editar-form').addEventListener('submit', guardarEdicion);
+  document.getElementById('editar-cancelar').addEventListener('click', cerrarEditar);
+  document.getElementById('editar-modal-close').addEventListener('click', cerrarEditar);
+  document.getElementById('editar-modal-backdrop').addEventListener('click', (event) => {
+    if (event.target === event.currentTarget) cerrarEditar();
+  });
+
+  try {
+    const { user } = await me(session.token);
+    if (user.role !== 'admin' && user.role !== 'supervisor') {
+      window.location.href = '../eventos.html';
+      return;
+    }
+    esAdmin = user.role === 'admin';
+    if (!esAdmin) {
+      document.getElementById('nav-usuarios').hidden = true;
+      document.getElementById('nav-catalogos').hidden = true;
+    }
+
+    const { eventos: lista } = await listarEventos(session.token);
+    eventos = lista;
+
+    if (eventos.length === 0) {
+      document.getElementById('hogares-empty').hidden = false;
+    } else {
+      poblarSelect();
+      const activo = getActiveEventId();
+      const inicial = eventos.find((e) => String(e.id) === activo) || eventos.find((e) => e.estatus === 'abierto') || eventos[0];
+      document.getElementById('evento-select').value = inicial.id;
+      setActiveEventId(inicial.id);
+      await cargarHogares(inicial.id);
+      suscribirEvento(inicial.id);
+
+      const verId = new URLSearchParams(window.location.search).get('ver');
+      if (verId) abrirEditar(Number(verId), true);
+    }
+  } catch (err) {
+    if (err.status === 401) {
+      clearSession();
+      clearActiveEventId();
+      window.location.href = '../index.html';
+    } else {
+      document.getElementById('hogares-error').textContent = 'No se pudo cargar la información de hogares.';
+    }
+  }
+}
+
+export function unmount() {
+  if (unsubscribeStream) {
+    unsubscribeStream();
+    unsubscribeStream = null;
+  }
+  clearTimeout(refrescoPendiente);
+  limpiarMapModal?.();
+  limpiarMapModal = null;
 }
