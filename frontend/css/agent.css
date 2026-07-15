@@ -2,9 +2,8 @@
   flex: 1 1 0%;
   min-width: 260px;
   max-width: 100%;
-  overflow: hidden;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   padding: 24px;
   box-sizing: border-box;
@@ -17,6 +16,8 @@
   cursor: pointer;
   width: 100%;
   max-width: 360px;
+  position: sticky;
+  top: 24px;
 }
 
 .agent-orb-inner {

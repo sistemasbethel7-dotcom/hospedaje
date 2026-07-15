@@ -110,12 +110,8 @@ function alClicSidebar(event) {
 }
 
 export function initRouter() {
-  if (iniciado) {
-    console.warn('[router] initRouter ya estaba iniciado, se ignora la llamada duplicada');
-    return;
-  }
+  if (iniciado) return;
   iniciado = true;
-  console.info('[router] iniciado, ruta actual:', window.location.pathname);
 
   currentPath = window.location.pathname;
   const rutaActual = RUTAS[currentPath];
