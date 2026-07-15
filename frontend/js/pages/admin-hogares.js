@@ -426,6 +426,9 @@ try {
     setActiveEventId(inicial.id);
     await cargarHogares(inicial.id);
     suscribirEvento(inicial.id);
+
+    const verId = new URLSearchParams(window.location.search).get('ver');
+    if (verId) abrirEditar(Number(verId), true);
   }
 } catch (err) {
   if (err.status === 401) {

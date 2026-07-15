@@ -1,3 +1,7 @@
+import { iniciarSesionAgente } from './agentClient.js';
+import { getSession } from './services/session.js';
+import { getActiveEventId } from './services/eventoActivo.js';
+
 const PUNTOS_ESFERA = 160;
 const RADIO_BASE = 70;
 const DISPERSION_MAX = 18;
@@ -6,11 +10,11 @@ let wrap, canvas, ctx, statusEl;
 let puntosEsfera = [];
 let rotacion = 0;
 let nivelSuavizado = 0;
-let nivelActual = 0;
+let nivelEntrada = 0;
+let nivelSalida = 0;
 let rafId = null;
-let audioCtx = null;
-let analyser = null;
-let stream = null;
+let sesionActiva = null;
+let ultimoStatus = '';
 let estado = 'dormido';
 
 function fibonacciEsfera(n, radio) {
@@ -88,8 +92,16 @@ function proyectar(p, escalaAudio, dispersion) {
 
 function dibujar() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const nivelObjetivo = estado === 'escuchando' ? nivelActual : 0;
+  const nivelObjetivo = estado === 'activo' ? Math.max(nivelEntrada, nivelSalida) : 0;
   nivelSuavizado += (nivelObjetivo - nivelSuavizado) * 0.15;
+
+  if (estado === 'activo') {
+    const nuevoStatus = nivelSalida > 0.08 && nivelSalida >= nivelEntrada ? 'Hablando…' : 'Escuchando…';
+    if (nuevoStatus !== ultimoStatus) {
+      ultimoStatus = nuevoStatus;
+      statusEl.textContent = nuevoStatus;
+    }
+  }
   rotacion += 0.0025 + nivelSuavizado * 0.01;
 
   const escalaAudio = nivelSuavizado * 0.5;
@@ -112,52 +124,50 @@ function dibujar() {
   rafId = requestAnimationFrame(dibujar);
 }
 
-async function iniciarMicrofono() {
+async function despertar() {
+  if (estado !== 'dormido') return;
+  estado = 'conectando';
+  statusEl.textContent = 'Despertando…';
+
+  const session = getSession();
+  const eventoId = getActiveEventId();
+  if (!session || !eventoId) {
+    estado = 'dormido';
+    statusEl.textContent = 'Selecciona un evento primero';
+    return;
+  }
+
   try {
-    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    audioCtx = new AudioContext();
-    const fuente = audioCtx.createMediaStreamSource(stream);
-    analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 256;
-    fuente.connect(analyser);
-    const datos = new Uint8Array(analyser.frequencyBinCount);
+    const sesion = await iniciarSesionAgente({
+      token: session.token,
+      eventoId,
+      onNivelEntrada: (n) => { nivelEntrada = n; },
+      onNivelSalida: (n) => { nivelSalida = n; },
+      onError: (msg) => { statusEl.textContent = msg; },
+      onNavegar: (id) => { window.location.href = `hogares.html?ver=${id}`; },
+    });
 
-    const medir = () => {
-      if (!analyser) return;
-      analyser.getByteFrequencyData(datos);
-      const prom = datos.reduce((a, b) => a + b, 0) / datos.length;
-      nivelActual = Math.min(1, prom / 90);
-      requestAnimationFrame(medir);
-    };
-    medir();
+    if (estado !== 'conectando') {
+      sesion.cerrar();
+      return;
+    }
 
-    estado = 'escuchando';
-    statusEl.textContent = 'Escuchando… habla algo';
+    sesionActiva = sesion;
+    estado = 'activo';
+    ultimoStatus = 'Escuchando…';
+    statusEl.textContent = ultimoStatus;
   } catch (err) {
     estado = 'dormido';
-    statusEl.textContent = 'No se pudo acceder al micrófono';
+    statusEl.textContent = 'No se pudo conectar con el agente';
   }
-}
-
-function detenerMicrofono() {
-  if (stream) stream.getTracks().forEach((t) => t.stop());
-  if (audioCtx) audioCtx.close();
-  stream = null;
-  audioCtx = null;
-  analyser = null;
-  nivelActual = 0;
-}
-
-function despertar() {
-  if (estado !== 'dormido') return;
-  estado = 'despertando';
-  statusEl.textContent = 'Despertando…';
-  iniciarMicrofono();
 }
 
 function dormir() {
   estado = 'dormido';
-  detenerMicrofono();
+  sesionActiva?.cerrar();
+  sesionActiva = null;
+  nivelEntrada = 0;
+  nivelSalida = 0;
   statusEl.textContent = 'Toca para hablar';
 }
 

@@ -377,6 +377,22 @@ export async function eliminarHogar(token, id) {
   }
 }
 
+export async function obtenerTokenAgente(token) {
+  const res = await fetch(`${API_BASE}/agente/token`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    const error = new Error(data.message || 'No se pudo iniciar la sesión del agente.');
+    error.status = res.status;
+    throw error;
+  }
+
+  return res.json();
+}
+
 export async function registrarIngreso(token, hogarId, cantidad) {
   const res = await fetch(`${API_BASE}/hogares/${hogarId}/ingresos`, {
     method: 'POST',

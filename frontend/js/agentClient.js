@@ -1,0 +1,178 @@
+import { obtenerTokenAgente, listarHogares, obtenerMetricasEvento } from './services/api.js';
+
+function normaliza(texto) {
+  return String(texto || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '');
+}
+
+function folioDe(id) {
+  return `H-${String(id).padStart(6, '0')}`;
+}
+
+async function buscarHogares(ctx, args) {
+  const { hogares } = await listarHogares(ctx.token, ctx.eventoId);
+  let resultados = hogares;
+
+  if (args.dueno) resultados = resultados.filter((h) => normaliza(h.nombre_dueno).includes(normaliza(args.dueno)));
+  if (args.calle) resultados = resultados.filter((h) => normaliza(h.calle_numero).includes(normaliza(args.calle)));
+  if (args.colonia) resultados = resultados.filter((h) => normaliza(h.colonia).includes(normaliza(args.colonia)));
+  if (args.solo_disponibles) resultados = resultados.filter((h) => h.capacidad - h.ocupacion_actual > 0);
+
+  return {
+    total_encontrados: resultados.length,
+    hogares: resultados.slice(0, 8).map((h) => ({
+      id: h.id,
+      folio: folioDe(h.id),
+      dueno: h.nombre_dueno,
+      direccion: `${h.calle_numero}, ${h.colonia}`,
+      capacidad: h.capacidad,
+      ocupacion_actual: h.ocupacion_actual,
+      disponibles: Math.max(0, h.capacidad - h.ocupacion_actual),
+    })),
+  };
+}
+
+async function metricasEvento(ctx) {
+  const { metricas } = await obtenerMetricasEvento(ctx.token, ctx.eventoId);
+  return {
+    hogares_registrados: metricas.total_hogares,
+    capacidad_total: metricas.capacidad_total,
+    ocupacion_actual: metricas.ocupacion_total,
+    lugares_disponibles: Math.max(0, metricas.capacidad_total - metricas.ocupacion_total),
+  };
+}
+
+async function abrirHogar(ctx, args) {
+  ctx.onNavegar?.(args.id);
+  return { ok: true };
+}
+
+async function ejecutarHerramienta(nombre, args, ctx) {
+  try {
+    if (nombre === 'buscar_hogares') return await buscarHogares(ctx, args);
+    if (nombre === 'metricas_evento') return await metricasEvento(ctx);
+    if (nombre === 'abrir_hogar') return await abrirHogar(ctx, args);
+    return { error: 'Herramienta desconocida.' };
+  } catch (err) {
+    return { error: 'No se pudo completar la consulta.' };
+  }
+}
+
+function medirNivel(stream, onNivel) {
+  const audioCtx = new AudioContext();
+  const fuente = audioCtx.createMediaStreamSource(stream);
+  const analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 256;
+  fuente.connect(analyser);
+  const datos = new Uint8Array(analyser.frequencyBinCount);
+  let activo = true;
+
+  const medir = () => {
+    if (!activo) return;
+    analyser.getByteFrequencyData(datos);
+    const prom = datos.reduce((a, b) => a + b, 0) / datos.length;
+    onNivel(Math.min(1, prom / 90));
+    requestAnimationFrame(medir);
+  };
+  medir();
+
+  return () => {
+    activo = false;
+    audioCtx.close();
+  };
+}
+
+export async function iniciarSesionAgente({ token, eventoId, onNivelEntrada, onNivelSalida, onError, onNavegar }) {
+  const { value: clientSecret } = await obtenerTokenAgente(token);
+
+  const pc = new RTCPeerConnection();
+  const audioEl = new Audio();
+  audioEl.autoplay = true;
+
+  let detenerMedicionSalida = () => {};
+  let detenerMedicionEntrada = () => {};
+
+  pc.ontrack = (e) => {
+    audioEl.srcObject = e.streams[0];
+    detenerMedicionSalida = medirNivel(e.streams[0], onNivelSalida);
+  };
+
+  const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  micStream.getTracks().forEach((t) => pc.addTrack(t, micStream));
+  detenerMedicionEntrada = medirNivel(micStream, onNivelEntrada);
+
+  const ctxHerramientas = { token, eventoId, onNavegar };
+
+  const dc = pc.createDataChannel('oai-events');
+  dc.addEventListener('open', () => {
+    dc.send(JSON.stringify({ type: 'response.create' }));
+  });
+  dc.addEventListener('message', async (e) => {
+    let evento;
+    try {
+      evento = JSON.parse(e.data);
+    } catch {
+      return;
+    }
+
+    if (evento.type === 'error') {
+      onError?.(evento.error?.message || 'Ocurrió un error con el agente.');
+      return;
+    }
+
+    if (evento.type !== 'response.done') return;
+
+    const llamadas = (evento.response?.output || []).filter((item) => item.type === 'function_call');
+    for (const llamada of llamadas) {
+      let args = {};
+      try {
+        args = JSON.parse(llamada.arguments || '{}');
+      } catch {
+        args = {};
+      }
+      const resultado = await ejecutarHerramienta(llamada.name, args, ctxHerramientas);
+      dc.send(JSON.stringify({
+        type: 'conversation.item.create',
+        item: {
+          type: 'function_call_output',
+          call_id: llamada.call_id,
+          output: JSON.stringify(resultado),
+        },
+      }));
+    }
+    if (llamadas.length > 0) {
+      dc.send(JSON.stringify({ type: 'response.create' }));
+    }
+  });
+
+  const offer = await pc.createOffer();
+  await pc.setLocalDescription(offer);
+
+  const respuesta = await fetch('https://api.openai.com/v1/realtime/calls?model=gpt-realtime-mini', {
+    method: 'POST',
+    body: offer.sdp,
+    headers: {
+      Authorization: `Bearer ${clientSecret}`,
+      'Content-Type': 'application/sdp',
+    },
+  });
+
+  if (!respuesta.ok) {
+    throw new Error('No se pudo conectar con el agente de voz.');
+  }
+
+  const answerSdp = await respuesta.text();
+  await pc.setRemoteDescription({ type: 'answer', sdp: answerSdp });
+
+  return {
+    cerrar() {
+      detenerMedicionEntrada();
+      detenerMedicionSalida();
+      micStream.getTracks().forEach((t) => t.stop());
+      dc.close();
+      pc.close();
+    },
+  };
+}
