@@ -1,7 +1,7 @@
 const PUNTOS_ESFERA = 180;
-const RADIO_BASE = 150;
+const RADIO_BASE = 100;
 
-let fab, overlay, canvas, ctx, statusEl;
+let fab, panel, canvas, ctx, statusEl;
 let puntosEsfera = [];
 let rotacion = 0;
 let nivelSuavizado = 0;
@@ -32,24 +32,26 @@ function crearDOM() {
   fab.setAttribute('aria-label', 'Abrir agente');
   fab.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M12 2l2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2L12 2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>';
 
-  overlay = document.createElement('div');
-  overlay.className = 'agent-overlay';
-  overlay.innerHTML = `
-    <button type="button" class="agent-close" aria-label="Cerrar">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-    </button>
-    <canvas class="agent-canvas" width="420" height="420"></canvas>
+  panel = document.createElement('div');
+  panel.className = 'agent-panel';
+  panel.innerHTML = `
+    <div class="agent-orb-wrap">
+      <div class="agent-orb-glow"></div>
+      <button type="button" class="agent-close" aria-label="Cerrar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <canvas class="agent-canvas" width="280" height="280"></canvas>
+    </div>
     <p class="agent-status">Toca para hablar</p>
   `;
 
-  document.body.append(fab, overlay);
-  canvas = overlay.querySelector('canvas');
+  document.body.append(fab, panel);
+  canvas = panel.querySelector('canvas');
   ctx = canvas.getContext('2d');
-  statusEl = overlay.querySelector('.agent-status');
+  statusEl = panel.querySelector('.agent-status');
 
   fab.addEventListener('click', despertar);
-  overlay.querySelector('.agent-close').addEventListener('click', dormir);
-  overlay.addEventListener('click', (e) => { if (e.target === overlay) dormir(); });
+  panel.querySelector('.agent-close').addEventListener('click', dormir);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && estado !== 'dormido') dormir(); });
 }
 
@@ -87,12 +89,12 @@ function dibujar() {
     .sort((a, b) => a.prof - b.prof);
 
   proyectados.forEach(({ sx, sy, prof, escala }) => {
-    const brillo = 0.35 + 0.5 * ((prof + RADIO_BASE) / (RADIO_BASE * 2)) + nivelSuavizado * 0.3;
+    const brillo = 0.4 + 0.5 * ((prof + RADIO_BASE) / (RADIO_BASE * 2)) + nivelSuavizado * 0.3;
     const tam = Math.max(1, 2.4 * escala);
     ctx.beginPath();
-    ctx.fillStyle = `rgba(212, 175, 105, ${Math.min(1, brillo)})`;
-    ctx.shadowColor = 'rgba(212, 175, 105, .8)';
-    ctx.shadowBlur = 6 + nivelSuavizado * 14;
+    ctx.fillStyle = `rgba(124, 94, 32, ${Math.min(1, brillo)})`;
+    ctx.shadowColor = 'rgba(168, 131, 46, .6)';
+    ctx.shadowBlur = 3 + nivelSuavizado * 10;
     ctx.arc(sx, sy, tam, 0, Math.PI * 2);
     ctx.fill();
   });
@@ -138,7 +140,7 @@ function detenerMicrofono() {
 function despertar() {
   if (estado !== 'dormido') return;
   estado = 'despertando';
-  overlay.classList.add('open');
+  panel.classList.add('open');
   statusEl.textContent = 'Despertando…';
   if (!rafId) rafId = requestAnimationFrame(dibujar);
   setTimeout(() => {
@@ -148,7 +150,7 @@ function despertar() {
 
 function dormir() {
   estado = 'dormido';
-  overlay.classList.remove('open');
+  panel.classList.remove('open');
   detenerMicrofono();
   statusEl.textContent = 'Toca para hablar';
 }

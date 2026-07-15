@@ -31,50 +31,93 @@
   50% { box-shadow: 0 0 0 10px rgba(168, 131, 46, 0); }
 }
 
-.agent-overlay {
+.agent-panel {
   position: fixed;
-  inset: 0;
-  background: rgba(8, 7, 4, .92);
-  backdrop-filter: blur(6px);
+  top: 50%;
+  right: 28px;
+  transform: translateY(-50%) translateX(24px);
+  width: 300px;
+  max-width: calc(100vw - 56px);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   z-index: 900;
   opacity: 0;
   pointer-events: none;
-  transition: opacity .25s ease;
+  transition: opacity .25s ease, transform .25s ease;
 }
 
-.agent-overlay.open {
+.agent-panel.open {
   opacity: 1;
   pointer-events: auto;
+  transform: translateY(-50%) translateX(0);
+}
+
+.agent-orb-wrap {
+  position: relative;
+  width: 280px;
+  height: 280px;
+}
+
+.agent-orb-glow {
+  position: absolute;
+  inset: -20px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(168, 131, 46, .16), rgba(168, 131, 46, 0) 70%);
+  pointer-events: none;
 }
 
 .agent-close {
   position: absolute;
-  top: 24px;
-  right: 28px;
-  background: none;
-  border: none;
-  color: var(--color-gold-tint);
+  top: -6px;
+  right: -6px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--color-bg-soft);
+  border: 1px solid var(--color-gold-border);
+  color: var(--color-gold-deep);
   cursor: pointer;
-  opacity: .8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
 }
 
 .agent-close:hover {
-  opacity: 1;
+  background: var(--color-gold-tint);
 }
 
 .agent-canvas {
-  width: min(420px, 80vw);
-  height: min(420px, 80vw);
+  position: relative;
+  width: 280px;
+  height: 280px;
 }
 
 .agent-status {
-  margin-top: 18px;
-  font-family: var(--font-body);
-  color: var(--color-gold-tint);
-  letter-spacing: .04em;
-  font-size: .95rem;
+  margin-top: 10px;
+  font: 600 12px var(--font-body);
+  color: var(--color-gold-deep);
+  background: rgba(255, 254, 251, .85);
+  padding: 5px 14px;
+  border-radius: 999px;
+  letter-spacing: .03em;
+}
+
+@media (max-width: 720px) {
+  .agent-panel {
+    top: auto;
+    bottom: 100px;
+    right: 16px;
+    transform: translateX(24px);
+    width: 220px;
+  }
+  .agent-panel.open {
+    transform: translateX(0);
+  }
+  .agent-orb-wrap,
+  .agent-canvas {
+    width: 200px;
+    height: 200px;
+  }
 }
