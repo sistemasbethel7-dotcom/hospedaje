@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anfitriones-v54';
+const CACHE_NAME = 'anfitriones-v55';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -16,6 +16,7 @@ const APP_SHELL = [
   '/admin/usuarios.html',
   '/admin/catalogos.html',
   '/admin/mapa.html',
+  '/admin/agente.html',
   '/tutorial-instalacion.html',
   '/assets/tutorial/ios.png',
   '/assets/tutorial/android.png',
@@ -57,6 +58,7 @@ const APP_SHELL = [
   '/js/pages/admin-usuarios.js',
   '/js/pages/admin-catalogos.js',
   '/js/pages/admin-mapa.js',
+  '/js/pages/admin-agente.js',
   '/js/services/api.js',
   '/js/services/session.js',
   '/js/services/eventoActivo.js',

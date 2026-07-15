@@ -418,6 +418,7 @@ export async function mount() {
     if (!esAdmin) {
       document.getElementById('nav-usuarios').hidden = true;
       document.getElementById('nav-catalogos').hidden = true;
+      document.getElementById('nav-agente').hidden = true;
     }
 
     const { eventos: lista } = await listarEventos(session.token);

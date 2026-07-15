@@ -1,3 +1,5 @@
+import { obtenerConfig, actualizarConfig, VOCES_VALIDAS } from "../services/agenteConfigService.js";
+
 const REALTIME_MODEL = "gpt-realtime-mini";
 
 const INSTRUCCIONES = `Eres el asistente de voz del panel de administración del sistema Hospedaje,
@@ -57,6 +59,15 @@ export async function obtenerToken(req, res) {
         return res.status(500).json({ message: "El agente de voz no está configurado en el servidor." });
     }
 
+    const config = await obtenerConfig();
+    if (!config.habilitado) {
+        return res.status(403).json({ message: "El agente de voz está deshabilitado." });
+    }
+
+    const instrucciones = config.acento_estilo
+        ? `${INSTRUCCIONES}\n\n${config.acento_estilo}`
+        : INSTRUCCIONES;
+
     const respuesta = await fetch("https://api.openai.com/v1/realtime/client_secrets", {
         method: "POST",
         headers: {
@@ -67,8 +78,8 @@ export async function obtenerToken(req, res) {
             session: {
                 type: "realtime",
                 model: REALTIME_MODEL,
-                instructions: INSTRUCCIONES,
-                audio: { output: { voice: "marin" } },
+                instructions: instrucciones,
+                audio: { output: { voice: config.voz } },
                 tools: TOOLS,
                 tool_choice: "auto",
             },
@@ -82,4 +93,26 @@ export async function obtenerToken(req, res) {
     }
 
     res.json({ value: datos.value, expires_at: datos.expires_at });
+}
+
+export async function obtenerConfigController(req, res) {
+    const config = await obtenerConfig();
+    res.json({ config });
+}
+
+export async function actualizarConfigController(req, res) {
+    const { habilitado, voz, acento_estilo } = req.body;
+
+    if (typeof habilitado !== "boolean") {
+        return res.status(400).json({ message: "El campo habilitado debe ser verdadero o falso." });
+    }
+    if (!VOCES_VALIDAS.includes(voz)) {
+        return res.status(400).json({ message: "La voz seleccionada no es válida." });
+    }
+    if (typeof acento_estilo !== "string") {
+        return res.status(400).json({ message: "El acento o estilo debe ser texto." });
+    }
+
+    const config = await actualizarConfig({ habilitado, voz, acento_estilo: acento_estilo.trim() });
+    res.json({ config });
 }

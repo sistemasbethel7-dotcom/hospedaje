@@ -466,6 +466,24 @@
   color: var(--color-text);
 }
 
+.admin-inline-form textarea {
+  min-width: 260px;
+  border: 1px solid var(--color-gold-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  padding: 10px 12px;
+  font: 500 14px var(--font-body);
+  color: var(--color-text);
+  resize: vertical;
+}
+
+.admin-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+}
+
 .admin-filtros {
   display: flex;
   flex-wrap: wrap;

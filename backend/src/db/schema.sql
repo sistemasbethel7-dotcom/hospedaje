@@ -203,3 +203,15 @@ ALTER TABLE hogares ADD CONSTRAINT hogares_registrado_por_fkey
 ALTER TABLE ingresos DROP CONSTRAINT IF EXISTS ingresos_registrado_por_fkey;
 ALTER TABLE ingresos ADD CONSTRAINT ingresos_registrado_por_fkey
   FOREIGN KEY (registrado_por) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+-- Configuración global del agente de voz (una sola fila, id fijo en 1).
+CREATE TABLE IF NOT EXISTS agente_config (
+  id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+  habilitado BOOLEAN NOT NULL DEFAULT true,
+  voz TEXT NOT NULL DEFAULT 'marin',
+  acento_estilo TEXT NOT NULL DEFAULT '',
+  actualizado_en TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+INSERT INTO agente_config (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
+
+GRANT ALL PRIVILEGES ON TABLE agente_config TO pwa_templo_app;

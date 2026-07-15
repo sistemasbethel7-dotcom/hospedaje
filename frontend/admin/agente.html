@@ -3,16 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mapa · Anfitriones</title>
+<title>Agente · Anfitriones</title>
 <meta name="theme-color" content="#A8832E">
 <link rel="manifest" href="../manifest.json">
 <link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <link rel="stylesheet" href="../css/tokens.css">
 <link rel="stylesheet" href="../css/base.css">
 <link rel="stylesheet" href="../css/components.css">
@@ -27,11 +24,11 @@
     <nav class="admin-nav">
       <a href="dashboard.html" class="admin-nav-link">Dashboard</a>
       <a href="hogares.html" class="admin-nav-link">Hogares</a>
-      <a href="mapa.html" class="admin-nav-link active">Mapa</a>
+      <a href="mapa.html" class="admin-nav-link">Mapa</a>
       <a href="eventos.html" class="admin-nav-link">Eventos</a>
       <a href="catalogos.html" class="admin-nav-link" id="nav-catalogos">Catálogos</a>
       <a href="usuarios.html" class="admin-nav-link" id="nav-usuarios">Usuarios</a>
-      <a href="agente.html" class="admin-nav-link" id="nav-agente">Agente</a>
+      <a href="agente.html" class="admin-nav-link active" id="nav-agente">Agente</a>
     </nav>
     <div class="admin-sidebar-footer">
       <a href="../eventos.html" class="admin-nav-link">Modo campo</a>
@@ -41,30 +38,41 @@
 
   <main class="admin-main">
     <div class="admin-page-header">
-      <h1 class="admin-page-title">Mapa</h1>
-      <div class="admin-page-actions">
-        <span class="admin-live-indicator" id="live-indicator" hidden>
-          <span class="admin-live-dot"></span>
-          <span id="live-indicator-text">En vivo</span>
-        </span>
-        <select class="admin-select" id="evento-select"></select>
-      </div>
+      <h1 class="admin-page-title">Agente de voz</h1>
     </div>
+    <p class="admin-page-desc">Controla el asistente de voz que aparece en el panel: enciéndelo o apágalo, elige su voz y ajusta el acento o estilo con el que habla.</p>
 
-    <p class="admin-error" id="mapa-error" role="alert"></p>
-    <p class="admin-empty" id="mapa-empty" hidden>Aún no hay eventos creados. <a href="eventos.html">Crea el primero</a>.</p>
+    <p class="admin-error" id="agente-error" role="alert"></p>
+    <p class="admin-empty" id="agente-exito" hidden>Configuración guardada.</p>
 
-    <div id="mapa-content" hidden>
-      <div class="admin-mapa-legend">
-        <span class="admin-mapa-legend-item"><span class="admin-mapa-dot libre"></span>Libre</span>
-        <span class="admin-mapa-legend-item"><span class="admin-mapa-dot parcial"></span>Parcialmente ocupada</span>
-        <span class="admin-mapa-legend-item"><span class="admin-mapa-dot lleno"></span>Llena</span>
-        <span class="admin-mapa-legend-item" id="mapa-sin-ubicacion" hidden></span>
+    <form class="admin-inline-form" id="agente-form">
+      <div class="field">
+        <label class="label-caps admin-checkbox-label" for="agente-habilitado-check">
+          <input type="checkbox" id="agente-habilitado-check">
+          Agente habilitado
+        </label>
       </div>
-      <div class="admin-mapa-container">
-        <div id="mapa"></div>
+      <div class="field">
+        <label class="label-caps" for="agente-voz-select">Voz</label>
+        <select id="agente-voz-select">
+          <option value="marin">Marin (recomendada)</option>
+          <option value="cedar">Cedar (recomendada)</option>
+          <option value="alloy">Alloy</option>
+          <option value="ash">Ash</option>
+          <option value="ballad">Ballad</option>
+          <option value="coral">Coral</option>
+          <option value="echo">Echo</option>
+          <option value="sage">Sage</option>
+          <option value="shimmer">Shimmer</option>
+          <option value="verse">Verse</option>
+        </select>
       </div>
-    </div>
+      <div class="field">
+        <label class="label-caps" for="agente-acento-input">Acento o estilo (opcional)</label>
+        <textarea id="agente-acento-input" rows="3" placeholder="Ej. Usa un acento neutro, evita modismos regionales."></textarea>
+      </div>
+      <button type="submit" class="admin-btn" id="agente-guardar-btn">Guardar</button>
+    </form>
   </main>
 
   <div class="agent-column" id="agent-column"></div>
@@ -74,6 +82,6 @@
   import { mountShellOnce } from '../js/adminShell.js';
   mountShellOnce();
 </script>
-<script type="module" src="../js/pages/admin-mapa.js"></script>
+<script type="module" src="../js/pages/admin-agente.js"></script>
 </body>
 </html>

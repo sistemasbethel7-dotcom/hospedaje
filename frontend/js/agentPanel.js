@@ -1,4 +1,5 @@
 import { iniciarSesionAgente } from './agentClient.js';
+import { obtenerConfigAgente } from './services/api.js';
 import { getSession } from './services/session.js';
 import { getActiveEventId } from './services/eventoActivo.js';
 
@@ -175,8 +176,19 @@ function dormir() {
   statusEl.textContent = 'Toca para hablar';
 }
 
-export function setupAgentPanel({ onAbrirHogar: callback } = {}) {
+export async function setupAgentPanel({ onAbrirHogar: callback } = {}) {
   onAbrirHogar = callback || null;
+
+  const session = getSession();
+  if (!session) return;
+
+  try {
+    const { config } = await obtenerConfigAgente(session.token);
+    if (!config.habilitado) return;
+  } catch {
+    return;
+  }
+
   puntosEsfera = fibonacciEsfera(PUNTOS_ESFERA, RADIO_BASE);
   crearDOM();
   if (canvas) rafId = requestAnimationFrame(dibujar);

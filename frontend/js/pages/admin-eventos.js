@@ -115,6 +115,7 @@ try {
   if (!esAdmin) {
     document.getElementById('nav-usuarios').hidden = true;
     document.getElementById('nav-catalogos').hidden = true;
+    document.getElementById('nav-agente').hidden = true;
   } else {
     document.getElementById('crear-evento-btn').hidden = false;
   }

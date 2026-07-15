@@ -393,6 +393,37 @@ export async function obtenerTokenAgente(token) {
   return res.json();
 }
 
+export async function obtenerConfigAgente(token) {
+  const res = await fetch(`${API_BASE}/agente/config`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    const error = new Error('No se pudo cargar la configuración del agente.');
+    error.status = res.status;
+    throw error;
+  }
+
+  return res.json();
+}
+
+export async function actualizarConfigAgente(token, payload) {
+  const res = await fetch(`${API_BASE}/agente/config`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    const error = new Error(data.message || 'No se pudo guardar la configuración del agente.');
+    error.status = res.status;
+    throw error;
+  }
+
+  return res.json();
+}
+
 export async function registrarIngreso(token, hogarId, cantidad) {
   const res = await fetch(`${API_BASE}/hogares/${hogarId}/ingresos`, {
     method: 'POST',

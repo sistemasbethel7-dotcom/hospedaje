@@ -446,6 +446,7 @@ export async function mount() {
     if (user.role !== 'admin') {
       document.getElementById('nav-usuarios').hidden = true;
       document.getElementById('nav-catalogos').hidden = true;
+      document.getElementById('nav-agente').hidden = true;
     }
 
     const { eventos: lista } = await listarEventos(session.token);
