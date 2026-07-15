@@ -69,6 +69,7 @@
 
 .admin-main {
   flex: 0 1 1200px;
+  min-width: 0;
   padding: 36px 44px;
   max-width: 1200px;
 }
