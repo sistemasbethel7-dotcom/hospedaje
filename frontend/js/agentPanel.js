@@ -1,7 +1,7 @@
-const PUNTOS_ESFERA = 180;
-const RADIO_BASE = 100;
+const PUNTOS_ESFERA = 140;
+const RADIO_BASE = 65;
 
-let fab, panel, canvas, ctx, statusEl;
+let card, canvas, ctx, statusEl;
 let puntosEsfera = [];
 let rotacion = 0;
 let nivelSuavizado = 0;
@@ -26,33 +26,41 @@ function fibonacciEsfera(n, radio) {
 }
 
 function crearDOM() {
-  fab = document.createElement('button');
-  fab.type = 'button';
-  fab.className = 'agent-fab';
-  fab.setAttribute('aria-label', 'Abrir agente');
-  fab.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M12 2l2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2L12 2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>';
+  const contenedor = document.querySelector('.admin-charts');
+  if (!contenedor) return;
 
-  panel = document.createElement('div');
-  panel.className = 'agent-panel';
-  panel.innerHTML = `
+  card = document.createElement('div');
+  card.className = 'admin-chart-card agent-card';
+  card.setAttribute('role', 'button');
+  card.setAttribute('tabindex', '0');
+  card.innerHTML = `
+    <div class="admin-chart-title">Agente IA</div>
     <div class="agent-orb-wrap">
       <div class="agent-orb-glow"></div>
-      <button type="button" class="agent-close" aria-label="Cerrar">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      </button>
-      <canvas class="agent-canvas" width="280" height="280"></canvas>
+      <canvas class="agent-canvas" width="180" height="180"></canvas>
     </div>
     <p class="agent-status">Toca para hablar</p>
   `;
 
-  document.body.append(fab, panel);
-  canvas = panel.querySelector('canvas');
-  ctx = canvas.getContext('2d');
-  statusEl = panel.querySelector('.agent-status');
+  const servicios = contenedor.children[2];
+  if (servicios) {
+    contenedor.insertBefore(card, servicios.nextSibling);
+  } else {
+    contenedor.appendChild(card);
+  }
 
-  fab.addEventListener('click', despertar);
-  panel.querySelector('.agent-close').addEventListener('click', dormir);
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && estado !== 'dormido') dormir(); });
+  canvas = card.querySelector('canvas');
+  ctx = canvas.getContext('2d');
+  statusEl = card.querySelector('.agent-status');
+
+  const alternar = () => {
+    if (estado === 'dormido') despertar();
+    else dormir();
+  };
+  card.addEventListener('click', alternar);
+  card.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); alternar(); }
+  });
 }
 
 function proyectar(p, escalaAudio) {
@@ -61,7 +69,7 @@ function proyectar(p, escalaAudio) {
   const x = p.x * cos - p.z * sin;
   const z = p.x * sin + p.z * cos;
   const factor = 1 + escalaAudio;
-  const focal = 260;
+  const focal = 200;
   const escala = focal / (focal + z * factor);
   return {
     sx: canvas.width / 2 + x * factor * escala,
@@ -72,16 +80,10 @@ function proyectar(p, escalaAudio) {
 }
 
 function dibujar() {
-  if (estado === 'dormido') {
-    rafId = null;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    return;
-  }
-
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   const nivelObjetivo = estado === 'escuchando' ? nivelActual : 0;
   nivelSuavizado += (nivelObjetivo - nivelSuavizado) * 0.15;
-  rotacion += 0.004 + nivelSuavizado * 0.01;
+  rotacion += 0.0025 + nivelSuavizado * 0.01;
 
   const escalaAudio = nivelSuavizado * 0.5;
   const proyectados = puntosEsfera
@@ -90,7 +92,7 @@ function dibujar() {
 
   proyectados.forEach(({ sx, sy, prof, escala }) => {
     const brillo = 0.4 + 0.5 * ((prof + RADIO_BASE) / (RADIO_BASE * 2)) + nivelSuavizado * 0.3;
-    const tam = Math.max(1, 2.4 * escala);
+    const tam = Math.max(1, 2.2 * escala);
     ctx.beginPath();
     ctx.fillStyle = `rgba(124, 94, 32, ${Math.min(1, brillo)})`;
     ctx.shadowColor = 'rgba(168, 131, 46, .6)';
@@ -124,6 +126,7 @@ async function iniciarMicrofono() {
     estado = 'escuchando';
     statusEl.textContent = 'Escuchando… habla algo';
   } catch (err) {
+    estado = 'dormido';
     statusEl.textContent = 'No se pudo acceder al micrófono';
   }
 }
@@ -140,17 +143,12 @@ function detenerMicrofono() {
 function despertar() {
   if (estado !== 'dormido') return;
   estado = 'despertando';
-  panel.classList.add('open');
   statusEl.textContent = 'Despertando…';
-  if (!rafId) rafId = requestAnimationFrame(dibujar);
-  setTimeout(() => {
-    if (estado === 'despertando') iniciarMicrofono();
-  }, 700);
+  iniciarMicrofono();
 }
 
 function dormir() {
   estado = 'dormido';
-  panel.classList.remove('open');
   detenerMicrofono();
   statusEl.textContent = 'Toca para hablar';
 }
@@ -158,4 +156,5 @@ function dormir() {
 export function setupAgentPanel() {
   puntosEsfera = fibonacciEsfera(PUNTOS_ESFERA, RADIO_BASE);
   crearDOM();
+  if (canvas) rafId = requestAnimationFrame(dibujar);
 }
