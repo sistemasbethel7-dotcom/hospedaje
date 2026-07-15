@@ -1,7 +1,7 @@
-const PUNTOS_ESFERA = 140;
-const RADIO_BASE = 65;
+const PUNTOS_ESFERA = 160;
+const RADIO_BASE = 70;
 
-let card, canvas, ctx, statusEl;
+let wrap, canvas, ctx, statusEl;
 let puntosEsfera = [];
 let rotacion = 0;
 let nivelSuavizado = 0;
@@ -20,45 +20,45 @@ function fibonacciEsfera(n, radio) {
     const y = i * offset - 1 + offset / 2;
     const r = Math.sqrt(Math.max(0, 1 - y * y));
     const phi = i * incremento;
-    puntos.push({ x: Math.cos(phi) * r * radio, y: y * radio, z: Math.sin(phi) * r * radio });
+    const jitter = 0.82 + Math.random() * 0.36;
+    puntos.push({
+      x: Math.cos(phi) * r * radio * jitter,
+      y: y * radio * jitter,
+      z: Math.sin(phi) * r * radio * jitter,
+    });
   }
   return puntos;
 }
 
 function crearDOM() {
-  const contenedor = document.querySelector('.admin-charts');
+  const contenedor = document.getElementById('agent-column');
   if (!contenedor) return;
 
-  card = document.createElement('div');
-  card.className = 'admin-chart-card agent-card';
-  card.setAttribute('role', 'button');
-  card.setAttribute('tabindex', '0');
-  card.innerHTML = `
-    <div class="admin-chart-title">Agente IA</div>
-    <div class="agent-orb-wrap">
+  wrap = document.createElement('div');
+  wrap.className = 'agent-orb-wrap';
+  wrap.setAttribute('role', 'button');
+  wrap.setAttribute('tabindex', '0');
+  wrap.setAttribute('aria-label', 'Hablar con el agente');
+  wrap.innerHTML = `
+    <div class="agent-orb-inner">
       <div class="agent-orb-glow"></div>
-      <canvas class="agent-canvas" width="180" height="180"></canvas>
+      <canvas class="agent-canvas" width="320" height="320"></canvas>
     </div>
     <p class="agent-status">Toca para hablar</p>
   `;
 
-  const servicios = contenedor.children[2];
-  if (servicios) {
-    contenedor.insertBefore(card, servicios.nextSibling);
-  } else {
-    contenedor.appendChild(card);
-  }
+  contenedor.appendChild(wrap);
 
-  canvas = card.querySelector('canvas');
+  canvas = wrap.querySelector('canvas');
   ctx = canvas.getContext('2d');
-  statusEl = card.querySelector('.agent-status');
+  statusEl = wrap.querySelector('.agent-status');
 
   const alternar = () => {
     if (estado === 'dormido') despertar();
     else dormir();
   };
-  card.addEventListener('click', alternar);
-  card.addEventListener('keydown', (e) => {
+  wrap.addEventListener('click', alternar);
+  wrap.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); alternar(); }
   });
 }
@@ -69,7 +69,7 @@ function proyectar(p, escalaAudio) {
   const x = p.x * cos - p.z * sin;
   const z = p.x * sin + p.z * cos;
   const factor = 1 + escalaAudio;
-  const focal = 200;
+  const focal = 240;
   const escala = focal / (focal + z * factor);
   return {
     sx: canvas.width / 2 + x * factor * escala,
