@@ -22,6 +22,7 @@ export async function navigate(url, { isPopstate = false } = {}) {
   }
 
   if (!RUTAS[path]) {
+    console.warn('[router] ruta no registrada, navegación real:', path);
     window.location.href = url;
     return;
   }
@@ -37,9 +38,10 @@ export async function navigate(url, { isPopstate = false } = {}) {
   let html;
   try {
     const res = await fetch(destino, { cache: 'no-cache' });
-    if (!res.ok) throw new Error('Respuesta no OK');
+    if (!res.ok) throw new Error(`Respuesta no OK: ${res.status}`);
     html = await res.text();
   } catch (err) {
+    console.warn('[router] fetch de la página falló, navegación real:', err);
     window.location.href = url;
     return;
   }
@@ -50,6 +52,7 @@ export async function navigate(url, { isPopstate = false } = {}) {
   const nuevoMain = doc.querySelector('.admin-main');
   const mainActual = document.querySelector('.admin-main');
   if (!nuevoMain || !mainActual) {
+    console.warn('[router] no se encontró .admin-main, navegación real');
     window.location.href = url;
     return;
   }
@@ -107,8 +110,12 @@ function alClicSidebar(event) {
 }
 
 export function initRouter() {
-  if (iniciado) return;
+  if (iniciado) {
+    console.warn('[router] initRouter ya estaba iniciado, se ignora la llamada duplicada');
+    return;
+  }
   iniciado = true;
+  console.info('[router] iniciado, ruta actual:', window.location.pathname);
 
   currentPath = window.location.pathname;
   const rutaActual = RUTAS[currentPath];
