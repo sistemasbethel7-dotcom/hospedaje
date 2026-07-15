@@ -1,8 +1,8 @@
 import { iniciarSesionAgente } from './agentClient.js';
-import { obtenerConfigAgente } from './services/api.js';
+import { obtenerConfigAgente, obtenerHogar } from './services/api.js';
 import { getSession } from './services/session.js';
 import { getActiveEventId } from './services/eventoActivo.js';
-import { folioDe, renderDetalleHogarHTML } from './hogarDetalleView.js';
+import { folioDe, renderDetalleHogarHTML, renderHogaresTablaHTML } from './hogarDetalleView.js';
 
 const PUNTOS_ESFERA = 160;
 const RADIO_BASE = 70;
@@ -109,6 +109,26 @@ function mostrarVistaPreviaHogar(hogar) {
   modalBackdrop.hidden = false;
 }
 
+async function abrirHogarPorId(id) {
+  const session = getSession();
+  if (!session) return;
+  try {
+    const { hogar } = await obtenerHogar(session.token, id);
+    mostrarVistaPreviaHogar(hogar);
+  } catch {
+    modalBody.innerHTML = '<p class="admin-modal-empty">No se pudo cargar el detalle de este hogar.</p>';
+  }
+}
+
+function mostrarListaHogares(titulo, hogares) {
+  modalTitle.textContent = titulo;
+  modalBody.innerHTML = renderHogaresTablaHTML(hogares);
+  modalBody.querySelectorAll('tr[data-hogar-id]').forEach((row) => {
+    row.addEventListener('click', () => abrirHogarPorId(Number(row.dataset.hogarId)));
+  });
+  modalBackdrop.hidden = false;
+}
+
 function cerrarVistaPrevia() {
   modalBackdrop.hidden = true;
 }
@@ -188,6 +208,7 @@ async function despertar() {
       onNivelSalida: (n) => { nivelSalida = n; },
       onError: (msg) => { statusEl.textContent = msg; },
       onMostrarVistaPrevia: (hogar) => mostrarVistaPreviaHogar(hogar),
+      onMostrarListaHogares: (titulo, hogares) => mostrarListaHogares(titulo, hogares),
       onNavegarPagina: (url) => {
         if (onNavegarPaginaCb) onNavegarPaginaCb(url);
         else window.location.href = url;

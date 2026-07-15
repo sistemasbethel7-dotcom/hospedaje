@@ -20,17 +20,26 @@ function normaliza(texto) {
 }
 
 function calleBase(calleNumero) {
-  return normaliza(calleNumero).replace(/\s*#?\d+[\w-]*\s*$/, '').trim() || normaliza(calleNumero);
+  const texto = String(calleNumero || '').trim();
+  return texto.replace(/\s*#?\d+[\w-]*\s*$/, '').trim() || texto;
 }
 
-async function buscarHogares(ctx, args) {
-  const { hogares } = await listarHogares(ctx.token, ctx.eventoId);
+function filtrarHogares(hogares, args) {
   let resultados = hogares;
 
   if (args.dueno) resultados = resultados.filter((h) => normaliza(h.nombre_dueno).includes(normaliza(args.dueno)));
   if (args.calle) resultados = resultados.filter((h) => normaliza(h.calle_numero).includes(normaliza(args.calle)));
   if (args.colonia) resultados = resultados.filter((h) => normaliza(h.colonia).includes(normaliza(args.colonia)));
   if (args.solo_disponibles) resultados = resultados.filter((h) => h.capacidad - h.ocupacion_actual > 0);
+  if (typeof args.capacidad_max === 'number') resultados = resultados.filter((h) => h.capacidad <= args.capacidad_max);
+  if (typeof args.capacidad_min === 'number') resultados = resultados.filter((h) => h.capacidad >= args.capacidad_min);
+
+  return resultados;
+}
+
+async function buscarHogares(ctx, args) {
+  const { hogares } = await listarHogares(ctx.token, ctx.eventoId);
+  const resultados = filtrarHogares(hogares, args);
 
   return {
     total_encontrados: resultados.length,
@@ -61,9 +70,10 @@ async function disponibilidadPorCalle(ctx) {
   const grupos = new Map();
 
   hogares.forEach((h) => {
-    const clave = calleBase(h.calle_numero);
+    const base = calleBase(h.calle_numero);
+    const clave = normaliza(base);
     const disponibles = Math.max(0, h.capacidad - h.ocupacion_actual);
-    const grupo = grupos.get(clave) || { calle: h.calle_numero, hogares: 0, capacidad: 0, ocupacion: 0, disponibles: 0 };
+    const grupo = grupos.get(clave) || { calle: base, hogares: 0, capacidad: 0, ocupacion: 0, disponibles: 0 };
     grupo.hogares += 1;
     grupo.capacidad += h.capacidad;
     grupo.ocupacion += h.ocupacion_actual;
@@ -91,6 +101,13 @@ async function navegarAPagina(ctx, args) {
   return { ok: true };
 }
 
+async function mostrarListaHogares(ctx, args) {
+  const { hogares } = await listarHogares(ctx.token, ctx.eventoId);
+  const resultados = filtrarHogares(hogares, args);
+  ctx.onMostrarListaHogares?.(args.titulo || 'Resultados', resultados);
+  return { total_mostrados: resultados.length };
+}
+
 async function ejecutarHerramienta(nombre, args, ctx) {
   try {
     if (nombre === 'buscar_hogares') return await buscarHogares(ctx, args);
@@ -98,6 +115,7 @@ async function ejecutarHerramienta(nombre, args, ctx) {
     if (nombre === 'disponibilidad_por_calle') return await disponibilidadPorCalle(ctx);
     if (nombre === 'abrir_hogar') return await abrirHogar(ctx, args);
     if (nombre === 'navegar_a_pagina') return await navegarAPagina(ctx, args);
+    if (nombre === 'mostrar_lista_hogares') return await mostrarListaHogares(ctx, args);
     return { error: 'Herramienta desconocida.' };
   } catch (err) {
     return { error: 'No se pudo completar la consulta.' };
@@ -128,7 +146,7 @@ function medirNivel(stream, onNivel) {
   };
 }
 
-export async function iniciarSesionAgente({ token, eventoId, onNivelEntrada, onNivelSalida, onError, onMostrarVistaPrevia, onNavegarPagina }) {
+export async function iniciarSesionAgente({ token, eventoId, onNivelEntrada, onNivelSalida, onError, onMostrarVistaPrevia, onNavegarPagina, onMostrarListaHogares }) {
   const { value: clientSecret } = await obtenerTokenAgente(token);
 
   const pc = new RTCPeerConnection();
@@ -149,7 +167,7 @@ export async function iniciarSesionAgente({ token, eventoId, onNivelEntrada, onN
   micStream.getTracks().forEach((t) => pc.addTrack(t, micStream));
   detenerMedicionEntrada = medirNivel(micStream, onNivelEntrada);
 
-  const ctxHerramientas = { token, eventoId, onMostrarVistaPrevia, onNavegarPagina };
+  const ctxHerramientas = { token, eventoId, onMostrarVistaPrevia, onNavegarPagina, onMostrarListaHogares };
 
   const dc = pc.createDataChannel('oai-events');
   dc.addEventListener('message', async (e) => {

@@ -22,6 +22,50 @@ export function folioDe(id) {
   return `H-${String(id).padStart(6, '0')}`;
 }
 
+export function renderHogaresTablaHTML(hogares) {
+  if (!hogares || hogares.length === 0) {
+    return '<p class="admin-modal-empty">No se encontraron hogares.</p>';
+  }
+
+  return `
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Folio</th>
+            <th>Dueño</th>
+            <th>Dirección</th>
+            <th>C.P.</th>
+            <th>Ocupación</th>
+            <th>Estatus</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${hogares
+            .map((h) => {
+              const thumbStyle = h.foto_fachada ? `style="background-image:url(/uploads/${h.foto_fachada})"` : '';
+              const thumbContent = h.foto_fachada ? '' : HOUSE_ICON;
+              const estatus = estatusHogar(h);
+              return `
+                <tr class="clickable" data-hogar-id="${h.id}">
+                  <td><div class="admin-table-thumb" ${thumbStyle}>${thumbContent}</div></td>
+                  <td>${folioDe(h.id)}</td>
+                  <td>${escapeHtml(h.nombre_dueno)}</td>
+                  <td>${escapeHtml(h.calle_numero)}, ${escapeHtml(h.colonia)}</td>
+                  <td>${h.codigo_postal ? escapeHtml(h.codigo_postal) : '—'}</td>
+                  <td>${h.ocupacion_actual}/${h.capacidad}</td>
+                  <td><span class="admin-estado-badge ${estatus}">${estatusLabel(estatus)}</span></td>
+                </tr>
+              `;
+            })
+            .join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
 export function renderDetalleHogarHTML(hogar) {
   const fotoStyle = hogar.foto_fachada ? `style="background-image:url(/uploads/${hogar.foto_fachada})"` : '';
   const fotoContent = hogar.foto_fachada ? '' : HOUSE_ICON;

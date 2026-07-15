@@ -34,16 +34,22 @@ Reglas de uso de herramientas:
 - Si el usuario pregunta en qué parte del sistema puede hacer algo ("¿dónde edito una casa?"),
   respóndele con la guía de páginas de arriba y ofrécele llevarlo ahí con "navegar_a_pagina" si
   quiere.
-- Si el usuario pide ver o que le muestres información de un hogar específico ("muéstrame la casa
-  con mayor capacidad"), usa "abrir_hogar" — esto lo muestra en tu propio panel flotante, SIN
+- Si el usuario pide ver o que le muestres información de UNA sola casa específica ("muéstrame la
+  casa con mayor capacidad"), usa "abrir_hogar" — esto la muestra en tu propio panel flotante, SIN
   cambiar de página. Nunca navegues a otra página solo para mostrar un hogar, a menos que el
   usuario lo pida explícitamente.
+- Si el usuario pide ver una LISTA de varias casas ("dame la lista de casas con capacidad menor a
+  10", "muéstrame las casas de tal calle", o quieres mostrar las casas de la calle con mayor
+  disponibilidad que acabas de calcular), usa "mostrar_lista_hogares" — abre tu panel con una tabla
+  completa de resultados. NUNCA uses "abrir_hogar" repetidas veces para simular una lista; para eso
+  existe "mostrar_lista_hogares".
 - En "buscar_hogares", el conteo real de resultados es "total_encontrados"; el arreglo "hogares"
   solo trae hasta 8 como muestra. Si preguntan cuántas casas hay (en total o en una calle/colonia),
   contesta con "total_encontrados", nunca cuentes el arreglo de muestra.
 - "disponibilidad_por_calle" agrupa por el nombre de calle detectado de forma aproximada (a partir
   del campo de dirección, que junta calle y número en un solo texto) — preséntalo como una
-  aproximación, no como un dato exacto.
+  aproximación, no como un dato exacto. El campo "calle" de cada resultado sirve directo como filtro
+  de "mostrar_lista_hogares" o "buscar_hogares" para ver las casas de esa calle.
 
 Solo puedes CONSULTAR información y navegar por el sistema. Nunca puedes crear, editar ni eliminar
 nada, y nunca debes inventar datos: si una herramienta no encuentra información, dilo con
@@ -59,7 +65,7 @@ function buildTools(role) {
         {
             type: "function",
             name: "buscar_hogares",
-            description: "Busca hogares registrados en el evento activo, filtrando por dueño, calle, colonia o disponibilidad.",
+            description: "Busca hogares registrados en el evento activo, filtrando por dueño, calle, colonia, disponibilidad o capacidad.",
             parameters: {
                 type: "object",
                 properties: {
@@ -67,6 +73,8 @@ function buildTools(role) {
                     calle: { type: "string", description: "Calle o parte de la dirección" },
                     colonia: { type: "string", description: "Colonia o parte de ella" },
                     solo_disponibles: { type: "boolean", description: "true para mostrar solo hogares con lugares disponibles" },
+                    capacidad_max: { type: "integer", description: "Solo hogares con capacidad menor o igual a este número" },
+                    capacidad_min: { type: "integer", description: "Solo hogares con capacidad mayor o igual a este número" },
                 },
             },
         },
@@ -94,6 +102,25 @@ function buildTools(role) {
                     id: { type: "integer", description: "ID numérico del hogar a mostrar" },
                 },
                 required: ["id"],
+            },
+        },
+        {
+            type: "function",
+            name: "mostrar_lista_hogares",
+            description:
+                "Muestra en el panel flotante del propio agente una tabla con varios hogares que cumplen un filtro, sin cambiar de página. Úsala para cualquier pedido de ver una lista de casas (no solo una).",
+            parameters: {
+                type: "object",
+                properties: {
+                    titulo: { type: "string", description: "Título breve para el panel, ej. 'Casas en Independencia' o 'Casas con capacidad menor a 10'" },
+                    dueno: { type: "string", description: "Nombre completo o parcial del dueño de la casa" },
+                    calle: { type: "string", description: "Calle o parte de la dirección" },
+                    colonia: { type: "string", description: "Colonia o parte de ella" },
+                    solo_disponibles: { type: "boolean", description: "true para mostrar solo hogares con lugares disponibles" },
+                    capacidad_max: { type: "integer", description: "Solo hogares con capacidad menor o igual a este número" },
+                    capacidad_min: { type: "integer", description: "Solo hogares con capacidad mayor o igual a este número" },
+                },
+                required: ["titulo"],
             },
         },
         {

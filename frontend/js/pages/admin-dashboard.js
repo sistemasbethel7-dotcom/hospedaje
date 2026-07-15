@@ -2,7 +2,7 @@ import { me, listarEventos, obtenerMetricasEvento, listarHogares, obtenerHogar }
 import { getSession, clearSession } from '../services/session.js';
 import { getActiveEventId, setActiveEventId, clearActiveEventId } from '../services/eventoActivo.js';
 import { subscribeToEvento } from '../services/eventStream.js';
-import { HOUSE_ICON, escapeHtml, estatusHogar, estatusLabel, folioDe, renderDetalleHogarHTML } from '../hogarDetalleView.js';
+import { folioDe, renderDetalleHogarHTML, renderHogaresTablaHTML } from '../hogarDetalleView.js';
 
 // Paleta llamativa a propósito: el dorado del tema se ve bien en botones y
 // texto, pero en gráficas se veía apagado y costaba distinguir series/barras.
@@ -56,49 +56,7 @@ function renderKpiModal(tipo) {
 
   const body = document.getElementById('kpi-modal-body');
   const hogares = hogaresActuales.filter(info.filtro).sort(info.orden);
-
-  if (hogares.length === 0) {
-    body.innerHTML = '<p class="admin-modal-empty">No hay hogares en esta categoría.</p>';
-    return;
-  }
-
-  body.innerHTML = `
-    <div class="admin-table-wrap">
-      <table class="admin-table">
-        <thead>
-          <tr>
-            <th></th>
-            <th>Folio</th>
-            <th>Dueño</th>
-            <th>Dirección</th>
-            <th>C.P.</th>
-            <th>Ocupación</th>
-            <th>Estatus</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${hogares
-            .map((h) => {
-              const thumbStyle = h.foto_fachada ? `style="background-image:url(/uploads/${h.foto_fachada})"` : '';
-              const thumbContent = h.foto_fachada ? '' : HOUSE_ICON;
-              const estatus = estatusHogar(h);
-              return `
-                <tr class="clickable" data-hogar-id="${h.id}">
-                  <td><div class="admin-table-thumb" ${thumbStyle}>${thumbContent}</div></td>
-                  <td>${folioDe(h.id)}</td>
-                  <td>${escapeHtml(h.nombre_dueno)}</td>
-                  <td>${escapeHtml(h.calle_numero)}, ${escapeHtml(h.colonia)}</td>
-                  <td>${h.codigo_postal ? escapeHtml(h.codigo_postal) : '—'}</td>
-                  <td>${h.ocupacion_actual}/${h.capacidad}</td>
-                  <td><span class="admin-estado-badge ${estatus}">${estatusLabel(estatus)}</span></td>
-                </tr>
-              `;
-            })
-            .join('')}
-        </tbody>
-      </table>
-    </div>
-  `;
+  body.innerHTML = renderHogaresTablaHTML(hogares);
 
   body.querySelectorAll('tr[data-hogar-id]').forEach((row) => {
     row.addEventListener('click', () => abrirHogar(row.dataset.hogarId));
