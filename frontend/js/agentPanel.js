@@ -1,0 +1,159 @@
+const PUNTOS_ESFERA = 180;
+const RADIO_BASE = 150;
+
+let fab, overlay, canvas, ctx, statusEl;
+let puntosEsfera = [];
+let rotacion = 0;
+let nivelSuavizado = 0;
+let nivelActual = 0;
+let rafId = null;
+let audioCtx = null;
+let analyser = null;
+let stream = null;
+let estado = 'dormido';
+
+function fibonacciEsfera(n, radio) {
+  const puntos = [];
+  const offset = 2 / n;
+  const incremento = Math.PI * (3 - Math.sqrt(5));
+  for (let i = 0; i < n; i++) {
+    const y = i * offset - 1 + offset / 2;
+    const r = Math.sqrt(Math.max(0, 1 - y * y));
+    const phi = i * incremento;
+    puntos.push({ x: Math.cos(phi) * r * radio, y: y * radio, z: Math.sin(phi) * r * radio });
+  }
+  return puntos;
+}
+
+function crearDOM() {
+  fab = document.createElement('button');
+  fab.type = 'button';
+  fab.className = 'agent-fab';
+  fab.setAttribute('aria-label', 'Abrir agente');
+  fab.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M12 2l2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2L12 2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>';
+
+  overlay = document.createElement('div');
+  overlay.className = 'agent-overlay';
+  overlay.innerHTML = `
+    <button type="button" class="agent-close" aria-label="Cerrar">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+    <canvas class="agent-canvas" width="420" height="420"></canvas>
+    <p class="agent-status">Toca para hablar</p>
+  `;
+
+  document.body.append(fab, overlay);
+  canvas = overlay.querySelector('canvas');
+  ctx = canvas.getContext('2d');
+  statusEl = overlay.querySelector('.agent-status');
+
+  fab.addEventListener('click', despertar);
+  overlay.querySelector('.agent-close').addEventListener('click', dormir);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) dormir(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && estado !== 'dormido') dormir(); });
+}
+
+function proyectar(p, escalaAudio) {
+  const cos = Math.cos(rotacion);
+  const sin = Math.sin(rotacion);
+  const x = p.x * cos - p.z * sin;
+  const z = p.x * sin + p.z * cos;
+  const factor = 1 + escalaAudio;
+  const focal = 260;
+  const escala = focal / (focal + z * factor);
+  return {
+    sx: canvas.width / 2 + x * factor * escala,
+    sy: canvas.height / 2 + p.y * factor * escala,
+    prof: z,
+    escala,
+  };
+}
+
+function dibujar() {
+  if (estado === 'dormido') {
+    rafId = null;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    return;
+  }
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const nivelObjetivo = estado === 'escuchando' ? nivelActual : 0;
+  nivelSuavizado += (nivelObjetivo - nivelSuavizado) * 0.15;
+  rotacion += 0.004 + nivelSuavizado * 0.01;
+
+  const escalaAudio = nivelSuavizado * 0.5;
+  const proyectados = puntosEsfera
+    .map((p) => proyectar(p, escalaAudio))
+    .sort((a, b) => a.prof - b.prof);
+
+  proyectados.forEach(({ sx, sy, prof, escala }) => {
+    const brillo = 0.35 + 0.5 * ((prof + RADIO_BASE) / (RADIO_BASE * 2)) + nivelSuavizado * 0.3;
+    const tam = Math.max(1, 2.4 * escala);
+    ctx.beginPath();
+    ctx.fillStyle = `rgba(212, 175, 105, ${Math.min(1, brillo)})`;
+    ctx.shadowColor = 'rgba(212, 175, 105, .8)';
+    ctx.shadowBlur = 6 + nivelSuavizado * 14;
+    ctx.arc(sx, sy, tam, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  rafId = requestAnimationFrame(dibujar);
+}
+
+async function iniciarMicrofono() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioCtx = new AudioContext();
+    const fuente = audioCtx.createMediaStreamSource(stream);
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 256;
+    fuente.connect(analyser);
+    const datos = new Uint8Array(analyser.frequencyBinCount);
+
+    const medir = () => {
+      if (!analyser) return;
+      analyser.getByteFrequencyData(datos);
+      const prom = datos.reduce((a, b) => a + b, 0) / datos.length;
+      nivelActual = Math.min(1, prom / 90);
+      requestAnimationFrame(medir);
+    };
+    medir();
+
+    estado = 'escuchando';
+    statusEl.textContent = 'Escuchando… habla algo';
+  } catch (err) {
+    statusEl.textContent = 'No se pudo acceder al micrófono';
+  }
+}
+
+function detenerMicrofono() {
+  if (stream) stream.getTracks().forEach((t) => t.stop());
+  if (audioCtx) audioCtx.close();
+  stream = null;
+  audioCtx = null;
+  analyser = null;
+  nivelActual = 0;
+}
+
+function despertar() {
+  if (estado !== 'dormido') return;
+  estado = 'despertando';
+  overlay.classList.add('open');
+  statusEl.textContent = 'Despertando…';
+  if (!rafId) rafId = requestAnimationFrame(dibujar);
+  setTimeout(() => {
+    if (estado === 'despertando') iniciarMicrofono();
+  }, 700);
+}
+
+function dormir() {
+  estado = 'dormido';
+  overlay.classList.remove('open');
+  detenerMicrofono();
+  statusEl.textContent = 'Toca para hablar';
+}
+
+export function setupAgentPanel() {
+  puntosEsfera = fibonacciEsfera(PUNTOS_ESFERA, RADIO_BASE);
+  crearDOM();
+}

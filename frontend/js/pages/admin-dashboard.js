@@ -3,8 +3,10 @@ import { me, listarEventos, obtenerMetricasEvento, listarHogares, obtenerHogar }
 import { getSession, clearSession } from '../services/session.js';
 import { getActiveEventId, setActiveEventId, clearActiveEventId } from '../services/eventoActivo.js';
 import { subscribeToEvento } from '../services/eventStream.js';
+import { setupAgentPanel } from '../agentPanel.js';
 
 registerServiceWorker();
+setupAgentPanel();
 
 const session = getSession();
 if (!session) {

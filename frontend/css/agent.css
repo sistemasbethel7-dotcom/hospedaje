@@ -1,0 +1,80 @@
+.agent-fab {
+  position: fixed;
+  right: 28px;
+  bottom: 28px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 1px solid var(--color-gold-border);
+  background: radial-gradient(circle at 35% 30%, #2a2418, #0d0b06 70%);
+  color: var(--color-gold-tint);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 500;
+  animation: agent-fab-pulse 3.2s ease-in-out infinite;
+  transition: transform .15s ease;
+}
+
+.agent-fab:hover {
+  transform: scale(1.06);
+}
+
+.agent-fab svg {
+  width: 26px;
+  height: 26px;
+}
+
+@keyframes agent-fab-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(168, 131, 46, .35); }
+  50% { box-shadow: 0 0 0 10px rgba(168, 131, 46, 0); }
+}
+
+.agent-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 7, 4, .92);
+  backdrop-filter: blur(6px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 900;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease;
+}
+
+.agent-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.agent-close {
+  position: absolute;
+  top: 24px;
+  right: 28px;
+  background: none;
+  border: none;
+  color: var(--color-gold-tint);
+  cursor: pointer;
+  opacity: .8;
+}
+
+.agent-close:hover {
+  opacity: 1;
+}
+
+.agent-canvas {
+  width: min(420px, 80vw);
+  height: min(420px, 80vw);
+}
+
+.agent-status {
+  margin-top: 18px;
+  font-family: var(--font-body);
+  color: var(--color-gold-tint);
+  letter-spacing: .04em;
+  font-size: .95rem;
+}
