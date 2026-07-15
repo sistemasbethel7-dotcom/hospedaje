@@ -162,7 +162,7 @@ function renderTabla() {
           <td>${ubicacionCelda(h)}</td>
           <td>
             <div class="admin-table-actions">
-              <a class="admin-btn outline icon" title="Ver detalle" aria-label="Ver detalle" href="../hogar-detalle.html?id=${h.id}&from=admin-hogares">${EYE_ICON}</a>
+              <button type="button" class="admin-btn outline icon" title="Ver" aria-label="Ver" data-ver="${h.id}">${EYE_ICON}</button>
               ${editarBtn}
               ${eliminarBtn}
             </div>
@@ -171,6 +171,10 @@ function renderTabla() {
       `;
     })
     .join('');
+
+  tbody.querySelectorAll('[data-ver]').forEach((btn) => {
+    btn.addEventListener('click', () => abrirEditar(btn.dataset.ver, true));
+  });
 
   tbody.querySelectorAll('[data-editar]').forEach((btn) => {
     btn.addEventListener('click', () => abrirEditar(btn.dataset.editar));
@@ -243,7 +247,8 @@ function cerrarEditar() {
   hogarEditando = null;
 }
 
-async function abrirEditar(id) {
+// soloLectura = modo "Ver": mismo modal, campos deshabilitados y sin Guardar.
+async function abrirEditar(id, soloLectura = false) {
   const errorEl = document.getElementById('hogares-error');
   errorEl.textContent = '';
   try {
@@ -264,7 +269,13 @@ async function abrirEditar(id) {
     return;
   }
 
-  document.getElementById('editar-modal-title').textContent = `Editar hogar · ${folioDe(hogarEditando.id)}`;
+  document.getElementById('editar-modal-title').textContent =
+    `${soloLectura ? 'Hogar' : 'Editar hogar'} · ${folioDe(hogarEditando.id)}`;
+  document.getElementById('editar-form').classList.toggle('solo-lectura', soloLectura);
+  ['e-nombre', 'e-telefono', 'e-calle', 'e-cp', 'e-colonia', 'e-estado', 'e-referencias', 'e-capacidad', 'e-notas', 'e-comentarios']
+    .forEach((campo) => { document.getElementById(campo).disabled = soloLectura; });
+  document.getElementById('editar-guardar').hidden = soloLectura;
+  document.getElementById('editar-cancelar').textContent = soloLectura ? 'Cerrar' : 'Cancelar';
   document.getElementById('e-nombre').value = hogarEditando.nombre_dueno;
   document.getElementById('e-telefono').value = hogarEditando.telefono_dueno || '';
   document.getElementById('e-calle').value = hogarEditando.calle_numero;
@@ -295,6 +306,7 @@ async function abrirEditar(id) {
 async function guardarEdicion(event) {
   event.preventDefault();
   if (!hogarEditando) return;
+  if (document.getElementById('editar-form').classList.contains('solo-lectura')) return;
   const errorEl = document.getElementById('editar-error');
   errorEl.textContent = '';
 

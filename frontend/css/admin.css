@@ -381,6 +381,18 @@
   margin-top: 16px;
 }
 
+/* Modo Ver: mismo modal de edición pero sin interacción */
+.admin-edit-form.solo-lectura .pill {
+  pointer-events: none;
+}
+
+.admin-edit-form.solo-lectura input:disabled,
+.admin-edit-form.solo-lectura textarea:disabled {
+  background: var(--color-bg-soft);
+  opacity: 1;
+  color: var(--color-text);
+}
+
 .badge-success {
   background: #E4EEE6;
   color: var(--color-success);
