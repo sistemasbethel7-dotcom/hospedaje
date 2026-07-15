@@ -1,4 +1,16 @@
-import { obtenerTokenAgente, listarHogares, obtenerMetricasEvento } from './services/api.js';
+import { obtenerTokenAgente, listarHogares, obtenerMetricasEvento, obtenerHogar } from './services/api.js';
+import { folioDe } from './hogarDetalleView.js';
+
+const PAGINAS = {
+  dashboard: 'dashboard.html',
+  hogares: 'hogares.html',
+  mapa: 'mapa.html',
+  eventos: 'eventos.html',
+  evento_nuevo: 'evento-nuevo.html',
+  catalogos: 'catalogos.html',
+  usuarios: 'usuarios.html',
+  agente: 'agente.html',
+};
 
 function normaliza(texto) {
   return String(texto || '')
@@ -7,8 +19,8 @@ function normaliza(texto) {
     .replace(/[̀-ͯ]/g, '');
 }
 
-function folioDe(id) {
-  return `H-${String(id).padStart(6, '0')}`;
+function calleBase(calleNumero) {
+  return normaliza(calleNumero).replace(/\s*#?\d+[\w-]*\s*$/, '').trim() || normaliza(calleNumero);
 }
 
 async function buscarHogares(ctx, args) {
@@ -44,8 +56,38 @@ async function metricasEvento(ctx) {
   };
 }
 
+async function disponibilidadPorCalle(ctx) {
+  const { hogares } = await listarHogares(ctx.token, ctx.eventoId);
+  const grupos = new Map();
+
+  hogares.forEach((h) => {
+    const clave = calleBase(h.calle_numero);
+    const disponibles = Math.max(0, h.capacidad - h.ocupacion_actual);
+    const grupo = grupos.get(clave) || { calle: h.calle_numero, hogares: 0, capacidad: 0, ocupacion: 0, disponibles: 0 };
+    grupo.hogares += 1;
+    grupo.capacidad += h.capacidad;
+    grupo.ocupacion += h.ocupacion_actual;
+    grupo.disponibles += disponibles;
+    grupos.set(clave, grupo);
+  });
+
+  const ranking = Array.from(grupos.values())
+    .sort((a, b) => b.disponibles - a.disponibles)
+    .slice(0, 8);
+
+  return { calles_distintas: grupos.size, ranking };
+}
+
 async function abrirHogar(ctx, args) {
-  ctx.onNavegar?.(args.id);
+  const { hogar } = await obtenerHogar(ctx.token, args.id);
+  ctx.onMostrarVistaPrevia?.(hogar);
+  return { ok: true };
+}
+
+async function navegarAPagina(ctx, args) {
+  const url = PAGINAS[args.pagina];
+  if (!url) return { error: 'Página desconocida.' };
+  ctx.onNavegarPagina?.(url);
   return { ok: true };
 }
 
@@ -53,7 +95,9 @@ async function ejecutarHerramienta(nombre, args, ctx) {
   try {
     if (nombre === 'buscar_hogares') return await buscarHogares(ctx, args);
     if (nombre === 'metricas_evento') return await metricasEvento(ctx);
+    if (nombre === 'disponibilidad_por_calle') return await disponibilidadPorCalle(ctx);
     if (nombre === 'abrir_hogar') return await abrirHogar(ctx, args);
+    if (nombre === 'navegar_a_pagina') return await navegarAPagina(ctx, args);
     return { error: 'Herramienta desconocida.' };
   } catch (err) {
     return { error: 'No se pudo completar la consulta.' };
@@ -84,7 +128,7 @@ function medirNivel(stream, onNivel) {
   };
 }
 
-export async function iniciarSesionAgente({ token, eventoId, onNivelEntrada, onNivelSalida, onError, onNavegar }) {
+export async function iniciarSesionAgente({ token, eventoId, onNivelEntrada, onNivelSalida, onError, onMostrarVistaPrevia, onNavegarPagina }) {
   const { value: clientSecret } = await obtenerTokenAgente(token);
 
   const pc = new RTCPeerConnection();
@@ -105,7 +149,7 @@ export async function iniciarSesionAgente({ token, eventoId, onNivelEntrada, onN
   micStream.getTracks().forEach((t) => pc.addTrack(t, micStream));
   detenerMedicionEntrada = medirNivel(micStream, onNivelEntrada);
 
-  const ctxHerramientas = { token, eventoId, onNavegar };
+  const ctxHerramientas = { token, eventoId, onMostrarVistaPrevia, onNavegarPagina };
 
   const dc = pc.createDataChannel('oai-events');
   dc.addEventListener('message', async (e) => {

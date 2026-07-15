@@ -2,12 +2,14 @@ import { iniciarSesionAgente } from './agentClient.js';
 import { obtenerConfigAgente } from './services/api.js';
 import { getSession } from './services/session.js';
 import { getActiveEventId } from './services/eventoActivo.js';
+import { folioDe, renderDetalleHogarHTML } from './hogarDetalleView.js';
 
 const PUNTOS_ESFERA = 160;
 const RADIO_BASE = 70;
 const DISPERSION_MAX = 18;
 
 let wrap, canvas, ctx, statusEl;
+let modalBackdrop, modalTitle, modalBody;
 let puntosEsfera = [];
 let rotacion = 0;
 let nivelSuavizado = 0;
@@ -17,7 +19,7 @@ let rafId = null;
 let sesionActiva = null;
 let ultimoStatus = '';
 let estado = 'dormido';
-let onAbrirHogar = null;
+let onNavegarPaginaCb = null;
 
 function fibonacciEsfera(n, radio) {
   const puntos = [];
@@ -70,6 +72,45 @@ function crearDOM() {
   wrap.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); alternar(); }
   });
+
+  crearModalVistaPrevia();
+}
+
+function crearModalVistaPrevia() {
+  modalBackdrop = document.createElement('div');
+  modalBackdrop.className = 'admin-modal-backdrop stacked';
+  modalBackdrop.hidden = true;
+  modalBackdrop.innerHTML = `
+    <div class="admin-modal" role="dialog" aria-modal="true" aria-labelledby="agente-vista-previa-title">
+      <div class="admin-modal-header">
+        <h2 class="admin-modal-title" id="agente-vista-previa-title"></h2>
+        <button type="button" class="admin-modal-close" aria-label="Cerrar">&times;</button>
+      </div>
+      <div class="admin-modal-body"></div>
+    </div>
+  `;
+  document.body.appendChild(modalBackdrop);
+
+  modalTitle = modalBackdrop.querySelector('#agente-vista-previa-title');
+  modalBody = modalBackdrop.querySelector('.admin-modal-body');
+
+  modalBackdrop.querySelector('.admin-modal-close').addEventListener('click', cerrarVistaPrevia);
+  modalBackdrop.addEventListener('click', (e) => {
+    if (e.target === modalBackdrop) cerrarVistaPrevia();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !modalBackdrop.hidden) cerrarVistaPrevia();
+  });
+}
+
+function mostrarVistaPreviaHogar(hogar) {
+  modalTitle.textContent = `${hogar.nombre_dueno} · ${folioDe(hogar.id)}`;
+  modalBody.innerHTML = renderDetalleHogarHTML(hogar);
+  modalBackdrop.hidden = false;
+}
+
+function cerrarVistaPrevia() {
+  modalBackdrop.hidden = true;
 }
 
 function proyectar(p, escalaAudio, dispersion) {
@@ -146,9 +187,10 @@ async function despertar() {
       onNivelEntrada: (n) => { nivelEntrada = n; },
       onNivelSalida: (n) => { nivelSalida = n; },
       onError: (msg) => { statusEl.textContent = msg; },
-      onNavegar: (id) => {
-        if (onAbrirHogar) onAbrirHogar(id);
-        else window.location.href = `hogares.html?ver=${id}`;
+      onMostrarVistaPrevia: (hogar) => mostrarVistaPreviaHogar(hogar),
+      onNavegarPagina: (url) => {
+        if (onNavegarPaginaCb) onNavegarPaginaCb(url);
+        else window.location.href = url;
       },
     });
 
@@ -176,8 +218,8 @@ function dormir() {
   statusEl.textContent = 'Toca para hablar';
 }
 
-export async function setupAgentPanel({ onAbrirHogar: callback } = {}) {
-  onAbrirHogar = callback || null;
+export async function setupAgentPanel({ onNavegarPagina } = {}) {
+  onNavegarPaginaCb = onNavegarPagina || null;
 
   const session = getSession();
   if (!session) return;

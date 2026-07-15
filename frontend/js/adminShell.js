@@ -2,7 +2,7 @@ import { registerServiceWorker } from './app.js';
 import { getSession, clearSession } from './services/session.js';
 import { clearActiveEventId } from './services/eventoActivo.js';
 import { setupAgentPanel } from './agentPanel.js';
-import { initRouter, navigate, getCurrentModule } from './router.js';
+import { initRouter, navigate } from './router.js';
 
 let shellPromise = null;
 
@@ -12,18 +12,6 @@ function wireLogout() {
     clearActiveEventId();
     window.location.href = '../index.html';
   });
-}
-
-// Si la página que ya está montada sabe mostrar un hogar en el sitio (Dashboard
-// y Hogares exportan `abrirHogar`), lo hace directo sin salir de donde está.
-// Si no, navega (vía SPA) a Hogares con el hogar pedido.
-function abrirHogarEnSitio(id) {
-  const modulo = getCurrentModule();
-  if (modulo?.abrirHogar) {
-    modulo.abrirHogar(id);
-    return;
-  }
-  navigate(`hogares.html?ver=${id}`);
 }
 
 async function doMountShell() {
@@ -36,7 +24,7 @@ async function doMountShell() {
   }
 
   wireLogout();
-  setupAgentPanel({ onAbrirHogar: abrirHogarEnSitio });
+  setupAgentPanel({ onNavegarPagina: (url) => navigate(url) });
   initRouter();
 
   return { session };
