@@ -16,6 +16,7 @@ let rafId = null;
 let sesionActiva = null;
 let ultimoStatus = '';
 let estado = 'dormido';
+let onAbrirHogar = null;
 
 function fibonacciEsfera(n, radio) {
   const puntos = [];
@@ -144,7 +145,10 @@ async function despertar() {
       onNivelEntrada: (n) => { nivelEntrada = n; },
       onNivelSalida: (n) => { nivelSalida = n; },
       onError: (msg) => { statusEl.textContent = msg; },
-      onNavegar: (id) => { window.location.href = `hogares.html?ver=${id}`; },
+      onNavegar: (id) => {
+        if (onAbrirHogar) onAbrirHogar(id);
+        else window.location.href = `hogares.html?ver=${id}`;
+      },
     });
 
     if (estado !== 'conectando') {
@@ -171,7 +175,8 @@ function dormir() {
   statusEl.textContent = 'Toca para hablar';
 }
 
-export function setupAgentPanel() {
+export function setupAgentPanel({ onAbrirHogar: callback } = {}) {
+  onAbrirHogar = callback || null;
   puntosEsfera = fibonacciEsfera(PUNTOS_ESFERA, RADIO_BASE);
   crearDOM();
   if (canvas) rafId = requestAnimationFrame(dibujar);

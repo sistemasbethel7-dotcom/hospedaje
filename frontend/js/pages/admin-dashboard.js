@@ -6,7 +6,7 @@ import { subscribeToEvento } from '../services/eventStream.js';
 import { setupAgentPanel } from '../agentPanel.js';
 
 registerServiceWorker();
-setupAgentPanel();
+setupAgentPanel({ onAbrirHogar: (id) => abrirDetalleHogar(id) });
 
 const session = getSession();
 if (!session) {
