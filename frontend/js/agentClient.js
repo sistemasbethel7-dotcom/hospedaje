@@ -106,9 +106,6 @@ export async function iniciarSesionAgente({ token, eventoId, onNivelEntrada, onN
   const ctxHerramientas = { token, eventoId, onNavegar };
 
   const dc = pc.createDataChannel('oai-events');
-  dc.addEventListener('open', () => {
-    dc.send(JSON.stringify({ type: 'response.create' }));
-  });
   dc.addEventListener('message', async (e) => {
     let evento;
     try {
