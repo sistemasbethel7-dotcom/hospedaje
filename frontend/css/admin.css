@@ -68,7 +68,7 @@
 }
 
 .admin-main {
-  flex: 1;
+  flex: 0 1 1200px;
   padding: 36px 44px;
   max-width: 1200px;
 }
@@ -754,6 +754,7 @@
   }
 
   .admin-main {
+    flex: 1;
     padding: 24px 20px;
   }
 }

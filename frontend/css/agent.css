@@ -1,6 +1,6 @@
 .agent-column {
-  flex: none;
-  width: 340px;
+  flex: 1 1 0%;
+  min-width: 260px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -16,8 +16,8 @@
 
 .agent-orb-inner {
   position: relative;
-  width: 320px;
-  height: 320px;
+  width: 360px;
+  height: 360px;
 }
 
 .agent-orb-glow {
@@ -36,8 +36,8 @@
 
 .agent-canvas {
   position: relative;
-  width: 320px;
-  height: 320px;
+  width: 360px;
+  height: 360px;
 }
 
 .agent-status {

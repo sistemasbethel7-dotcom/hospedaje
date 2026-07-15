@@ -1,5 +1,6 @@
 const PUNTOS_ESFERA = 160;
 const RADIO_BASE = 70;
+const DISPERSION_MAX = 18;
 
 let wrap, canvas, ctx, statusEl;
 let puntosEsfera = [];
@@ -20,11 +21,13 @@ function fibonacciEsfera(n, radio) {
     const y = i * offset - 1 + offset / 2;
     const r = Math.sqrt(Math.max(0, 1 - y * y));
     const phi = i * incremento;
-    const jitter = 0.82 + Math.random() * 0.36;
     puntos.push({
-      x: Math.cos(phi) * r * radio * jitter,
-      y: y * radio * jitter,
-      z: Math.sin(phi) * r * radio * jitter,
+      x: Math.cos(phi) * r * radio,
+      y: y * radio,
+      z: Math.sin(phi) * r * radio,
+      jx: (Math.random() - 0.5) * 2,
+      jy: (Math.random() - 0.5) * 2,
+      jz: (Math.random() - 0.5) * 2,
     });
   }
   return puntos;
@@ -42,7 +45,7 @@ function crearDOM() {
   wrap.innerHTML = `
     <div class="agent-orb-inner">
       <div class="agent-orb-glow"></div>
-      <canvas class="agent-canvas" width="320" height="320"></canvas>
+      <canvas class="agent-canvas" width="360" height="360"></canvas>
     </div>
     <p class="agent-status">Toca para hablar</p>
   `;
@@ -63,17 +66,21 @@ function crearDOM() {
   });
 }
 
-function proyectar(p, escalaAudio) {
+function proyectar(p, escalaAudio, dispersion) {
+  const px = p.x + p.jx * dispersion;
+  const py = p.y + p.jy * dispersion;
+  const pz = p.z + p.jz * dispersion;
+
   const cos = Math.cos(rotacion);
   const sin = Math.sin(rotacion);
-  const x = p.x * cos - p.z * sin;
-  const z = p.x * sin + p.z * cos;
+  const x = px * cos - pz * sin;
+  const z = px * sin + pz * cos;
   const factor = 1 + escalaAudio;
   const focal = 240;
   const escala = focal / (focal + z * factor);
   return {
     sx: canvas.width / 2 + x * factor * escala,
-    sy: canvas.height / 2 + p.y * factor * escala,
+    sy: canvas.height / 2 + py * factor * escala,
     prof: z,
     escala,
   };
@@ -86,8 +93,9 @@ function dibujar() {
   rotacion += 0.0025 + nivelSuavizado * 0.01;
 
   const escalaAudio = nivelSuavizado * 0.5;
+  const dispersion = nivelSuavizado * DISPERSION_MAX;
   const proyectados = puntosEsfera
-    .map((p) => proyectar(p, escalaAudio))
+    .map((p) => proyectar(p, escalaAudio, dispersion))
     .sort((a, b) => a.prof - b.prof);
 
   proyectados.forEach(({ sx, sy, prof, escala }) => {
