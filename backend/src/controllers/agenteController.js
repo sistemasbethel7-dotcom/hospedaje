@@ -79,7 +79,16 @@ export async function obtenerToken(req, res) {
                 type: "realtime",
                 model: REALTIME_MODEL,
                 instructions: instrucciones,
-                audio: { output: { voice: config.voz } },
+                audio: {
+                    output: { voice: config.voz },
+                    input: {
+                        turn_detection: {
+                            type: "semantic_vad",
+                            eagerness: "low",
+                            interrupt_response: true,
+                        },
+                    },
+                },
                 tools: TOOLS,
                 tool_choice: "auto",
             },

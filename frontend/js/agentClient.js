@@ -99,7 +99,9 @@ export async function iniciarSesionAgente({ token, eventoId, onNivelEntrada, onN
     detenerMedicionSalida = medirNivel(e.streams[0], onNivelSalida);
   };
 
-  const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  const micStream = await navigator.mediaDevices.getUserMedia({
+    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+  });
   micStream.getTracks().forEach((t) => pc.addTrack(t, micStream));
   detenerMedicionEntrada = medirNivel(micStream, onNivelEntrada);
 
