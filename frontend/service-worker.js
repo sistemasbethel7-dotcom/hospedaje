@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anfitriones-v58';
+const CACHE_NAME = 'anfitriones-v59';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -87,8 +87,13 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request, { cache: 'no-cache' })
       .then((response) => {
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        // Solo se cachean respuestas exitosas: un 5xx/proxy caído no debe
+        // sobrescribir una copia buena previa en caché (causaba estilos
+        // rotos intermitentes tras un fallo transitorio de red/servidor).
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        }
         return response;
       })
       .catch(() => caches.match(event.request))
