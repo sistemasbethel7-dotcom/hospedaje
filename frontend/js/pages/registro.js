@@ -28,7 +28,6 @@ const state = {
   servicios: [],
   vulnerabilidades: [],
   perfil: [],
-  fotoDueno: null,
   fotoFachada: null,
 };
 
@@ -234,7 +233,6 @@ function setupPhotos() {
       label.querySelector('span').textContent = '';
     });
   };
-  bind('foto_dueno', 'foto_dueno_label', 'fotoDueno');
   bind('foto_fachada', 'foto_fachada_label', 'fotoFachada');
 }
 
@@ -354,7 +352,6 @@ async function handleSubmit() {
   formData.append('vulnerabilidades', JSON.stringify(state.vulnerabilidades));
   formData.append('notas_vulnerabilidad', document.getElementById('notas_vulnerabilidad').value.trim());
   formData.append('perfil_sugerido', JSON.stringify(state.perfil));
-  if (state.fotoDueno) formData.append('foto_dueno', state.fotoDueno);
   if (state.fotoFachada) formData.append('foto_fachada', state.fotoFachada);
 
   const submitBtn = document.getElementById('siguiente-btn');
