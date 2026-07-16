@@ -192,14 +192,29 @@ function updateLocationTrigger() {
   text.textContent = hasLocation ? 'Ubicación fijada · Clic para ajustar' : 'Ubicar en el mapa';
 }
 
+function abrirLightbox(url) {
+  document.getElementById('photo-lightbox-img').src = url;
+  document.getElementById('photo-lightbox').hidden = false;
+}
+
+function cerrarLightbox() {
+  document.getElementById('photo-lightbox').hidden = true;
+  document.getElementById('photo-lightbox-img').src = '';
+}
+
 function renderFotoEdit(elementId, filename, placeholderIcon) {
   const el = document.getElementById(elementId);
   if (filename) {
-    el.style.backgroundImage = `url(/uploads/${filename})`;
+    const url = `/uploads/${filename}`;
+    el.style.backgroundImage = `url(${url})`;
     el.innerHTML = '';
+    el.classList.add('clickable');
+    el.onclick = () => abrirLightbox(url);
   } else {
     el.style.backgroundImage = '';
     el.innerHTML = placeholderIcon;
+    el.classList.remove('clickable');
+    el.onclick = null;
   }
 }
 
@@ -420,6 +435,11 @@ export async function mount() {
   document.getElementById('editar-modal-close').addEventListener('click', cerrarEditar);
   document.getElementById('editar-modal-backdrop').addEventListener('click', (event) => {
     if (event.target === event.currentTarget) cerrarEditar();
+  });
+
+  document.getElementById('photo-lightbox-close').addEventListener('click', cerrarLightbox);
+  document.getElementById('photo-lightbox').addEventListener('click', (event) => {
+    if (event.target === event.currentTarget) cerrarLightbox();
   });
 
   try {

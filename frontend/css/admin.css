@@ -698,10 +698,44 @@
   margin-bottom: 0;
 }
 
+.admin-detalle-photo.clickable {
+  cursor: zoom-in;
+}
+
 @media (max-width: 520px) {
   .admin-fotos-row {
     flex-direction: column;
   }
+}
+
+.photo-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(20, 16, 8, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+}
+
+.photo-lightbox-img {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.photo-lightbox-close {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 34px;
+  line-height: 1;
+  cursor: pointer;
 }
 
 .admin-detalle-nombre {
