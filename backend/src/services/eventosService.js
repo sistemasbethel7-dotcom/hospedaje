@@ -35,7 +35,7 @@ export async function getEventoById(id) {
 }
 
 export async function getEventoMetricas(id) {
-  const [resumen, colonias, vulnerabilidades, perfiles, servicios] = await Promise.all([
+  const [resumen, colonias, vulnerabilidades, perfiles, servicios, agentes] = await Promise.all([
     getEventoById(id),
     pool.query(
       `SELECT colonia, COUNT(*)::int AS hogares,
@@ -63,6 +63,15 @@ export async function getEventoMetricas(id) {
        GROUP BY etiqueta ORDER BY total DESC`,
       [id]
     ),
+    pool.query(
+      `SELECT h.registrado_por, COALESCE(u.nombre, u.email, 'Usuario eliminado') AS etiqueta, COUNT(*)::int AS total
+       FROM hogares h
+       LEFT JOIN usuarios u ON u.id = h.registrado_por
+       WHERE h.evento_id = $1
+       GROUP BY h.registrado_por, u.nombre, u.email
+       ORDER BY total DESC`,
+      [id]
+    ),
   ]);
 
   if (!resumen) return null;
@@ -73,6 +82,7 @@ export async function getEventoMetricas(id) {
     vulnerabilidades: vulnerabilidades.rows,
     perfiles: perfiles.rows,
     servicios: servicios.rows,
+    agentes: agentes.rows,
   };
 }
 

@@ -252,6 +252,16 @@ function renderMetricas(metricas) {
     },
     options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } },
   });
+
+  destroyChart('agentes');
+  charts.agentes = new Chart(document.getElementById('chart-agentes'), {
+    type: 'bar',
+    data: {
+      labels: metricas.agentes.map((a) => a.etiqueta),
+      datasets: [{ data: metricas.agentes.map((a) => a.total), backgroundColor: CIAN }],
+    },
+    options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { precision: 0 } } } },
+  });
 }
 
 async function cargarMetricas(eventoId) {
@@ -384,7 +394,7 @@ export function unmount() {
     unsubscribeStream = null;
   }
   clearTimeout(refrescoPendiente);
-  ['ocupacion', 'colonias', 'servicios', 'vulnerabilidades', 'perfiles'].forEach(destroyChart);
+  ['ocupacion', 'colonias', 'servicios', 'vulnerabilidades', 'perfiles', 'agentes'].forEach(destroyChart);
   if (onKeydown) {
     document.removeEventListener('keydown', onKeydown);
     onKeydown = null;
