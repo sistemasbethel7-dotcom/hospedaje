@@ -293,6 +293,10 @@ async function abrirEditar(id, soloLectura = false) {
   document.getElementById('e-comentarios').value = hogarEditando.comentarios || '';
   renderFotoEdit('e-foto-dueno', hogarEditando.foto_dueno, PERSON_ICON);
   renderFotoEdit('e-foto-fachada', hogarEditando.foto_fachada, HOUSE_ICON);
+  const registrador = hogarEditando.registrado_por_nombre || hogarEditando.registrado_por_email;
+  document.getElementById('e-registrado-por').textContent = registrador
+    ? `${registrador} · ${formatFecha(hogarEditando.created_at)}`
+    : 'Sin dato (registro previo o usuario eliminado)';
 
   editState.tenencia = hogarEditando.tenencia || null;
   editState.servicios = [...hogarEditando.servicios];

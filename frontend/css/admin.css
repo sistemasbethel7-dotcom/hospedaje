@@ -375,6 +375,12 @@
   resize: vertical;
 }
 
+.admin-registrado-por {
+  font: 600 14px var(--font-body);
+  color: var(--color-text);
+  margin: 0;
+}
+
 .admin-edit-actions {
   display: flex;
   justify-content: flex-end;

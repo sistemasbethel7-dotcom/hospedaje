@@ -56,11 +56,13 @@ export async function getHogarById(id) {
 
 export async function getHogarDetalle(id) {
   const { rows } = await pool.query(
-    `SELECT id, evento_id, nombre_dueno, telefono_dueno, calle_numero, colonia, codigo_postal, estado, referencias, lat, lng,
-            capacidad, ocupacion_actual, tenencia, comentarios, folio_anterior, foto_dueno, foto_fachada, servicios,
-            vulnerabilidades, notas_vulnerabilidad, perfil_sugerido, created_at
-     FROM hogares
-     WHERE id = $1`,
+    `SELECT h.id, h.evento_id, h.nombre_dueno, h.telefono_dueno, h.calle_numero, h.colonia, h.codigo_postal, h.estado, h.referencias, h.lat, h.lng,
+            h.capacidad, h.ocupacion_actual, h.tenencia, h.comentarios, h.folio_anterior, h.foto_dueno, h.foto_fachada, h.servicios,
+            h.vulnerabilidades, h.notas_vulnerabilidad, h.perfil_sugerido, h.created_at,
+            u.nombre AS registrado_por_nombre, u.email AS registrado_por_email
+     FROM hogares h
+     LEFT JOIN usuarios u ON u.id = h.registrado_por
+     WHERE h.id = $1`,
     [id]
   );
   return rows[0] || null;
