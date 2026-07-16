@@ -2,6 +2,11 @@ const RUTAS = {
   '/admin/dashboard.html': './pages/admin-dashboard.js',
   '/admin/hogares.html': './pages/admin-hogares.js',
   '/admin/agente.html': './pages/admin-agente.js',
+  '/admin/eventos.html': './pages/admin-eventos.js',
+  '/admin/usuarios.html': './pages/admin-usuarios.js',
+  '/admin/catalogos.html': './pages/admin-catalogos.js',
+  '/admin/mapa.html': './pages/admin-mapa.js',
+  '/admin/evento-nuevo.html': './pages/admin-evento-nuevo.js',
 };
 
 let currentModule = null;

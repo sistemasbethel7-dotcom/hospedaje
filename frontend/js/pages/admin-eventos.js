@@ -1,22 +1,10 @@
-import { registerServiceWorker } from '../app.js';
 import { me, listarEventos, actualizarEvento } from '../services/api.js';
 import { getSession, clearSession } from '../services/session.js';
 import { setActiveEventId, clearActiveEventId } from '../services/eventoActivo.js';
 
-registerServiceWorker();
-
-const session = getSession();
-if (!session) {
-  window.location.href = '../index.html';
-}
-
+let session = null;
 let esAdmin = false;
-
-document.getElementById('logout-btn').addEventListener('click', () => {
-  clearSession();
-  clearActiveEventId();
-  window.location.href = '../index.html';
-});
+let navigateFn = null;
 
 function escapeHtml(value) {
   const div = document.createElement('div');
@@ -71,7 +59,7 @@ function renderEventos(eventos) {
   tbody.querySelectorAll('[data-ver]').forEach((btn) => {
     btn.addEventListener('click', () => {
       setActiveEventId(btn.dataset.ver);
-      window.location.href = 'dashboard.html';
+      navigateFn('dashboard.html');
     });
   });
 
@@ -106,27 +94,38 @@ async function cargarEventos() {
   }
 }
 
-try {
-  const { user } = await me(session.token);
-  if (user.role !== 'admin' && user.role !== 'supervisor') {
-    window.location.href = '../eventos.html';
-  }
-  esAdmin = user.role === 'admin';
-  if (!esAdmin) {
-    document.getElementById('nav-usuarios').hidden = true;
-    document.getElementById('nav-catalogos').hidden = true;
-    document.getElementById('nav-agente').hidden = true;
-  } else {
-    document.getElementById('crear-evento-btn').hidden = false;
-  }
-
-  await cargarEventos();
-} catch (err) {
-  if (err.status === 401) {
-    clearSession();
-    clearActiveEventId();
+export async function mount({ navigate }) {
+  session = getSession();
+  if (!session) {
     window.location.href = '../index.html';
-  } else {
-    document.getElementById('eventos-error').textContent = 'No se pudo cargar la información de sesión.';
+    return;
+  }
+  navigateFn = navigate;
+  esAdmin = false;
+
+  try {
+    const { user } = await me(session.token);
+    if (user.role !== 'admin' && user.role !== 'supervisor') {
+      window.location.href = '../eventos.html';
+      return;
+    }
+    esAdmin = user.role === 'admin';
+    if (!esAdmin) {
+      document.getElementById('nav-usuarios').hidden = true;
+      document.getElementById('nav-catalogos').hidden = true;
+      document.getElementById('nav-agente').hidden = true;
+    } else {
+      document.getElementById('crear-evento-btn').hidden = false;
+    }
+
+    await cargarEventos();
+  } catch (err) {
+    if (err.status === 401) {
+      clearSession();
+      clearActiveEventId();
+      window.location.href = '../index.html';
+    } else {
+      document.getElementById('eventos-error').textContent = 'No se pudo cargar la información de sesión.';
+    }
   }
 }

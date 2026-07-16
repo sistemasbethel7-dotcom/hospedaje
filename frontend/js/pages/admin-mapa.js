@@ -1,15 +1,7 @@
-import { registerServiceWorker } from '../app.js';
 import { me, listarEventos, listarHogares } from '../services/api.js';
 import { getSession, clearSession } from '../services/session.js';
 import { getActiveEventId, setActiveEventId, clearActiveEventId } from '../services/eventoActivo.js';
 import { subscribeToEvento } from '../services/eventStream.js';
-
-registerServiceWorker();
-
-const session = getSession();
-if (!session) {
-  window.location.href = '../index.html';
-}
 
 const STREET_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}';
 const DEFAULT_CENTER = [20.6597, -103.3496];
@@ -20,23 +12,12 @@ const COLOR_LIBRE = '#22C55E';
 const COLOR_PARCIAL = '#FBBF24';
 const COLOR_LLENO = '#EF4444';
 
+let session = null;
 let map = null;
 let markersLayer = null;
 let eventos = [];
 let unsubscribeStream = null;
 let refrescoPendiente = null;
-
-document.getElementById('logout-btn').addEventListener('click', () => {
-  clearSession();
-  clearActiveEventId();
-  window.location.href = '../index.html';
-});
-
-document.getElementById('evento-select').addEventListener('change', (event) => {
-  setActiveEventId(event.target.value);
-  cargarMapa(event.target.value);
-  suscribirEvento(event.target.value);
-});
 
 function setLiveStatus(estado) {
   const indicator = document.getElementById('live-indicator');
@@ -154,37 +135,66 @@ async function cargarMapa(eventoId) {
   }
 }
 
-try {
-  const { user } = await me(session.token);
-  if (user.role !== 'admin' && user.role !== 'supervisor') {
-    window.location.href = '../eventos.html';
-  }
-  if (user.role !== 'admin') {
-    document.getElementById('nav-usuarios').hidden = true;
-    document.getElementById('nav-catalogos').hidden = true;
-    document.getElementById('nav-agente').hidden = true;
-  }
-
-  const { eventos: lista } = await listarEventos(session.token);
-  eventos = lista;
-
-  if (eventos.length === 0) {
-    document.getElementById('mapa-empty').hidden = false;
-  } else {
-    poblarSelect();
-    const activo = getActiveEventId();
-    const inicial = eventos.find((e) => String(e.id) === activo) || eventos.find((e) => e.estatus === 'abierto') || eventos[0];
-    document.getElementById('evento-select').value = inicial.id;
-    setActiveEventId(inicial.id);
-    await cargarMapa(inicial.id);
-    suscribirEvento(inicial.id);
-  }
-} catch (err) {
-  if (err.status === 401) {
-    clearSession();
-    clearActiveEventId();
+export async function mount() {
+  session = getSession();
+  if (!session) {
     window.location.href = '../index.html';
-  } else {
-    document.getElementById('mapa-error').textContent = 'No se pudo cargar la información del mapa.';
+    return;
+  }
+  eventos = [];
+
+  document.getElementById('evento-select').addEventListener('change', (event) => {
+    setActiveEventId(event.target.value);
+    cargarMapa(event.target.value);
+    suscribirEvento(event.target.value);
+  });
+
+  try {
+    const { user } = await me(session.token);
+    if (user.role !== 'admin' && user.role !== 'supervisor') {
+      window.location.href = '../eventos.html';
+      return;
+    }
+    if (user.role !== 'admin') {
+      document.getElementById('nav-usuarios').hidden = true;
+      document.getElementById('nav-catalogos').hidden = true;
+      document.getElementById('nav-agente').hidden = true;
+    }
+
+    const { eventos: lista } = await listarEventos(session.token);
+    eventos = lista;
+
+    if (eventos.length === 0) {
+      document.getElementById('mapa-empty').hidden = false;
+    } else {
+      poblarSelect();
+      const activo = getActiveEventId();
+      const inicial = eventos.find((e) => String(e.id) === activo) || eventos.find((e) => e.estatus === 'abierto') || eventos[0];
+      document.getElementById('evento-select').value = inicial.id;
+      setActiveEventId(inicial.id);
+      await cargarMapa(inicial.id);
+      suscribirEvento(inicial.id);
+    }
+  } catch (err) {
+    if (err.status === 401) {
+      clearSession();
+      clearActiveEventId();
+      window.location.href = '../index.html';
+    } else {
+      document.getElementById('mapa-error').textContent = 'No se pudo cargar la información del mapa.';
+    }
+  }
+}
+
+export function unmount() {
+  if (unsubscribeStream) {
+    unsubscribeStream();
+    unsubscribeStream = null;
+  }
+  clearTimeout(refrescoPendiente);
+  if (map) {
+    map.remove();
+    map = null;
+    markersLayer = null;
   }
 }
