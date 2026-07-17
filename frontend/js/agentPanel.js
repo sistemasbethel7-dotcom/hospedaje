@@ -19,7 +19,6 @@ let nivelSalida = 0;
 let rafId = null;
 let sesionVozActiva = null;
 let ultimoStatus = '';
-let huboSalida = false;
 let estado = 'dormido';
 let panelAbierto = false;
 let onNavegarPaginaCb = null;
@@ -127,8 +126,7 @@ function dibujar() {
   nivelSuavizado += (nivelObjetivo - nivelSuavizado) * 0.15;
 
   if (estado === 'activo') {
-    if (nivelSalida > 0.08) huboSalida = true;
-    const nuevoStatus = !huboSalida || (nivelSalida > 0.08 && nivelSalida >= nivelEntrada) ? 'Hablando…' : 'Escuchando…';
+    const nuevoStatus = nivelSalida > 0.08 && nivelSalida >= nivelEntrada ? 'Hablando…' : 'Escuchando…';
     if (nuevoStatus !== ultimoStatus) {
       ultimoStatus = nuevoStatus;
       statusEl.textContent = nuevoStatus;
@@ -191,8 +189,7 @@ async function despertar() {
 
     sesionVozActiva = sesion;
     estado = 'activo';
-    huboSalida = false;
-    ultimoStatus = 'Hablando…';
+    ultimoStatus = 'Escuchando…';
     statusEl.textContent = ultimoStatus;
   } catch (err) {
     estado = 'dormido';

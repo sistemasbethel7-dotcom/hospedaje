@@ -232,14 +232,6 @@ export async function iniciarSesionAgente({ token, eventoId, onNivelEntrada, onN
   const ctxHerramientas = { token, eventoId, onMostrarVistaPrevia, onNavegarPagina, onMostrarListaHogares };
   const dc = pc.createDataChannel('oai-events');
   wireDataChannel(dc, { ctxHerramientas, onError });
-  dc.addEventListener('open', () => {
-    dc.send(JSON.stringify({
-      type: 'response.create',
-      response: {
-        instructions: 'Da un saludo breve e inicial (una sola frase corta, siguiendo tu estilo de saludo) para abrir la conversación, sin esperar a que el usuario hable primero.',
-      },
-    }));
-  }, { once: true });
 
   await negociarConexion(pc, clientSecret);
 
