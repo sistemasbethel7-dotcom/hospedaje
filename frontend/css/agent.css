@@ -3,16 +3,13 @@
 }
 
 .agent-orb-wrap {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+  position: relative;
   cursor: pointer;
 }
 
 .agent-orb-inner {
   position: relative;
-  width: 130px;
-  flex: none;
+  width: 260px;
   aspect-ratio: 1 / 1;
 }
 
@@ -38,6 +35,11 @@
 }
 
 .agent-status {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 16px;
   font: 600 14px var(--font-body);
   color: var(--color-gold-deep);
   letter-spacing: .03em;
@@ -156,7 +158,7 @@
   left: 50%;
   transform: translateX(-50%);
   z-index: 90;
-  width: max-content;
+  width: 260px;
   max-width: calc(100vw - 40px);
 }
 
