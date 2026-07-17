@@ -1,4 +1,4 @@
-import { iniciarSesionAgente } from './agentClient.js';
+import { iniciarSesionAgente, iniciarSesionAgenteTexto } from './agentClient.js';
 import { obtenerConfigAgente, obtenerHogar } from './services/api.js';
 import { getSession } from './services/session.js';
 import { getActiveEventId } from './services/eventoActivo.js';
@@ -8,7 +8,9 @@ const PUNTOS_ESFERA = 160;
 const RADIO_BASE = 70;
 const DISPERSION_MAX = 18;
 
-let wrap, canvas, ctx, statusEl;
+let fabRoot, fab, menu;
+let panelVoz, canvas, ctx, statusEl, wrap;
+let panelTexto, chatMensajesEl, chatFormEl, chatInputEl, chatSendBtn;
 let modalBackdrop, modalTitle, modalBody;
 let puntosEsfera = [];
 let rotacion = 0;
@@ -16,9 +18,12 @@ let nivelSuavizado = 0;
 let nivelEntrada = 0;
 let nivelSalida = 0;
 let rafId = null;
-let sesionActiva = null;
+let sesionVozActiva = null;
+let sesionTextoActiva = null;
+let burbujaAgenteActual = null;
 let ultimoStatus = '';
 let estado = 'dormido';
+let panelAbierto = null;
 let onNavegarPaginaCb = null;
 
 function fibonacciEsfera(n, radio) {
@@ -39,41 +44,6 @@ function fibonacciEsfera(n, radio) {
     });
   }
   return puntos;
-}
-
-function crearDOM() {
-  const contenedor = document.getElementById('agent-column');
-  if (!contenedor) return;
-
-  wrap = document.createElement('div');
-  wrap.className = 'agent-orb-wrap';
-  wrap.setAttribute('role', 'button');
-  wrap.setAttribute('tabindex', '0');
-  wrap.setAttribute('aria-label', 'Hablar con el agente');
-  wrap.innerHTML = `
-    <div class="agent-orb-inner">
-      <div class="agent-orb-glow"></div>
-      <canvas class="agent-canvas" width="360" height="360"></canvas>
-    </div>
-    <p class="agent-status">Toca para hablar</p>
-  `;
-
-  contenedor.appendChild(wrap);
-
-  canvas = wrap.querySelector('canvas');
-  ctx = canvas.getContext('2d');
-  statusEl = wrap.querySelector('.agent-status');
-
-  const alternar = () => {
-    if (estado === 'dormido') despertar();
-    else dormir();
-  };
-  wrap.addEventListener('click', alternar);
-  wrap.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); alternar(); }
-  });
-
-  crearModalVistaPrevia();
 }
 
 function crearModalVistaPrevia() {
@@ -220,7 +190,7 @@ async function despertar() {
       return;
     }
 
-    sesionActiva = sesion;
+    sesionVozActiva = sesion;
     estado = 'activo';
     ultimoStatus = 'Escuchando…';
     statusEl.textContent = ultimoStatus;
@@ -232,11 +202,228 @@ async function despertar() {
 
 function dormir() {
   estado = 'dormido';
-  sesionActiva?.cerrar();
-  sesionActiva = null;
+  sesionVozActiva?.cerrar();
+  sesionVozActiva = null;
   nivelEntrada = 0;
   nivelSalida = 0;
-  statusEl.textContent = 'Toca para hablar';
+  if (statusEl) statusEl.textContent = 'Toca para hablar';
+}
+
+function crearPanelVoz() {
+  panelVoz = document.createElement('div');
+  panelVoz.className = 'agent-panel agent-panel-voz';
+  panelVoz.hidden = true;
+  panelVoz.innerHTML = `
+    <div class="agent-panel-header">
+      <span>Agente por voz</span>
+      <button type="button" class="agent-panel-close" aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="agent-orb-wrap" role="button" tabindex="0" aria-label="Hablar con el agente">
+      <div class="agent-orb-inner">
+        <div class="agent-orb-glow"></div>
+        <canvas class="agent-canvas" width="360" height="360"></canvas>
+      </div>
+      <p class="agent-status">Toca para hablar</p>
+    </div>
+  `;
+  fabRoot.insertBefore(panelVoz, fab);
+
+  wrap = panelVoz.querySelector('.agent-orb-wrap');
+  canvas = panelVoz.querySelector('canvas');
+  ctx = canvas.getContext('2d');
+  statusEl = panelVoz.querySelector('.agent-status');
+
+  const alternar = () => {
+    if (estado === 'dormido') despertar();
+    else dormir();
+  };
+  wrap.addEventListener('click', alternar);
+  wrap.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); alternar(); }
+  });
+
+  panelVoz.querySelector('.agent-panel-close').addEventListener('click', cerrarPaneles);
+
+  if (!rafId) rafId = requestAnimationFrame(dibujar);
+}
+
+function agregarBurbujaChat(texto, tipo) {
+  const burbuja = document.createElement('div');
+  burbuja.className = `agent-chat-burbuja ${tipo}`;
+  burbuja.textContent = texto;
+  chatMensajesEl.appendChild(burbuja);
+  chatMensajesEl.scrollTop = chatMensajesEl.scrollHeight;
+  return burbuja;
+}
+
+function fijarChatHabilitado(habilitado) {
+  chatInputEl.disabled = !habilitado;
+  chatSendBtn.disabled = !habilitado;
+}
+
+async function asegurarSesionTexto() {
+  if (sesionTextoActiva) return sesionTextoActiva;
+
+  const session = getSession();
+  const eventoId = getActiveEventId();
+  if (!session || !eventoId) {
+    agregarBurbujaChat('Selecciona un evento primero.', 'sistema');
+    return null;
+  }
+
+  fijarChatHabilitado(false);
+  agregarBurbujaChat('Conectando…', 'sistema');
+
+  try {
+    sesionTextoActiva = await iniciarSesionAgenteTexto({
+      token: session.token,
+      eventoId,
+      onTexto: (delta) => {
+        if (!burbujaAgenteActual) burbujaAgenteActual = agregarBurbujaChat('', 'agente');
+        burbujaAgenteActual.textContent += delta;
+        chatMensajesEl.scrollTop = chatMensajesEl.scrollHeight;
+      },
+      onRespuestaTerminada: () => {
+        burbujaAgenteActual = null;
+        fijarChatHabilitado(true);
+        chatInputEl.focus();
+      },
+      onError: (msg) => {
+        agregarBurbujaChat(msg, 'sistema');
+        fijarChatHabilitado(true);
+      },
+      onMostrarVistaPrevia: (hogar) => mostrarVistaPreviaHogar(hogar),
+      onMostrarListaHogares: (titulo, hogares) => mostrarListaHogares(titulo, hogares),
+      onNavegarPagina: (url) => {
+        if (onNavegarPaginaCb) onNavegarPaginaCb(url);
+        else window.location.href = url;
+      },
+    });
+    fijarChatHabilitado(true);
+    return sesionTextoActiva;
+  } catch (err) {
+    agregarBurbujaChat('No se pudo conectar con el agente.', 'sistema');
+    fijarChatHabilitado(true);
+    return null;
+  }
+}
+
+function cerrarSesionTexto() {
+  sesionTextoActiva?.cerrar();
+  sesionTextoActiva = null;
+  burbujaAgenteActual = null;
+  if (chatMensajesEl) chatMensajesEl.innerHTML = '';
+}
+
+async function enviarMensajeTexto(texto) {
+  agregarBurbujaChat(texto, 'usuario');
+  const sesion = await asegurarSesionTexto();
+  if (!sesion) return;
+  fijarChatHabilitado(false);
+  try {
+    await sesion.enviarTexto(texto);
+  } catch {
+    agregarBurbujaChat('No se pudo enviar el mensaje.', 'sistema');
+    fijarChatHabilitado(true);
+  }
+}
+
+function crearPanelTexto() {
+  panelTexto = document.createElement('div');
+  panelTexto.className = 'agent-panel agent-chat';
+  panelTexto.hidden = true;
+  panelTexto.innerHTML = `
+    <div class="agent-panel-header">
+      <span>Asistente</span>
+      <button type="button" class="agent-panel-close" aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="agent-chat-mensajes"></div>
+    <form class="agent-chat-form">
+      <input type="text" class="agent-chat-input" placeholder="Escribe tu mensaje…" autocomplete="off" />
+      <button type="submit" class="agent-chat-send">Enviar</button>
+    </form>
+  `;
+  fabRoot.insertBefore(panelTexto, fab);
+
+  chatMensajesEl = panelTexto.querySelector('.agent-chat-mensajes');
+  chatFormEl = panelTexto.querySelector('.agent-chat-form');
+  chatInputEl = panelTexto.querySelector('.agent-chat-input');
+  chatSendBtn = panelTexto.querySelector('.agent-chat-send');
+
+  panelTexto.querySelector('.agent-panel-close').addEventListener('click', cerrarPaneles);
+
+  chatFormEl.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const texto = chatInputEl.value.trim();
+    if (!texto) return;
+    chatInputEl.value = '';
+    enviarMensajeTexto(texto);
+  });
+}
+
+function cerrarPaneles() {
+  if (panelVoz) {
+    panelVoz.hidden = true;
+    dormir();
+  }
+  if (panelTexto) {
+    panelTexto.hidden = true;
+    cerrarSesionTexto();
+  }
+  menu.hidden = true;
+  panelAbierto = null;
+}
+
+function abrirPanel(modo) {
+  menu.hidden = true;
+
+  if (modo === panelAbierto) {
+    cerrarPaneles();
+    return;
+  }
+
+  if (panelAbierto === 'voz') dormir();
+  if (panelAbierto === 'texto') cerrarSesionTexto();
+
+  if (panelVoz) panelVoz.hidden = modo !== 'voz';
+  if (panelTexto) panelTexto.hidden = modo !== 'texto';
+  panelAbierto = modo;
+
+  if (modo === 'voz') despertar();
+  if (modo === 'texto') chatInputEl.focus();
+}
+
+function alternarMenu() {
+  if (panelAbierto) {
+    cerrarPaneles();
+    return;
+  }
+  menu.hidden = !menu.hidden;
+}
+
+function crearDOM() {
+  fabRoot = document.createElement('div');
+  fabRoot.className = 'agent-fab-root';
+  fabRoot.innerHTML = `
+    <div class="agent-menu" hidden>
+      <button type="button" class="agent-menu-btn" data-modo="texto">💬 Texto</button>
+      <button type="button" class="agent-menu-btn" data-modo="voz">🎤 Voz</button>
+    </div>
+    <button type="button" class="agent-fab" aria-label="Asistente">✦</button>
+  `;
+  document.body.appendChild(fabRoot);
+
+  fab = fabRoot.querySelector('.agent-fab');
+  menu = fabRoot.querySelector('.agent-menu');
+
+  fab.addEventListener('click', alternarMenu);
+  menu.querySelectorAll('.agent-menu-btn').forEach((btn) => {
+    btn.addEventListener('click', () => abrirPanel(btn.dataset.modo));
+  });
+
+  crearPanelTexto();
+  crearPanelVoz();
+  crearModalVistaPrevia();
 }
 
 export async function setupAgentPanel({ onNavegarPagina } = {}) {
@@ -254,5 +441,4 @@ export async function setupAgentPanel({ onNavegarPagina } = {}) {
 
   puntosEsfera = fibonacciEsfera(PUNTOS_ESFERA, RADIO_BASE);
   crearDOM();
-  if (canvas) rafId = requestAnimationFrame(dibujar);
 }

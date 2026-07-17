@@ -68,10 +68,9 @@
 }
 
 .admin-main {
-  flex: 0 1 1200px;
+  flex: 1 1 auto;
   min-width: 0;
   padding: 36px 44px;
-  max-width: 1200px;
 }
 
 .admin-page-header {

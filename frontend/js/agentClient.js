@@ -146,30 +146,7 @@ function medirNivel(stream, onNivel) {
   };
 }
 
-export async function iniciarSesionAgente({ token, eventoId, onNivelEntrada, onNivelSalida, onError, onMostrarVistaPrevia, onNavegarPagina, onMostrarListaHogares }) {
-  const { value: clientSecret } = await obtenerTokenAgente(token);
-
-  const pc = new RTCPeerConnection();
-  const audioEl = new Audio();
-  audioEl.autoplay = true;
-
-  let detenerMedicionSalida = () => {};
-  let detenerMedicionEntrada = () => {};
-
-  pc.ontrack = (e) => {
-    audioEl.srcObject = e.streams[0];
-    detenerMedicionSalida = medirNivel(e.streams[0], onNivelSalida);
-  };
-
-  const micStream = await navigator.mediaDevices.getUserMedia({
-    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-  });
-  micStream.getTracks().forEach((t) => pc.addTrack(t, micStream));
-  detenerMedicionEntrada = medirNivel(micStream, onNivelEntrada);
-
-  const ctxHerramientas = { token, eventoId, onMostrarVistaPrevia, onNavegarPagina, onMostrarListaHogares };
-
-  const dc = pc.createDataChannel('oai-events');
+function wireDataChannel(dc, { ctxHerramientas, soloTexto, onError, onTextoDelta, onRespuestaTerminada }) {
   dc.addEventListener('message', async (e) => {
     let evento;
     try {
@@ -180,6 +157,11 @@ export async function iniciarSesionAgente({ token, eventoId, onNivelEntrada, onN
 
     if (evento.type === 'error') {
       onError?.(evento.error?.message || 'Ocurrió un error con el agente.');
+      return;
+    }
+
+    if (evento.type === 'response.output_text.delta' || evento.type === 'response.text.delta') {
+      onTextoDelta?.(evento.delta || '');
       return;
     }
 
@@ -203,11 +185,19 @@ export async function iniciarSesionAgente({ token, eventoId, onNivelEntrada, onN
         },
       }));
     }
+
     if (llamadas.length > 0) {
-      dc.send(JSON.stringify({ type: 'response.create' }));
+      dc.send(JSON.stringify({
+        type: 'response.create',
+        ...(soloTexto ? { response: { output_modalities: ['text'] } } : {}),
+      }));
+    } else {
+      onRespuestaTerminada?.();
     }
   });
+}
 
+async function negociarConexion(pc, clientSecret) {
   const offer = await pc.createOffer();
   await pc.setLocalDescription(offer);
 
@@ -221,17 +211,86 @@ export async function iniciarSesionAgente({ token, eventoId, onNivelEntrada, onN
   });
 
   if (!respuesta.ok) {
-    throw new Error('No se pudo conectar con el agente de voz.');
+    throw new Error('No se pudo conectar con el agente.');
   }
 
   const answerSdp = await respuesta.text();
   await pc.setRemoteDescription({ type: 'answer', sdp: answerSdp });
+}
+
+function esperarCanalAbierto(dc) {
+  if (dc.readyState === 'open') return Promise.resolve();
+  return new Promise((resolve) => {
+    dc.addEventListener('open', () => resolve(), { once: true });
+  });
+}
+
+export async function iniciarSesionAgente({ token, eventoId, onNivelEntrada, onNivelSalida, onError, onMostrarVistaPrevia, onNavegarPagina, onMostrarListaHogares }) {
+  const { value: clientSecret } = await obtenerTokenAgente(token);
+
+  const pc = new RTCPeerConnection();
+  const audioEl = new Audio();
+  audioEl.autoplay = true;
+
+  let detenerMedicionSalida = () => {};
+  let detenerMedicionEntrada = () => {};
+
+  pc.ontrack = (e) => {
+    audioEl.srcObject = e.streams[0];
+    detenerMedicionSalida = medirNivel(e.streams[0], onNivelSalida);
+  };
+
+  const micStream = await navigator.mediaDevices.getUserMedia({
+    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+  });
+  micStream.getTracks().forEach((t) => pc.addTrack(t, micStream));
+  detenerMedicionEntrada = medirNivel(micStream, onNivelEntrada);
+
+  const ctxHerramientas = { token, eventoId, onMostrarVistaPrevia, onNavegarPagina, onMostrarListaHogares };
+  const dc = pc.createDataChannel('oai-events');
+  wireDataChannel(dc, { ctxHerramientas, soloTexto: false, onError });
+
+  await negociarConexion(pc, clientSecret);
 
   return {
     cerrar() {
       detenerMedicionEntrada();
       detenerMedicionSalida();
       micStream.getTracks().forEach((t) => t.stop());
+      dc.close();
+      pc.close();
+    },
+  };
+}
+
+export async function iniciarSesionAgenteTexto({ token, eventoId, onTexto, onRespuestaTerminada, onError, onMostrarVistaPrevia, onNavegarPagina, onMostrarListaHogares }) {
+  const { value: clientSecret } = await obtenerTokenAgente(token);
+
+  const pc = new RTCPeerConnection();
+  pc.addTransceiver('audio', { direction: 'recvonly' });
+
+  const ctxHerramientas = { token, eventoId, onMostrarVistaPrevia, onNavegarPagina, onMostrarListaHogares };
+  const dc = pc.createDataChannel('oai-events');
+  wireDataChannel(dc, {
+    ctxHerramientas,
+    soloTexto: true,
+    onError,
+    onTextoDelta: onTexto,
+    onRespuestaTerminada,
+  });
+
+  await negociarConexion(pc, clientSecret);
+
+  return {
+    async enviarTexto(texto) {
+      await esperarCanalAbierto(dc);
+      dc.send(JSON.stringify({
+        type: 'conversation.item.create',
+        item: { type: 'message', role: 'user', content: [{ type: 'input_text', text: texto }] },
+      }));
+      dc.send(JSON.stringify({ type: 'response.create', response: { output_modalities: ['text'] } }));
+    },
+    cerrar() {
       dc.close();
       pc.close();
     },
