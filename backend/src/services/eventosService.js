@@ -67,7 +67,7 @@ export async function getEventoMetricas(id) {
       `SELECT h.registrado_por, COALESCE(u.nombre, u.email, 'Usuario eliminado') AS etiqueta, COUNT(*)::int AS total
        FROM hogares h
        LEFT JOIN usuarios u ON u.id = h.registrado_por
-       WHERE h.evento_id = $1
+       WHERE h.evento_id = $1 AND (u.role IS NULL OR u.role <> 'admin')
        GROUP BY h.registrado_por, u.nombre, u.email
        ORDER BY total DESC`,
       [id]
