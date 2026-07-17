@@ -46,10 +46,19 @@ Reglas de uso de herramientas:
 - En "buscar_hogares", el conteo real de resultados es "total_encontrados"; el arreglo "hogares"
   solo trae hasta 8 como muestra. Si preguntan cuántas casas hay (en total o en una calle/colonia),
   contesta con "total_encontrados", nunca cuentes el arreglo de muestra.
-- "disponibilidad_por_calle" agrupa por el nombre de calle detectado de forma aproximada (a partir
-  del campo de dirección, que junta calle y número en un solo texto) — preséntalo como una
-  aproximación, no como un dato exacto. El campo "calle" de cada resultado sirve directo como filtro
-  de "mostrar_lista_hogares" o "buscar_hogares" para ver las casas de esa calle.
+- "disponibilidad_por_calle" y "capacidad_por_calle" agrupan por el nombre de calle detectado de
+  forma aproximada (a partir del campo de dirección, que junta calle y número en un solo texto) —
+  preséntalo como una aproximación, no como un dato exacto. El campo "calle" de cada resultado sirve
+  directo como filtro de "mostrar_lista_hogares" o "buscar_hogares" para ver las casas de esa calle.
+- Si piden disponibilidad por calle ("¿qué calle tiene más lugares libres?") usa
+  "disponibilidad_por_calle". Si piden un resumen de capacidad por calle ("dame la capacidad por
+  calle", "cuánta capacidad hay en cada calle"), usa "capacidad_por_calle".
+- "casas_por_distancia" calcula la distancia en línea recta (aérea, no en calles/tiempo de manejo)
+  de cada hogar respecto al templo, y regresa las más lejanas o las más cercanas según el parámetro
+  "orden" (por defecto "lejanas"). Úsala para preguntas como "¿qué casas están más lejos del
+  templo?" o "¿cuáles son las más cercanas?". Aclara que es distancia en línea recta, no de manejo,
+  y que solo considera casas con ubicación registrada en el mapa (si "sin_ubicacion" es mayor a 0,
+  menciona que esa cantidad de casas no tiene ubicación y no se pudo incluir).
 
 Solo puedes CONSULTAR información y navegar por el sistema. Nunca puedes crear, editar ni eliminar
 nada, y nunca debes inventar datos: si una herramienta no encuentra información, dilo con
@@ -91,6 +100,29 @@ function buildTools(role) {
             description:
                 "Agrupa los hogares del evento activo por nombre de calle (de forma aproximada) y regresa las calles con más lugares disponibles, ordenadas de mayor a menor.",
             parameters: { type: "object", properties: {} },
+        },
+        {
+            type: "function",
+            name: "capacidad_por_calle",
+            description:
+                "Agrupa los hogares del evento activo por nombre de calle (de forma aproximada) y regresa un resumen de la capacidad total de cada una, ordenadas de mayor a menor capacidad.",
+            parameters: { type: "object", properties: {} },
+        },
+        {
+            type: "function",
+            name: "casas_por_distancia",
+            description:
+                "Calcula la distancia en línea recta de cada hogar con ubicación registrada respecto al templo, y regresa las más lejanas o más cercanas.",
+            parameters: {
+                type: "object",
+                properties: {
+                    orden: {
+                        type: "string",
+                        enum: ["lejanas", "cercanas"],
+                        description: "lejanas para las más alejadas del templo, cercanas para las más próximas. Por defecto lejanas.",
+                    },
+                },
+            },
         },
         {
             type: "function",

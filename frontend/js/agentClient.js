@@ -24,6 +24,21 @@ function calleBase(calleNumero) {
   return texto.replace(/\s*#?\d+[\w-]*\s*$/, '').trim() || texto;
 }
 
+// Coordenadas del templo (mismo punto usado como centro por defecto del mapa
+// en admin-mapa.js y mapModal.js), usado como referencia fija de distancia.
+const TEMPLO_LAT = 20.6597;
+const TEMPLO_LNG = -103.3496;
+
+function distanciaKm(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLng = (lng2 - lng1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 function filtrarHogares(hogares, args) {
   let resultados = hogares;
 
@@ -88,6 +103,50 @@ async function disponibilidadPorCalle(ctx) {
   return { calles_distintas: grupos.size, ranking };
 }
 
+async function capacidadPorCalle(ctx) {
+  const { hogares } = await listarHogares(ctx.token, ctx.eventoId);
+  const grupos = new Map();
+
+  hogares.forEach((h) => {
+    const base = calleBase(h.calle_numero);
+    const clave = normaliza(base);
+    const grupo = grupos.get(clave) || { calle: base, hogares: 0, capacidad: 0 };
+    grupo.hogares += 1;
+    grupo.capacidad += h.capacidad;
+    grupos.set(clave, grupo);
+  });
+
+  const ranking = Array.from(grupos.values()).sort((a, b) => b.capacidad - a.capacidad);
+
+  return {
+    calles_distintas: ranking.length,
+    resumen: ranking.slice(0, 15),
+  };
+}
+
+async function casasPorDistancia(ctx, args) {
+  const { hogares } = await listarHogares(ctx.token, ctx.eventoId);
+  const conUbicacion = hogares.filter((h) => typeof h.lat === 'number' && typeof h.lng === 'number');
+  const sinUbicacion = hogares.length - conUbicacion.length;
+
+  const conDistancia = conUbicacion
+    .map((h) => ({ ...h, distancia_km: distanciaKm(TEMPLO_LAT, TEMPLO_LNG, h.lat, h.lng) }))
+    .sort((a, b) => (args.orden === 'cercanas' ? a.distancia_km - b.distancia_km : b.distancia_km - a.distancia_km));
+
+  return {
+    referencia: 'el templo',
+    orden: args.orden === 'cercanas' ? 'cercanas' : 'lejanas',
+    sin_ubicacion: sinUbicacion,
+    casas: conDistancia.slice(0, 8).map((h) => ({
+      id: h.id,
+      folio: folioDe(h.id),
+      dueno: h.nombre_dueno,
+      direccion: `${h.calle_numero}, ${h.colonia}`,
+      distancia_km: Math.round(h.distancia_km * 10) / 10,
+    })),
+  };
+}
+
 async function abrirHogar(ctx, args) {
   const { hogar } = await obtenerHogar(ctx.token, args.id);
   ctx.onMostrarVistaPrevia?.(hogar);
@@ -113,6 +172,8 @@ async function ejecutarHerramienta(nombre, args, ctx) {
     if (nombre === 'buscar_hogares') return await buscarHogares(ctx, args);
     if (nombre === 'metricas_evento') return await metricasEvento(ctx);
     if (nombre === 'disponibilidad_por_calle') return await disponibilidadPorCalle(ctx);
+    if (nombre === 'capacidad_por_calle') return await capacidadPorCalle(ctx);
+    if (nombre === 'casas_por_distancia') return await casasPorDistancia(ctx, args);
     if (nombre === 'abrir_hogar') return await abrirHogar(ctx, args);
     if (nombre === 'navegar_a_pagina') return await navegarAPagina(ctx, args);
     if (nombre === 'mostrar_lista_hogares') return await mostrarListaHogares(ctx, args);
