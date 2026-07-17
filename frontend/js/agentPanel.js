@@ -386,7 +386,6 @@ function abrirPanel(modo) {
   if (panelTexto) panelTexto.hidden = modo !== 'texto';
   panelAbierto = modo;
 
-  if (modo === 'voz') despertar();
   if (modo === 'texto') chatInputEl.focus();
 }
 
