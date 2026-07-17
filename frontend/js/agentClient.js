@@ -24,10 +24,9 @@ function calleBase(calleNumero) {
   return texto.replace(/\s*#?\d+[\w-]*\s*$/, '').trim() || texto;
 }
 
-// Coordenadas del templo (mismo punto usado como centro por defecto del mapa
-// en admin-mapa.js y mapModal.js), usado como referencia fija de distancia.
-const TEMPLO_LAT = 20.6597;
-const TEMPLO_LNG = -103.3496;
+// Coordenadas del templo, usadas como referencia fija de distancia.
+const TEMPLO_LAT = 20.6719;
+const TEMPLO_LNG = -103.28414;
 
 function distanciaKm(lat1, lng1, lat2, lng2) {
   const R = 6371;
