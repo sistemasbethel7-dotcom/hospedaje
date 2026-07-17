@@ -132,7 +132,8 @@ function renderTabla() {
           <td><div class="admin-table-thumb" ${thumbStyle}>${thumbContent}</div></td>
           <td>${folioDe(h.id)}</td>
           <td>${escapeHtml(h.nombre_dueno)}</td>
-          <td>${escapeHtml(h.calle_numero)}, ${escapeHtml(h.colonia)}</td>
+          <td>${escapeHtml(h.calle_numero)}</td>
+          <td>${escapeHtml(h.colonia)}</td>
           <td>${h.codigo_postal ? escapeHtml(h.codigo_postal) : '—'}</td>
           <td>${h.ocupacion_actual}/${h.capacidad}</td>
           <td><span class="admin-estado-badge ${estatus}">${estatusLabel(estatus)}</span></td>
