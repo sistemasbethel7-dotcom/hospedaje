@@ -1,4 +1,4 @@
-import { iniciarSesionAgente, iniciarSesionAgenteTexto } from './agentClient.js';
+import { iniciarSesionAgente } from './agentClient.js';
 import { obtenerConfigAgente, obtenerHogar } from './services/api.js';
 import { getSession } from './services/session.js';
 import { getActiveEventId } from './services/eventoActivo.js';
@@ -8,9 +8,8 @@ const PUNTOS_ESFERA = 160;
 const RADIO_BASE = 70;
 const DISPERSION_MAX = 18;
 
-let fabRoot, fab, menu;
+let fabRoot, fab;
 let panelVoz, canvas, ctx, statusEl, wrap;
-let panelTexto, chatMensajesEl, chatFormEl, chatInputEl, chatSendBtn;
 let modalBackdrop, modalTitle, modalBody;
 let puntosEsfera = [];
 let rotacion = 0;
@@ -19,12 +18,10 @@ let nivelEntrada = 0;
 let nivelSalida = 0;
 let rafId = null;
 let sesionVozActiva = null;
-let sesionTextoActiva = null;
-let burbujaAgenteActual = null;
 let ultimoStatus = '';
 let huboSalida = false;
 let estado = 'dormido';
-let panelAbierto = null;
+let panelAbierto = false;
 let onNavegarPaginaCb = null;
 
 function fibonacciEsfera(n, radio) {
@@ -244,186 +241,32 @@ function crearPanelVoz() {
   if (!rafId) rafId = requestAnimationFrame(dibujar);
 }
 
-function agregarBurbujaChat(texto, tipo) {
-  const burbuja = document.createElement('div');
-  burbuja.className = `agent-chat-burbuja ${tipo}`;
-  burbuja.textContent = texto;
-  chatMensajesEl.appendChild(burbuja);
-  chatMensajesEl.scrollTop = chatMensajesEl.scrollHeight;
-  return burbuja;
+function cerrarPanelVoz() {
+  panelVoz.hidden = true;
+  dormir();
+  panelAbierto = false;
 }
 
-function fijarChatHabilitado(habilitado) {
-  chatInputEl.disabled = !habilitado;
-  chatSendBtn.disabled = !habilitado;
-}
-
-async function asegurarSesionTexto() {
-  if (sesionTextoActiva) return sesionTextoActiva;
-
-  const session = getSession();
-  const eventoId = getActiveEventId();
-  if (!session || !eventoId) {
-    agregarBurbujaChat('Selecciona un evento primero.', 'sistema');
-    return null;
-  }
-
-  fijarChatHabilitado(false);
-  agregarBurbujaChat('Conectando…', 'sistema');
-
-  try {
-    sesionTextoActiva = await iniciarSesionAgenteTexto({
-      token: session.token,
-      eventoId,
-      onTexto: (delta) => {
-        if (!burbujaAgenteActual) burbujaAgenteActual = agregarBurbujaChat('', 'agente');
-        burbujaAgenteActual.textContent += delta;
-        chatMensajesEl.scrollTop = chatMensajesEl.scrollHeight;
-      },
-      onRespuestaTerminada: () => {
-        burbujaAgenteActual = null;
-        fijarChatHabilitado(true);
-        chatInputEl.focus();
-      },
-      onError: (msg) => {
-        agregarBurbujaChat(msg, 'sistema');
-        fijarChatHabilitado(true);
-      },
-      onMostrarVistaPrevia: (hogar) => mostrarVistaPreviaHogar(hogar),
-      onMostrarListaHogares: (titulo, hogares) => mostrarListaHogares(titulo, hogares),
-      onNavegarPagina: (url) => {
-        if (onNavegarPaginaCb) onNavegarPaginaCb(url);
-        else window.location.href = url;
-      },
-    });
-    fijarChatHabilitado(true);
-    return sesionTextoActiva;
-  } catch (err) {
-    agregarBurbujaChat('No se pudo conectar con el agente.', 'sistema');
-    fijarChatHabilitado(true);
-    return null;
-  }
-}
-
-function cerrarSesionTexto() {
-  sesionTextoActiva?.cerrar();
-  sesionTextoActiva = null;
-  burbujaAgenteActual = null;
-  if (chatMensajesEl) chatMensajesEl.innerHTML = '';
-}
-
-async function enviarMensajeTexto(texto) {
-  agregarBurbujaChat(texto, 'usuario');
-  const sesion = await asegurarSesionTexto();
-  if (!sesion) return;
-  fijarChatHabilitado(false);
-  try {
-    await sesion.enviarTexto(texto);
-  } catch {
-    agregarBurbujaChat('No se pudo enviar el mensaje.', 'sistema');
-    fijarChatHabilitado(true);
-  }
-}
-
-function crearPanelTexto() {
-  panelTexto = document.createElement('div');
-  panelTexto.className = 'agent-panel agent-chat';
-  panelTexto.hidden = true;
-  panelTexto.innerHTML = `
-    <div class="agent-panel-header">
-      <span>Asistente</span>
-      <button type="button" class="agent-panel-close" aria-label="Cerrar"><span class="material-symbols-outlined">close</span></button>
-    </div>
-    <div class="agent-chat-mensajes"></div>
-    <form class="agent-chat-form">
-      <input type="text" class="agent-chat-input" placeholder="Escribe tu mensaje…" autocomplete="off" />
-      <button type="submit" class="agent-chat-send">Enviar</button>
-    </form>
-  `;
-  fabRoot.insertBefore(panelTexto, fab);
-
-  chatMensajesEl = panelTexto.querySelector('.agent-chat-mensajes');
-  chatFormEl = panelTexto.querySelector('.agent-chat-form');
-  chatInputEl = panelTexto.querySelector('.agent-chat-input');
-  chatSendBtn = panelTexto.querySelector('.agent-chat-send');
-
-  panelTexto.querySelector('.agent-panel-close').addEventListener('click', cerrarPaneles);
-
-  chatFormEl.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const texto = chatInputEl.value.trim();
-    if (!texto) return;
-    chatInputEl.value = '';
-    enviarMensajeTexto(texto);
-  });
-}
-
-function cerrarPaneles() {
-  if (panelVoz) {
-    panelVoz.hidden = true;
-    dormir();
-  }
-  if (panelTexto) {
-    panelTexto.hidden = true;
-    cerrarSesionTexto();
-  }
-  menu.hidden = true;
-  panelAbierto = null;
-}
-
-function abrirPanel(modo) {
-  menu.hidden = true;
-
-  if (modo === panelAbierto) {
-    cerrarPaneles();
-    return;
-  }
-
-  if (panelAbierto === 'voz') dormir();
-  if (panelAbierto === 'texto') cerrarSesionTexto();
-
-  if (panelVoz) panelVoz.hidden = modo !== 'voz';
-  if (panelTexto) panelTexto.hidden = modo !== 'texto';
-  panelAbierto = modo;
-
-  if (modo === 'texto') chatInputEl.focus();
-}
-
-function alternarMenu() {
+function alternarPanelVoz() {
   if (panelAbierto) {
-    cerrarPaneles();
+    cerrarPanelVoz();
     return;
   }
-  menu.hidden = !menu.hidden;
+  panelVoz.hidden = false;
+  panelAbierto = true;
 }
 
 function crearDOM() {
   fabRoot = document.createElement('div');
   fabRoot.className = 'agent-fab-root';
   fabRoot.innerHTML = `
-    <div class="agent-menu" hidden>
-      <button type="button" class="agent-menu-btn" data-modo="texto"><span class="material-symbols-outlined">chat</span>Texto</button>
-      <button type="button" class="agent-menu-btn" data-modo="voz"><span class="material-symbols-outlined">mic</span>Voz</button>
-    </div>
     <button type="button" class="agent-fab" aria-label="Asistente"><span class="material-symbols-outlined">support_agent</span></button>
   `;
   document.body.appendChild(fabRoot);
 
   fab = fabRoot.querySelector('.agent-fab');
-  menu = fabRoot.querySelector('.agent-menu');
+  fab.addEventListener('click', alternarPanelVoz);
 
-  fab.addEventListener('click', alternarMenu);
-  menu.querySelectorAll('.agent-menu-btn').forEach((btn) => {
-    btn.addEventListener('click', () => abrirPanel(btn.dataset.modo));
-  });
-
-  document.addEventListener('click', (e) => {
-    if (!menu.hidden && !fabRoot.contains(e.target)) {
-      menu.hidden = true;
-    }
-  });
-
-  crearPanelTexto();
   crearPanelVoz();
   crearModalVistaPrevia();
 }

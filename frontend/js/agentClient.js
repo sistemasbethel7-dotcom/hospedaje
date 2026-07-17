@@ -146,7 +146,7 @@ function medirNivel(stream, onNivel) {
   };
 }
 
-function wireDataChannel(dc, { ctxHerramientas, soloTexto, onError, onTextoDelta, onRespuestaTerminada }) {
+function wireDataChannel(dc, { ctxHerramientas, onError }) {
   dc.addEventListener('message', async (e) => {
     let evento;
     try {
@@ -157,11 +157,6 @@ function wireDataChannel(dc, { ctxHerramientas, soloTexto, onError, onTextoDelta
 
     if (evento.type === 'error') {
       onError?.(evento.error?.message || 'Ocurrió un error con el agente.');
-      return;
-    }
-
-    if (evento.type === 'response.output_text.delta' || evento.type === 'response.text.delta') {
-      onTextoDelta?.(evento.delta || '');
       return;
     }
 
@@ -187,12 +182,7 @@ function wireDataChannel(dc, { ctxHerramientas, soloTexto, onError, onTextoDelta
     }
 
     if (llamadas.length > 0) {
-      dc.send(JSON.stringify({
-        type: 'response.create',
-        ...(soloTexto ? { response: { output_modalities: ['text'] } } : {}),
-      }));
-    } else {
-      onRespuestaTerminada?.();
+      dc.send(JSON.stringify({ type: 'response.create' }));
     }
   });
 }
@@ -218,13 +208,6 @@ async function negociarConexion(pc, clientSecret) {
   await pc.setRemoteDescription({ type: 'answer', sdp: answerSdp });
 }
 
-function esperarCanalAbierto(dc) {
-  if (dc.readyState === 'open') return Promise.resolve();
-  return new Promise((resolve) => {
-    dc.addEventListener('open', () => resolve(), { once: true });
-  });
-}
-
 export async function iniciarSesionAgente({ token, eventoId, onNivelEntrada, onNivelSalida, onError, onMostrarVistaPrevia, onNavegarPagina, onMostrarListaHogares }) {
   const { value: clientSecret } = await obtenerTokenAgente(token);
 
@@ -248,7 +231,7 @@ export async function iniciarSesionAgente({ token, eventoId, onNivelEntrada, onN
 
   const ctxHerramientas = { token, eventoId, onMostrarVistaPrevia, onNavegarPagina, onMostrarListaHogares };
   const dc = pc.createDataChannel('oai-events');
-  wireDataChannel(dc, { ctxHerramientas, soloTexto: false, onError });
+  wireDataChannel(dc, { ctxHerramientas, onError });
   dc.addEventListener('open', () => {
     dc.send(JSON.stringify({
       type: 'response.create',
@@ -265,40 +248,6 @@ export async function iniciarSesionAgente({ token, eventoId, onNivelEntrada, onN
       detenerMedicionEntrada();
       detenerMedicionSalida();
       micStream.getTracks().forEach((t) => t.stop());
-      dc.close();
-      pc.close();
-    },
-  };
-}
-
-export async function iniciarSesionAgenteTexto({ token, eventoId, onTexto, onRespuestaTerminada, onError, onMostrarVistaPrevia, onNavegarPagina, onMostrarListaHogares }) {
-  const { value: clientSecret } = await obtenerTokenAgente(token);
-
-  const pc = new RTCPeerConnection();
-  pc.addTransceiver('audio', { direction: 'recvonly' });
-
-  const ctxHerramientas = { token, eventoId, onMostrarVistaPrevia, onNavegarPagina, onMostrarListaHogares };
-  const dc = pc.createDataChannel('oai-events');
-  wireDataChannel(dc, {
-    ctxHerramientas,
-    soloTexto: true,
-    onError,
-    onTextoDelta: onTexto,
-    onRespuestaTerminada,
-  });
-
-  await negociarConexion(pc, clientSecret);
-
-  return {
-    async enviarTexto(texto) {
-      await esperarCanalAbierto(dc);
-      dc.send(JSON.stringify({
-        type: 'conversation.item.create',
-        item: { type: 'message', role: 'user', content: [{ type: 'input_text', text: texto }] },
-      }));
-      dc.send(JSON.stringify({ type: 'response.create', response: { output_modalities: ['text'] } }));
-    },
-    cerrar() {
       dc.close();
       pc.close();
     },
