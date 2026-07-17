@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anfitriones-v72';
+const CACHE_NAME = 'anfitriones-v73';
 const APP_SHELL = [
   '/',
   '/index.html',

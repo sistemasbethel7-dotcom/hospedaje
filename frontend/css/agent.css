@@ -154,7 +154,7 @@
 
 .agent-voz-float {
   position: fixed;
-  top: -75px;
+  top: -60px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 90;
