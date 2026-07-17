@@ -22,6 +22,7 @@ let sesionVozActiva = null;
 let sesionTextoActiva = null;
 let burbujaAgenteActual = null;
 let ultimoStatus = '';
+let huboSalida = false;
 let estado = 'dormido';
 let panelAbierto = null;
 let onNavegarPaginaCb = null;
@@ -129,7 +130,8 @@ function dibujar() {
   nivelSuavizado += (nivelObjetivo - nivelSuavizado) * 0.15;
 
   if (estado === 'activo') {
-    const nuevoStatus = nivelSalida > 0.08 && nivelSalida >= nivelEntrada ? 'Hablando…' : 'Escuchando…';
+    if (nivelSalida > 0.08) huboSalida = true;
+    const nuevoStatus = !huboSalida || (nivelSalida > 0.08 && nivelSalida >= nivelEntrada) ? 'Hablando…' : 'Escuchando…';
     if (nuevoStatus !== ultimoStatus) {
       ultimoStatus = nuevoStatus;
       statusEl.textContent = nuevoStatus;
@@ -192,7 +194,8 @@ async function despertar() {
 
     sesionVozActiva = sesion;
     estado = 'activo';
-    ultimoStatus = 'Escuchando…';
+    huboSalida = false;
+    ultimoStatus = 'Hablando…';
     statusEl.textContent = ultimoStatus;
   } catch (err) {
     estado = 'dormido';
@@ -211,13 +214,9 @@ function dormir() {
 
 function crearPanelVoz() {
   panelVoz = document.createElement('div');
-  panelVoz.className = 'agent-panel agent-panel-voz';
+  panelVoz.className = 'agent-voz-float';
   panelVoz.hidden = true;
   panelVoz.innerHTML = `
-    <div class="agent-panel-header">
-      <span>Agente por voz</span>
-      <button type="button" class="agent-panel-close" aria-label="Cerrar">&times;</button>
-    </div>
     <div class="agent-orb-wrap" role="button" tabindex="0" aria-label="Hablar con el agente">
       <div class="agent-orb-inner">
         <div class="agent-orb-glow"></div>
@@ -241,8 +240,6 @@ function crearPanelVoz() {
   wrap.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); alternar(); }
   });
-
-  panelVoz.querySelector('.agent-panel-close').addEventListener('click', cerrarPaneles);
 
   if (!rafId) rafId = requestAnimationFrame(dibujar);
 }
@@ -335,7 +332,7 @@ function crearPanelTexto() {
   panelTexto.innerHTML = `
     <div class="agent-panel-header">
       <span>Asistente</span>
-      <button type="button" class="agent-panel-close" aria-label="Cerrar">&times;</button>
+      <button type="button" class="agent-panel-close" aria-label="Cerrar"><span class="material-symbols-outlined">close</span></button>
     </div>
     <div class="agent-chat-mensajes"></div>
     <form class="agent-chat-form">
@@ -406,10 +403,10 @@ function crearDOM() {
   fabRoot.className = 'agent-fab-root';
   fabRoot.innerHTML = `
     <div class="agent-menu" hidden>
-      <button type="button" class="agent-menu-btn" data-modo="texto">💬 Texto</button>
-      <button type="button" class="agent-menu-btn" data-modo="voz">🎤 Voz</button>
+      <button type="button" class="agent-menu-btn" data-modo="texto"><span class="material-symbols-outlined">chat</span>Texto</button>
+      <button type="button" class="agent-menu-btn" data-modo="voz"><span class="material-symbols-outlined">mic</span>Voz</button>
     </div>
-    <button type="button" class="agent-fab" aria-label="Asistente">✦</button>
+    <button type="button" class="agent-fab" aria-label="Asistente"><span class="material-symbols-outlined">support_agent</span></button>
   `;
   document.body.appendChild(fabRoot);
 
@@ -419,6 +416,12 @@ function crearDOM() {
   fab.addEventListener('click', alternarMenu);
   menu.querySelectorAll('.agent-menu-btn').forEach((btn) => {
     btn.addEventListener('click', () => abrirPanel(btn.dataset.modo));
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!menu.hidden && !fabRoot.contains(e.target)) {
+      menu.hidden = true;
+    }
   });
 
   crearPanelTexto();

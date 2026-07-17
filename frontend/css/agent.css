@@ -1,3 +1,7 @@
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 32;
+}
+
 .agent-orb-wrap {
   display: flex;
   flex-direction: column;
@@ -60,14 +64,16 @@
   border: none;
   background: var(--color-gold-deep);
   color: #fff;
-  font-size: 24px;
-  line-height: 1;
   cursor: pointer;
   box-shadow: 0 6px 18px rgba(124, 94, 32, .35);
   display: flex;
   align-items: center;
   justify-content: center;
   flex: none;
+}
+
+.agent-fab .material-symbols-outlined {
+  font-size: 26px;
 }
 
 .agent-fab:hover {
@@ -82,6 +88,9 @@
 }
 
 .agent-menu-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   border: 1px solid var(--color-gold-border);
   background: var(--color-bg-soft, #fff);
   color: var(--color-gold-deep);
@@ -92,6 +101,10 @@
   white-space: nowrap;
   box-shadow: 0 4px 12px rgba(124, 94, 32, .15);
   text-align: left;
+}
+
+.agent-menu-btn .material-symbols-outlined {
+  font-size: 18px;
 }
 
 .agent-menu-btn:hover {
@@ -123,26 +136,34 @@
 .agent-panel-close {
   border: none;
   background: none;
-  font-size: 18px;
-  line-height: 1;
   cursor: pointer;
   color: var(--color-text-muted);
   padding: 2px 6px;
+  display: flex;
+}
+
+.agent-panel-close .material-symbols-outlined {
+  font-size: 20px;
 }
 
 .agent-panel-close:hover {
   color: var(--color-gold-deep);
 }
 
-.agent-panel-voz .agent-orb-wrap {
-  padding: 20px;
-  max-width: 240px;
-  margin: 0 auto;
+.agent-voz-float {
+  position: fixed;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 90;
+  width: 220px;
+  max-width: calc(100vw - 40px);
 }
 
 .agent-chat {
   width: 340px;
-  height: 460px;
+  height: calc(100dvh - 110px);
+  max-height: calc(100dvh - 110px);
 }
 
 .agent-chat-mensajes {
