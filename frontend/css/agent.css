@@ -5,13 +5,13 @@
 .agent-orb-wrap {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   cursor: pointer;
 }
 
 .agent-orb-inner {
   position: relative;
-  width: 64px;
+  width: 130px;
   flex: none;
   aspect-ratio: 1 / 1;
 }
@@ -38,7 +38,7 @@
 }
 
 .agent-status {
-  font: 600 12px var(--font-body);
+  font: 600 14px var(--font-body);
   color: var(--color-gold-deep);
   letter-spacing: .03em;
   white-space: nowrap;
