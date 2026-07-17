@@ -4,15 +4,15 @@
 
 .agent-orb-wrap {
   display: flex;
-  flex-direction: column;
   align-items: center;
+  gap: 12px;
   cursor: pointer;
-  width: 100%;
 }
 
 .agent-orb-inner {
   position: relative;
-  width: 100%;
+  width: 64px;
+  flex: none;
   aspect-ratio: 1 / 1;
 }
 
@@ -38,10 +38,10 @@
 }
 
 .agent-status {
-  margin-top: 8px;
   font: 600 12px var(--font-body);
   color: var(--color-gold-deep);
   letter-spacing: .03em;
+  white-space: nowrap;
 }
 
 /* FAB + paneles flotantes */
@@ -152,11 +152,11 @@
 
 .agent-voz-float {
   position: fixed;
-  top: 28px;
+  top: 10px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 90;
-  width: 220px;
+  width: max-content;
   max-width: calc(100vw - 40px);
 }
 
