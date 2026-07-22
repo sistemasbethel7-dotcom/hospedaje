@@ -291,6 +291,41 @@
   border-radius: 14px;
   overflow-x: auto;
   background: var(--color-bg);
+  /* Barra de scroll siempre visible mientras haya contenido que no cabe (no un overlay
+     que solo aparece al pasar el mouse), para que quede claro que se puede desplazar. */
+  scrollbar-width: auto;
+  scrollbar-color: var(--color-gold) var(--color-bg-soft);
+}
+
+.admin-table-wrap::-webkit-scrollbar {
+  height: 12px;
+}
+
+.admin-table-wrap::-webkit-scrollbar-track {
+  background: var(--color-bg-soft);
+}
+
+.admin-table-wrap::-webkit-scrollbar-thumb {
+  background: var(--color-gold);
+  border-radius: 6px;
+  border: 2px solid var(--color-bg-soft);
+}
+
+.admin-table-wrap::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gold-deep);
+}
+
+.admin-paginacion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.admin-paginacion-info {
+  font: 600 13px var(--font-body);
+  color: var(--color-text-muted);
 }
 
 .admin-td-comentarios {

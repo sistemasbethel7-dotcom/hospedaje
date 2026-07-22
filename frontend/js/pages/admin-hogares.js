@@ -9,6 +9,8 @@ const EYE_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><p
 const TRASH_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m-9 0l1 13a1 1 0 001 1h8a1 1 0 001-1l1-13M10 11v6M14 11v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const PENCIL_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 20h4L19.5 8.5a2.1 2.1 0 00-3-3L5 17v3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M13.5 6.5l3 3" stroke="currentColor" stroke-width="1.8"/></svg>`;
 
+const HOGARES_POR_PAGINA = 25;
+
 let session = null;
 let eventos = [];
 let hogaresActuales = [];
@@ -16,6 +18,7 @@ let esAdmin = false;
 let unsubscribeStream = null;
 let refrescoPendiente = null;
 let limpiarMapModal = null;
+let paginaActual = 1;
 
 function setLiveStatus(estado) {
   const indicator = document.getElementById('live-indicator');
@@ -115,17 +118,30 @@ function renderTabla() {
   const tbody = document.getElementById('hogares-tbody');
   const wrap = document.getElementById('hogares-table-wrap');
   const sinResultados = document.getElementById('hogares-sin-resultados');
+  const paginacion = document.getElementById('hogares-paginacion');
 
   if (hogares.length === 0) {
     wrap.hidden = true;
     sinResultados.hidden = false;
+    paginacion.hidden = true;
     tbody.innerHTML = '';
     return;
   }
   wrap.hidden = false;
   sinResultados.hidden = true;
 
-  tbody.innerHTML = hogares
+  const totalPaginas = Math.ceil(hogares.length / HOGARES_POR_PAGINA);
+  if (paginaActual > totalPaginas) paginaActual = totalPaginas;
+  if (paginaActual < 1) paginaActual = 1;
+  const inicio = (paginaActual - 1) * HOGARES_POR_PAGINA;
+  const hogaresPagina = hogares.slice(inicio, inicio + HOGARES_POR_PAGINA);
+
+  paginacion.hidden = totalPaginas <= 1;
+  document.getElementById('pagina-info').textContent = `Página ${paginaActual} de ${totalPaginas}`;
+  document.getElementById('pagina-anterior').disabled = paginaActual <= 1;
+  document.getElementById('pagina-siguiente').disabled = paginaActual >= totalPaginas;
+
+  tbody.innerHTML = hogaresPagina
     .map((h) => {
       const thumbStyle = h.foto_fachada ? `style="background-image:url(/uploads/${h.foto_fachada})"` : '';
       const thumbContent = h.foto_fachada ? '' : HOUSE_ICON;
@@ -423,18 +439,33 @@ export async function mount() {
   esAdmin = false;
   catalogosEdit = null;
   hogarEditando = null;
+  paginaActual = 1;
 
   document.getElementById('evento-select').addEventListener('change', (event) => {
     setActiveEventId(event.target.value);
+    paginaActual = 1;
     cargarHogares(event.target.value);
     suscribirEvento(event.target.value);
   });
 
   ['filtro-dueno', 'filtro-colonia', 'filtro-calle', 'filtro-cp'].forEach((id) => {
-    document.getElementById(id).addEventListener('input', renderTabla);
+    document.getElementById(id).addEventListener('input', () => {
+      paginaActual = 1;
+      renderTabla();
+    });
   });
   document.getElementById('filtro-duplicados').addEventListener('click', (event) => {
     event.currentTarget.classList.toggle('selected');
+    paginaActual = 1;
+    renderTabla();
+  });
+
+  document.getElementById('pagina-anterior').addEventListener('click', () => {
+    paginaActual -= 1;
+    renderTabla();
+  });
+  document.getElementById('pagina-siguiente').addEventListener('click', () => {
+    paginaActual += 1;
     renderTabla();
   });
 
