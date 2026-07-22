@@ -117,17 +117,20 @@ function renderTabla() {
 
   const tbody = document.getElementById('hogares-tbody');
   const wrap = document.getElementById('hogares-table-wrap');
+  const headwrap = document.getElementById('hogares-table-headwrap');
   const sinResultados = document.getElementById('hogares-sin-resultados');
   const paginacion = document.getElementById('hogares-paginacion');
 
   if (hogares.length === 0) {
     wrap.hidden = true;
+    headwrap.hidden = true;
     sinResultados.hidden = false;
     paginacion.hidden = true;
     tbody.innerHTML = '';
     return;
   }
   wrap.hidden = false;
+  headwrap.hidden = false;
   sinResultados.hidden = true;
 
   const totalPaginas = Math.ceil(hogares.length / HOGARES_POR_PAGINA);
@@ -206,6 +209,27 @@ function renderTabla() {
         btn.disabled = false;
       }
     });
+  });
+}
+
+// Cabecera y cuerpo son tablas separadas (mismo colgroup de anchos) para poder mostrar
+// una barra de scroll propia debajo de los títulos además de la de abajo; se mantienen
+// alineadas reflejando el scrollLeft de una en la otra.
+function sincronizarScrollTabla() {
+  const headwrap = document.getElementById('hogares-table-headwrap');
+  const wrap = document.getElementById('hogares-table-wrap');
+  let sincronizando = false;
+  headwrap.addEventListener('scroll', () => {
+    if (sincronizando) return;
+    sincronizando = true;
+    wrap.scrollLeft = headwrap.scrollLeft;
+    sincronizando = false;
+  });
+  wrap.addEventListener('scroll', () => {
+    if (sincronizando) return;
+    sincronizando = true;
+    headwrap.scrollLeft = wrap.scrollLeft;
+    sincronizando = false;
   });
 }
 
@@ -468,6 +492,8 @@ export async function mount() {
     paginaActual += 1;
     renderTabla();
   });
+
+  sincronizarScrollTabla();
 
   document.querySelectorAll('#e-tenencia-group .pill').forEach((pill) => {
     pill.addEventListener('click', () => {

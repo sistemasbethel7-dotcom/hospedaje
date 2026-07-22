@@ -72,8 +72,20 @@
 
       <p class="admin-empty" id="hogares-sin-resultados" hidden>Ningún hogar coincide con el filtro.</p>
 
-      <div class="admin-table-wrap" id="hogares-table-wrap">
-        <table class="admin-table">
+      <div class="admin-table-toolbar" id="hogares-paginacion" hidden>
+        <button type="button" class="admin-btn outline" id="pagina-anterior">Anterior</button>
+        <span class="admin-paginacion-info" id="pagina-info"></span>
+        <button type="button" class="admin-btn outline" id="pagina-siguiente">Siguiente</button>
+      </div>
+
+      <div class="admin-table-headwrap" id="hogares-table-headwrap">
+        <table class="admin-table admin-table-head">
+          <colgroup>
+            <col style="width:56px"><col style="width:90px"><col style="width:170px">
+            <col style="width:190px"><col style="width:150px"><col style="width:70px">
+            <col style="width:100px"><col style="width:90px"><col style="width:190px">
+            <col style="width:260px"><col style="width:150px"><col style="width:130px">
+          </colgroup>
           <thead>
             <tr>
               <th></th>
@@ -90,14 +102,19 @@
               <th>Acciones</th>
             </tr>
           </thead>
-          <tbody id="hogares-tbody"></tbody>
         </table>
       </div>
 
-      <div class="admin-paginacion" id="hogares-paginacion" hidden>
-        <button type="button" class="admin-btn outline" id="pagina-anterior">Anterior</button>
-        <span class="admin-paginacion-info" id="pagina-info"></span>
-        <button type="button" class="admin-btn outline" id="pagina-siguiente">Siguiente</button>
+      <div class="admin-table-wrap" id="hogares-table-wrap">
+        <table class="admin-table">
+          <colgroup>
+            <col style="width:56px"><col style="width:90px"><col style="width:170px">
+            <col style="width:190px"><col style="width:150px"><col style="width:70px">
+            <col style="width:100px"><col style="width:90px"><col style="width:190px">
+            <col style="width:260px"><col style="width:150px"><col style="width:130px">
+          </colgroup>
+          <tbody id="hogares-tbody"></tbody>
+        </table>
       </div>
     </div>
 <div class="admin-modal-backdrop" id="editar-modal-backdrop" hidden>
