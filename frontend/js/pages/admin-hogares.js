@@ -94,7 +94,7 @@ function renderTabla() {
   const filtroColonia = document.getElementById('filtro-colonia').value.trim().toLowerCase();
   const filtroCalle = document.getElementById('filtro-calle').value.trim().toLowerCase();
   const filtroCp = document.getElementById('filtro-cp').value.trim().toLowerCase();
-  const soloDuplicados = document.getElementById('filtro-duplicados').checked;
+  const soloDuplicados = document.getElementById('filtro-duplicados').classList.contains('selected');
 
   const hogares = hogaresActuales.filter((h) => {
     if (filtroDueno && !h.nombre_dueno.toLowerCase().includes(filtroDueno)) return false;
@@ -104,6 +104,13 @@ function renderTabla() {
     if (soloDuplicados && !h.posible_duplicado_de) return false;
     return true;
   });
+
+  const totalTodos = hogaresActuales.length;
+  const contador = document.getElementById('hogares-contador');
+  const palabra = totalTodos === 1 ? 'hogar' : 'hogares';
+  contador.textContent = hogares.length === totalTodos
+    ? `${totalTodos} ${palabra}`
+    : `${hogares.length} de ${totalTodos} ${palabra}`;
 
   const tbody = document.getElementById('hogares-tbody');
   const wrap = document.getElementById('hogares-table-wrap');
@@ -426,7 +433,10 @@ export async function mount() {
   ['filtro-dueno', 'filtro-colonia', 'filtro-calle', 'filtro-cp'].forEach((id) => {
     document.getElementById(id).addEventListener('input', renderTabla);
   });
-  document.getElementById('filtro-duplicados').addEventListener('change', renderTabla);
+  document.getElementById('filtro-duplicados').addEventListener('click', (event) => {
+    event.currentTarget.classList.toggle('selected');
+    renderTabla();
+  });
 
   document.querySelectorAll('#e-tenencia-group .pill').forEach((pill) => {
     pill.addEventListener('click', () => {
