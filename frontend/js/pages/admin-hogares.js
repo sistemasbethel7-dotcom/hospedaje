@@ -94,12 +94,14 @@ function renderTabla() {
   const filtroColonia = document.getElementById('filtro-colonia').value.trim().toLowerCase();
   const filtroCalle = document.getElementById('filtro-calle').value.trim().toLowerCase();
   const filtroCp = document.getElementById('filtro-cp').value.trim().toLowerCase();
+  const soloDuplicados = document.getElementById('filtro-duplicados').checked;
 
   const hogares = hogaresActuales.filter((h) => {
     if (filtroDueno && !h.nombre_dueno.toLowerCase().includes(filtroDueno)) return false;
     if (filtroColonia && !h.colonia.toLowerCase().includes(filtroColonia)) return false;
     if (filtroCalle && !h.calle_numero.toLowerCase().includes(filtroCalle)) return false;
     if (filtroCp && !(h.codigo_postal || '').toLowerCase().includes(filtroCp)) return false;
+    if (soloDuplicados && !h.posible_duplicado_de) return false;
     return true;
   });
 
@@ -121,6 +123,9 @@ function renderTabla() {
       const thumbStyle = h.foto_fachada ? `style="background-image:url(/uploads/${h.foto_fachada})"` : '';
       const thumbContent = h.foto_fachada ? '' : HOUSE_ICON;
       const estatus = estatusHogar(h);
+      const duplicadoCelda = h.posible_duplicado_de
+        ? `<button type="button" class="admin-duplicado-badge" data-ver-original="${h.posible_duplicado_de}">Posible duplicado de ${folioDe(h.posible_duplicado_de)}</button>`
+        : '—';
       const editarBtn = esAdmin
         ? `<button type="button" class="admin-btn outline icon" title="Editar" aria-label="Editar" data-editar="${h.id}">${PENCIL_ICON}</button>`
         : '';
@@ -137,6 +142,7 @@ function renderTabla() {
           <td>${h.codigo_postal ? escapeHtml(h.codigo_postal) : '—'}</td>
           <td>${h.ocupacion_actual}/${h.capacidad}</td>
           <td><span class="admin-estado-badge ${estatus}">${estatusLabel(estatus)}</span></td>
+          <td>${duplicadoCelda}</td>
           <td class="admin-td-comentarios">${comentariosCelda(h)}</td>
           <td>${ubicacionCelda(h)}</td>
           <td>
@@ -157,6 +163,10 @@ function renderTabla() {
 
   tbody.querySelectorAll('[data-editar]').forEach((btn) => {
     btn.addEventListener('click', () => abrirEditar(btn.dataset.editar));
+  });
+
+  tbody.querySelectorAll('[data-ver-original]').forEach((btn) => {
+    btn.addEventListener('click', () => abrirEditar(btn.dataset.verOriginal, true));
   });
 
   tbody.querySelectorAll('[data-eliminar]').forEach((btn) => {
@@ -416,6 +426,7 @@ export async function mount() {
   ['filtro-dueno', 'filtro-colonia', 'filtro-calle', 'filtro-cp'].forEach((id) => {
     document.getElementById(id).addEventListener('input', renderTabla);
   });
+  document.getElementById('filtro-duplicados').addEventListener('change', renderTabla);
 
   document.querySelectorAll('#e-tenencia-group .pill').forEach((pill) => {
     pill.addEventListener('click', () => {

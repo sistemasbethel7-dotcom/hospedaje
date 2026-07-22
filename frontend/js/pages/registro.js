@@ -330,7 +330,29 @@ async function cargarCatalogos() {
   }
 }
 
-async function handleSubmit() {
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (c) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+}
+
+function mostrarModalDuplicados(duplicados) {
+  const lista = document.getElementById('dup-modal-list');
+  lista.innerHTML = duplicados.map((d) => `
+    <li class="dup-modal-item">
+      <span class="dup-modal-item-nombre">${escapeHtml(d.nombre_dueno)}</span>
+      <span class="dup-modal-item-dir">${escapeHtml(d.calle_numero)}, ${escapeHtml(d.colonia)}</span>
+      <span class="dup-modal-item-origen">${d.folio_anterior ? `Folio previo ${escapeHtml(d.folio_anterior)}` : 'Registrado en campo'}</span>
+    </li>
+  `).join('');
+  document.getElementById('dup-modal').hidden = false;
+}
+
+function ocultarModalDuplicados() {
+  document.getElementById('dup-modal').hidden = true;
+}
+
+async function handleSubmit(forzarDuplicado = false) {
   const errorEl = document.getElementById('wizard-error');
   errorEl.textContent = '';
 
@@ -352,6 +374,7 @@ async function handleSubmit() {
   formData.append('vulnerabilidades', JSON.stringify(state.vulnerabilidades));
   formData.append('notas_vulnerabilidad', document.getElementById('notas_vulnerabilidad').value.trim());
   formData.append('perfil_sugerido', JSON.stringify(state.perfil));
+  formData.append('forzar_duplicado', forzarDuplicado ? 'true' : 'false');
   if (state.fotoFachada) formData.append('foto_fachada', state.fotoFachada);
 
   const submitBtn = document.getElementById('siguiente-btn');
@@ -365,6 +388,10 @@ async function handleSubmit() {
       clearSession();
       clearActiveEventId();
       window.location.href = 'index.html';
+      return;
+    }
+    if (err.status === 409 && err.data?.codigo === 'POSIBLE_DUPLICADO') {
+      mostrarModalDuplicados(err.data.duplicados);
       return;
     }
     errorEl.textContent = navigator.onLine
@@ -395,13 +422,19 @@ document.getElementById('siguiente-btn').addEventListener('click', () => {
   }
 
   if (state.step === TOTAL_STEPS) {
-    handleSubmit();
+    handleSubmit(false);
     return;
   }
 
   state.step += 1;
   renderStep();
   saveDraft();
+});
+
+document.getElementById('dup-modal-cancel').addEventListener('click', ocultarModalDuplicados);
+document.getElementById('dup-modal-confirm').addEventListener('click', () => {
+  ocultarModalDuplicados();
+  handleSubmit(true);
 });
 
 document.getElementById('registro-form').addEventListener('input', saveDraft);

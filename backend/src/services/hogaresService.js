@@ -35,9 +35,28 @@ export async function insertHogar(data) {
   return rows[0];
 }
 
+export async function findPosiblesDuplicados({ eventoId, telefonoDueno, calleNumero, colonia, excludeId }) {
+  const telefonoNorm = telefonoDueno ? telefonoDueno.replace(/\D/g, '') : '';
+  if (!telefonoNorm && !(calleNumero && colonia)) return [];
+
+  const { rows } = await pool.query(
+    `SELECT id, nombre_dueno, telefono_dueno, calle_numero, colonia, folio_anterior, created_at
+     FROM hogares
+     WHERE evento_id = $1
+       AND id <> COALESCE($2, -1)
+       AND (
+         ($3 <> '' AND regexp_replace(COALESCE(telefono_dueno, ''), '\D', '', 'g') = $3)
+         OR (lower(trim(calle_numero)) = lower(trim($4)) AND lower(trim(colonia)) = lower(trim($5)) AND $4 <> '' AND $5 <> '')
+       )
+     ORDER BY id`,
+    [eventoId, excludeId || null, telefonoNorm, calleNumero || '', colonia || '']
+  );
+  return rows;
+}
+
 export async function listHogares(eventoId) {
   const { rows } = await pool.query(
-    `SELECT id, nombre_dueno, calle_numero, colonia, codigo_postal, estado, capacidad, ocupacion_actual, tenencia, folio_anterior, comentarios, foto_fachada, lat, lng, created_at
+    `SELECT id, nombre_dueno, calle_numero, colonia, codigo_postal, estado, capacidad, ocupacion_actual, tenencia, folio_anterior, comentarios, foto_fachada, lat, lng, posible_duplicado_de, created_at
      FROM hogares
      WHERE evento_id = $1
      ORDER BY created_at DESC`,

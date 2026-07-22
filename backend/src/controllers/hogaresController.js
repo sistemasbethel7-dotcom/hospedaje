@@ -4,6 +4,7 @@ import {
   getHogarDetalle,
   updateHogar,
   deleteHogar,
+  findPosiblesDuplicados,
 } from '../services/hogaresService.js';
 import { getEventoById } from '../services/eventosService.js';
 import { eventBus } from '../services/eventBus.js';
@@ -30,6 +31,7 @@ export async function crear(req, res) {
     vulnerabilidades,
     notas_vulnerabilidad,
     perfil_sugerido,
+    forzar_duplicado,
   } = req.body;
 
   const eventoId = Number(evento_id);
@@ -49,6 +51,22 @@ export async function crear(req, res) {
   }
   if (evento.estatus === 'finalizado') {
     return res.status(409).json({ message: 'El evento ya fue finalizado.' });
+  }
+
+  if (forzar_duplicado !== 'true') {
+    const duplicados = await findPosiblesDuplicados({
+      eventoId,
+      telefonoDueno: telefono_dueno,
+      calleNumero: calle_numero,
+      colonia,
+    });
+    if (duplicados.length > 0) {
+      return res.status(409).json({
+        message: 'Ya existe un hogar registrado con el mismo teléfono o la misma dirección.',
+        codigo: 'POSIBLE_DUPLICADO',
+        duplicados,
+      });
+    }
   }
 
   const fotoDueno = req.files?.foto_dueno?.[0]?.filename || null;

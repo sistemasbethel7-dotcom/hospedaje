@@ -215,3 +215,48 @@ CREATE TABLE IF NOT EXISTS agente_config (
 INSERT INTO agente_config (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
 
 GRANT ALL PRIVILEGES ON TABLE agente_config TO pwa_templo_app;
+
+-- Índices para la detección de hogares duplicados (mismo teléfono, o misma calle+colonia)
+-- dentro de un evento. Ver findPosiblesDuplicados en hogaresService.js.
+CREATE INDEX IF NOT EXISTS idx_hogares_evento_telefono ON hogares (evento_id, regexp_replace(COALESCE(telefono_dueno, ''), '\D', '', 'g'));
+CREATE INDEX IF NOT EXISTS idx_hogares_evento_direccion ON hogares (evento_id, lower(trim(calle_numero)), lower(trim(colonia)));
+
+-- Marca de posible duplicado (mismo teléfono y misma calle+número dentro del mismo evento):
+-- apunta al hogar más antiguo del grupo. Solo informativa, no bloquea nada — el admin la usa
+-- para filtrar en admin/hogares.html y decidir a mano cuál eliminar. Se recalcula por completo
+-- cada vez que se corre este archivo (self-healing: si el admin borra un duplicado o corrige un
+-- dato, la marca se ajusta sola en el siguiente deploy que toque schema.sql).
+ALTER TABLE hogares ADD COLUMN IF NOT EXISTS posible_duplicado_de INTEGER;
+ALTER TABLE hogares DROP CONSTRAINT IF EXISTS hogares_posible_duplicado_de_fkey;
+ALTER TABLE hogares ADD CONSTRAINT hogares_posible_duplicado_de_fkey
+  FOREIGN KEY (posible_duplicado_de) REFERENCES hogares(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_hogares_posible_duplicado_de ON hogares (posible_duplicado_de);
+
+UPDATE hogares SET posible_duplicado_de = NULL WHERE posible_duplicado_de IS NOT NULL;
+
+WITH normalizados AS (
+  SELECT id, evento_id, created_at,
+         regexp_replace(COALESCE(telefono_dueno, ''), '\D', '', 'g') AS tel_norm,
+         lower(trim(calle_numero)) AS calle_norm
+  FROM hogares
+),
+grupos_dup AS (
+  SELECT evento_id, tel_norm, calle_norm
+  FROM normalizados
+  WHERE tel_norm <> ''
+  GROUP BY evento_id, tel_norm, calle_norm
+  HAVING count(*) > 1
+),
+con_original AS (
+  SELECT n.id,
+         first_value(n.id) OVER (
+           PARTITION BY n.evento_id, n.tel_norm, n.calle_norm
+           ORDER BY n.created_at, n.id
+         ) AS id_original
+  FROM normalizados n
+  JOIN grupos_dup d ON d.evento_id = n.evento_id AND d.tel_norm = n.tel_norm AND d.calle_norm = n.calle_norm
+)
+UPDATE hogares h
+SET posible_duplicado_de = c.id_original
+FROM con_original c
+WHERE h.id = c.id AND c.id <> c.id_original;

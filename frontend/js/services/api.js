@@ -312,6 +312,7 @@ export async function crearHogar(token, formData) {
     const data = await res.json().catch(() => ({}));
     const error = new Error(data.message || 'No se pudo guardar el registro.');
     error.status = res.status;
+    error.data = data;
     throw error;
   }
 
