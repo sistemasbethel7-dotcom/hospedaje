@@ -3,6 +3,7 @@ import { getSession, clearSession } from '../services/session.js';
 import { getActiveEventId, setActiveEventId, clearActiveEventId } from '../services/eventoActivo.js';
 import { subscribeToEvento } from '../services/eventStream.js';
 import { setupMapModal } from '../mapModal.js';
+import { renderDetalleHogarHTML } from '../hogarDetalleView.js';
 
 const HOUSE_ICON = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 10.5L12 4l8 6.5V20a1 1 0 01-1 1h-4v-6H9v6H5a1 1 0 01-1-1v-9.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
 const EYE_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg>`;
@@ -382,20 +383,22 @@ function cerrarComparacion() {
   document.getElementById('comparar-modal-backdrop').hidden = true;
 }
 
+// Reutiliza renderDetalleHogarHTML (foto, dirección, teléfono, C.P., referencias,
+// ocupación, servicios, vulnerabilidades, perfil sugerido) y añade lo que ese
+// render no cubre, para mostrar absolutamente todos los datos del hogar.
 function compareCardHtml(h, otro) {
   const registrador = h.registrado_por_nombre || h.registrado_por_email || 'Sin dato';
   const fecha = h.created_at ? formatFecha(h.created_at) : '';
-  const direccion = `${h.calle_numero || ''}, ${h.colonia || ''}${h.codigo_postal ? ' · CP ' + h.codigo_postal : ''}`;
   return `
     <div class="admin-compare-card">
-      <span class="admin-compare-folio">${folioDe(h.id)}</span>
+      <span class="admin-compare-folio">${folioDe(h.id)}${h.folio_anterior ? ` · Folio anterior: ${escapeHtml(h.folio_anterior)}` : ''}</span>
       <h3 class="admin-compare-nombre">${escapeHtml(h.nombre_dueno)}</h3>
+      ${renderDetalleHogarHTML(h)}
       <dl class="admin-compare-fields">
-        <div><dt>Teléfono</dt><dd>${h.telefono_dueno ? escapeHtml(h.telefono_dueno) : '—'}</dd></div>
-        <div><dt>Dirección</dt><dd>${escapeHtml(direccion)}</dd></div>
-        <div><dt>Ocupación</dt><dd>${h.ocupacion_actual}/${h.capacidad}</dd></div>
-        <div><dt>Registrado por</dt><dd>${escapeHtml(registrador)}${fecha ? ' · ' + fecha : ''}</dd></div>
+        <div><dt>La casa es</dt><dd>${h.tenencia ? escapeHtml(h.tenencia) : '—'}</dd></div>
         <div><dt>Comentarios</dt><dd>${comentariosCelda(h)}</dd></div>
+        <div><dt>Ubicación</dt><dd>${ubicacionCelda(h)}</dd></div>
+        <div><dt>Registrado por</dt><dd>${escapeHtml(registrador)}${fecha ? ' · ' + fecha : ''}</dd></div>
       </dl>
       <button type="button" class="admin-btn" data-conservar="${h.id}" data-eliminar="${otro.id}" data-nombre-otro="${escapeHtml(otro.nombre_dueno)}">Conservar este</button>
     </div>
@@ -414,6 +417,15 @@ async function abrirComparacion(idA, idB) {
       obtenerHogar(session.token, idB),
     ]);
     grid.innerHTML = compareCardHtml(ra.hogar, rb.hogar) + compareCardHtml(rb.hogar, ra.hogar);
+    const hogaresEnOrden = [ra.hogar, rb.hogar];
+    grid.querySelectorAll('.admin-detalle-photo').forEach((el, idx) => {
+      const hogar = hogaresEnOrden[idx];
+      if (hogar.foto_fachada) {
+        const url = `/uploads/${hogar.foto_fachada}`;
+        el.classList.add('clickable');
+        el.addEventListener('click', () => abrirLightbox(url));
+      }
+    });
     grid.querySelectorAll('[data-conservar]').forEach((btn) => {
       btn.addEventListener('click', async () => {
         if (!confirm(`¿Conservar este hogar y eliminar el de ${btn.dataset.nombreOtro}? Esta acción no se puede deshacer.`)) {
