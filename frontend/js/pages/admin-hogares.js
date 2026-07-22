@@ -149,8 +149,9 @@ function renderTabla() {
       const thumbStyle = h.foto_fachada ? `style="background-image:url(/uploads/${h.foto_fachada})"` : '';
       const thumbContent = h.foto_fachada ? '' : HOUSE_ICON;
       const estatus = estatusHogar(h);
+      const registrador = h.registrado_por_nombre || h.registrado_por_email || '—';
       const duplicadoCelda = h.posible_duplicado_de
-        ? `<button type="button" class="admin-duplicado-badge" data-ver-original="${h.posible_duplicado_de}">Posible duplicado de ${folioDe(h.posible_duplicado_de)}</button>`
+        ? `<button type="button" class="admin-duplicado-badge" data-hogar-id="${h.id}" data-ver-original="${h.posible_duplicado_de}">Posible duplicado de ${folioDe(h.posible_duplicado_de)}</button>`
         : '—';
       const editarBtn = esAdmin
         ? `<button type="button" class="admin-btn outline icon" title="Editar" aria-label="Editar" data-editar="${h.id}">${PENCIL_ICON}</button>`
@@ -168,6 +169,7 @@ function renderTabla() {
           <td>${h.codigo_postal ? escapeHtml(h.codigo_postal) : '—'}</td>
           <td>${h.ocupacion_actual}/${h.capacidad}</td>
           <td><span class="admin-estado-badge ${estatus}">${estatusLabel(estatus)}</span></td>
+          <td class="admin-td-truncate" title="${escapeHtml(registrador)}">${escapeHtml(registrador)}</td>
           <td>${duplicadoCelda}</td>
           <td class="admin-td-comentarios">${comentariosCelda(h)}</td>
           <td>${ubicacionCelda(h)}</td>
@@ -192,7 +194,7 @@ function renderTabla() {
   });
 
   tbody.querySelectorAll('[data-ver-original]').forEach((btn) => {
-    btn.addEventListener('click', () => abrirEditar(btn.dataset.verOriginal, true));
+    btn.addEventListener('click', () => abrirComparacion(btn.dataset.hogarId, btn.dataset.verOriginal));
   });
 
   tbody.querySelectorAll('[data-eliminar]').forEach((btn) => {
@@ -374,6 +376,71 @@ export function abrirHogar(id) {
   return abrirEditar(id, true);
 }
 
+// ---- Modal de comparación de posibles duplicados ----
+
+function cerrarComparacion() {
+  document.getElementById('comparar-modal-backdrop').hidden = true;
+}
+
+function compareCardHtml(h, otro) {
+  const registrador = h.registrado_por_nombre || h.registrado_por_email || 'Sin dato';
+  const fecha = h.created_at ? formatFecha(h.created_at) : '';
+  const direccion = `${h.calle_numero || ''}, ${h.colonia || ''}${h.codigo_postal ? ' · CP ' + h.codigo_postal : ''}`;
+  return `
+    <div class="admin-compare-card">
+      <span class="admin-compare-folio">${folioDe(h.id)}</span>
+      <h3 class="admin-compare-nombre">${escapeHtml(h.nombre_dueno)}</h3>
+      <dl class="admin-compare-fields">
+        <div><dt>Teléfono</dt><dd>${h.telefono_dueno ? escapeHtml(h.telefono_dueno) : '—'}</dd></div>
+        <div><dt>Dirección</dt><dd>${escapeHtml(direccion)}</dd></div>
+        <div><dt>Ocupación</dt><dd>${h.ocupacion_actual}/${h.capacidad}</dd></div>
+        <div><dt>Registrado por</dt><dd>${escapeHtml(registrador)}${fecha ? ' · ' + fecha : ''}</dd></div>
+        <div><dt>Comentarios</dt><dd>${comentariosCelda(h)}</dd></div>
+      </dl>
+      <button type="button" class="admin-btn" data-conservar="${h.id}" data-eliminar="${otro.id}" data-nombre-otro="${escapeHtml(otro.nombre_dueno)}">Conservar este</button>
+    </div>
+  `;
+}
+
+async function abrirComparacion(idA, idB) {
+  const errorEl = document.getElementById('comparar-error');
+  errorEl.textContent = '';
+  const grid = document.getElementById('comparar-grid');
+  grid.innerHTML = '';
+  document.getElementById('comparar-modal-backdrop').hidden = false;
+  try {
+    const [ra, rb] = await Promise.all([
+      obtenerHogar(session.token, idA),
+      obtenerHogar(session.token, idB),
+    ]);
+    grid.innerHTML = compareCardHtml(ra.hogar, rb.hogar) + compareCardHtml(rb.hogar, ra.hogar);
+    grid.querySelectorAll('[data-conservar]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        if (!confirm(`¿Conservar este hogar y eliminar el de ${btn.dataset.nombreOtro}? Esta acción no se puede deshacer.`)) {
+          return;
+        }
+        grid.querySelectorAll('[data-conservar]').forEach((b) => { b.disabled = true; });
+        try {
+          await eliminarHogar(session.token, btn.dataset.eliminar);
+          cerrarComparacion();
+          await cargarHogares(document.getElementById('evento-select').value);
+        } catch (err) {
+          errorEl.textContent = err.message || 'No se pudo eliminar el hogar duplicado.';
+          grid.querySelectorAll('[data-conservar]').forEach((b) => { b.disabled = false; });
+        }
+      });
+    });
+  } catch (err) {
+    if (err.status === 401) {
+      clearSession();
+      clearActiveEventId();
+      window.location.href = '../index.html';
+      return;
+    }
+    errorEl.textContent = 'No se pudo cargar la comparación de hogares.';
+  }
+}
+
 async function guardarEdicion(event) {
   event.preventDefault();
   if (!hogarEditando) return;
@@ -521,6 +588,11 @@ export async function mount() {
   document.getElementById('photo-lightbox-close').addEventListener('click', cerrarLightbox);
   document.getElementById('photo-lightbox').addEventListener('click', (event) => {
     if (event.target === event.currentTarget) cerrarLightbox();
+  });
+
+  document.getElementById('comparar-modal-close').addEventListener('click', cerrarComparacion);
+  document.getElementById('comparar-modal-backdrop').addEventListener('click', (event) => {
+    if (event.target === event.currentTarget) cerrarComparacion();
   });
 
   try {

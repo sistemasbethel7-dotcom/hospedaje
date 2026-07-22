@@ -83,8 +83,9 @@
           <colgroup>
             <col style="width:56px"><col style="width:90px"><col style="width:170px">
             <col style="width:190px"><col style="width:150px"><col style="width:70px">
-            <col style="width:100px"><col style="width:90px"><col style="width:190px">
-            <col style="width:260px"><col style="width:150px"><col style="width:170px">
+            <col style="width:100px"><col style="width:90px"><col style="width:170px">
+            <col style="width:190px"><col style="width:260px"><col style="width:150px">
+            <col style="width:170px">
           </colgroup>
           <thead>
             <tr>
@@ -96,6 +97,7 @@
               <th>C.P.</th>
               <th>Ocupación</th>
               <th>Estatus</th>
+              <th>Registrado por</th>
               <th>Duplicado</th>
               <th>Comentarios</th>
               <th>Ubicación</th>
@@ -110,8 +112,9 @@
           <colgroup>
             <col style="width:56px"><col style="width:90px"><col style="width:170px">
             <col style="width:190px"><col style="width:150px"><col style="width:70px">
-            <col style="width:100px"><col style="width:90px"><col style="width:190px">
-            <col style="width:260px"><col style="width:150px"><col style="width:170px">
+            <col style="width:100px"><col style="width:90px"><col style="width:170px">
+            <col style="width:190px"><col style="width:260px"><col style="width:150px">
+            <col style="width:170px">
           </colgroup>
           <tbody id="hogares-tbody"></tbody>
         </table>
@@ -204,6 +207,20 @@
           <button type="submit" class="admin-btn" id="editar-guardar">Guardar cambios</button>
         </div>
       </form>
+    </div>
+  </div>
+</div>
+
+<div class="admin-modal-backdrop stacked" id="comparar-modal-backdrop" hidden>
+  <div class="admin-modal wide" role="dialog" aria-modal="true" aria-labelledby="comparar-modal-title">
+    <div class="admin-modal-header">
+      <h2 class="admin-modal-title" id="comparar-modal-title">Comparar posibles duplicados</h2>
+      <button type="button" class="admin-modal-close" id="comparar-modal-close" aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="admin-modal-body">
+      <p class="admin-page-desc" style="margin:0 0 16px;">Revisa ambos registros y elige cuál conservar. El otro se eliminará, junto con sus ingresos registrados si tiene.</p>
+      <p class="admin-error" id="comparar-error" role="alert"></p>
+      <div class="admin-compare-grid" id="comparar-grid"></div>
     </div>
   </div>
 </div>

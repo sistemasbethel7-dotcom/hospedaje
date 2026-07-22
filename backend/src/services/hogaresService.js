@@ -56,10 +56,12 @@ export async function findPosiblesDuplicados({ eventoId, telefonoDueno, calleNum
 
 export async function listHogares(eventoId) {
   const { rows } = await pool.query(
-    `SELECT id, nombre_dueno, calle_numero, colonia, codigo_postal, estado, capacidad, ocupacion_actual, tenencia, folio_anterior, comentarios, foto_fachada, lat, lng, posible_duplicado_de, created_at
-     FROM hogares
-     WHERE evento_id = $1
-     ORDER BY created_at DESC`,
+    `SELECT h.id, h.nombre_dueno, h.calle_numero, h.colonia, h.codigo_postal, h.estado, h.capacidad, h.ocupacion_actual, h.tenencia, h.folio_anterior, h.comentarios, h.foto_fachada, h.lat, h.lng, h.posible_duplicado_de, h.created_at,
+            u.nombre AS registrado_por_nombre, u.email AS registrado_por_email
+     FROM hogares h
+     LEFT JOIN usuarios u ON u.id = h.registrado_por
+     WHERE h.evento_id = $1
+     ORDER BY h.created_at DESC`,
     [eventoId]
   );
   return rows;
