@@ -166,6 +166,8 @@ function mostrarSinSeleccion() {
   document.getElementById('dashboard-content').hidden = true;
   document.getElementById('dashboard-sin-seleccion').hidden = false;
   document.getElementById('live-indicator').hidden = true;
+  document.getElementById('admin-recordatorios').hidden = true;
+  document.getElementById('recordatorio-duplicados').hidden = true;
 }
 
 async function seleccionarEvento(eventoId) {
@@ -264,6 +266,18 @@ function renderMetricas(metricas) {
   });
 }
 
+// Por ahora solo hay un recordatorio (duplicados); se deja como función aparte
+// para poder sumar más tarjetas de este tipo sin tocar cargarMetricas.
+function actualizarRecordatorios() {
+  const duplicados = hogaresActuales.filter((h) => h.posible_duplicado_de).length;
+  const card = document.getElementById('recordatorio-duplicados');
+  card.hidden = duplicados === 0;
+  document.getElementById('admin-recordatorios').hidden = duplicados === 0;
+  if (duplicados > 0) {
+    document.getElementById('recordatorio-duplicados-count').textContent = duplicados;
+  }
+}
+
 async function cargarMetricas(eventoId) {
   const errorEl = document.getElementById('dashboard-error');
   errorEl.textContent = '';
@@ -275,6 +289,7 @@ async function cargarMetricas(eventoId) {
     document.getElementById('dashboard-content').hidden = false;
     renderMetricas(metricas);
     hogaresActuales = hogares;
+    actualizarRecordatorios();
     if (kpiModalActivo) renderKpiModal(kpiModalActivo);
   } catch (err) {
     if (err.status === 401) {

@@ -563,6 +563,11 @@ export async function mount() {
     renderTabla();
   });
 
+  // Llegar desde el recordatorio del dashboard (?duplicados=1) activa el filtro de una vez.
+  if (new URLSearchParams(window.location.search).get('duplicados') === '1') {
+    document.getElementById('filtro-duplicados').classList.add('selected');
+  }
+
   document.getElementById('pagina-anterior').addEventListener('click', () => {
     paginaActual -= 1;
     renderTabla();
