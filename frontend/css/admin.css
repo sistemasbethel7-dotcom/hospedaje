@@ -514,6 +514,34 @@
   margin-top: 16px;
 }
 
+.admin-modal-readonly {
+  font: 500 14px var(--font-body);
+  color: var(--color-text-muted);
+  padding: 10px 0 2px;
+}
+
+.admin-modal-section {
+  border-top: 1px solid var(--color-gold-border);
+  margin-top: 18px;
+  padding-top: 16px;
+}
+
+.admin-password-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.admin-password-row input {
+  flex: 1;
+  border: 1px solid var(--color-gold-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: 500 14px var(--font-body);
+  padding: 10px 12px;
+}
+
 /* Modo Ver: mismo modal de edición pero sin interacción */
 .admin-edit-form.solo-lectura .pill {
   pointer-events: none;
