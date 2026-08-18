@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Manual del sistema Anfitriones</title>
+<style>
+  @page { size: A4; margin: 22mm 18mm; }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    color: #241D12;
+    line-height: 1.55;
+    font-size: 12.5px;
+  }
+
+  .serif { font-family: 'Georgia', serif; }
+
+  /* ---------- Portada ---------- */
+  .portada {
+    height: 235mm;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    page-break-after: always;
+  }
+
+  .emblema {
+    width: 110px;
+    height: 110px;
+    border: 2px solid #A8832E;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 28px;
+    position: relative;
+  }
+  .emblema::before {
+    content: '';
+    position: absolute;
+    inset: 10px;
+    border: 1px solid #A8832E;
+    border-radius: 50%;
+  }
+  .emblema span {
+    font-size: 30px;
+    font-weight: bold;
+    color: #7C5E20;
+  }
+
+  .portada .kicker {
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #A8832E;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+
+  .portada h1 {
+    font-size: 40px;
+    margin: 0 0 6px;
+    color: #241D12;
+  }
+
+  .portada .subtitulo {
+    color: #7A705B;
+    font-size: 15px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 60px;
+  }
+
+  .portada .ficha {
+    border: 1px solid #A8832E55;
+    border-radius: 10px;
+    padding: 18px 32px;
+    color: #7A705B;
+    font-size: 13px;
+  }
+
+  .portada .ficha strong { color: #241D12; }
+
+  /* ---------- Secciones ---------- */
+  section { page-break-before: always; }
+  section:first-of-type { page-break-before: avoid; }
+
+  .num-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #A8832E;
+    color: #fff;
+    font-weight: bold;
+    font-size: 15px;
+    margin-right: 12px;
+    flex: none;
+  }
+
+  h2.titulo-seccion {
+    display: flex;
+    align-items: center;
+    font-size: 22px;
+    color: #241D12;
+    border-bottom: 2px solid #A8832E55;
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+  }
+
+  h3 {
+    color: #7C5E20;
+    font-size: 15.5px;
+    margin: 22px 0 8px;
+  }
+
+  p { margin: 0 0 10px; }
+
+  .nota {
+    background: #F4E9CB55;
+    border-left: 3px solid #A8832E;
+    padding: 10px 14px;
+    margin: 14px 0;
+    font-size: 12px;
+    color: #5c5240;
+  }
+
+  .rol-grid {
+    display: flex;
+    gap: 14px;
+    margin: 16px 0 6px;
+  }
+  .rol-card {
+    flex: 1;
+    border: 1px solid #A8832E55;
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .rol-card h4 {
+    margin: 0 0 6px;
+    color: #7C5E20;
+    font-size: 13.5px;
+  }
+  .rol-card p { font-size: 11.5px; color: #4a4436; margin: 0; }
+
+  .pasos { margin: 10px 0 16px; padding: 0; list-style: none; counter-reset: paso; }
+  .pasos li {
+    counter-increment: paso;
+    margin-bottom: 10px;
+    padding-left: 34px;
+    position: relative;
+    font-size: 12.3px;
+  }
+  .pasos li::before {
+    content: counter(paso);
+    position: absolute;
+    left: 0;
+    top: -1px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid #A8832E;
+    color: #7C5E20;
+    font-weight: bold;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .shot-row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    margin: 14px 0 6px;
+  }
+  .shot-row.wrap { flex-wrap: wrap; }
+
+  figure {
+    margin: 0;
+    text-align: center;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .shot-row {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  figure img {
+    border: 1px solid #A8832E55;
+    border-radius: 10px;
+    display: block;
+  }
+  figure figcaption {
+    font-size: 10.5px;
+    color: #7A705B;
+    margin-top: 6px;
+    font-style: italic;
+  }
+
+  .shot-mobile img {
+    width: 200px;
+    height: 420px;
+    object-fit: cover;
+    object-position: top;
+  }
+  .shot-desktop img {
+    width: 100%;
+    max-width: 480px;
+    height: 300px;
+    object-fit: cover;
+    object-position: top;
+  }
+
+  .semaforo {
+    display: flex;
+    gap: 18px;
+    margin: 10px 0 16px;
+  }
+  .semaforo .item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+  }
+  .dot { width: 13px; height: 13px; border-radius: 50%; flex: none; }
+  .dot.verde { background: #22C55E; }
+  .dot.amarillo { background: #FBBF24; }
+  .dot.rojo { background: #EF4444; }
+
+  ul.lista-simple { margin: 6px 0 14px; padding-left: 20px; }
+  ul.lista-simple li { margin-bottom: 6px; font-size: 12.3px; }
+
+  .cierre {
+    text-align: center;
+    margin-top: 40px;
+    color: #7A705B;
+    font-size: 12px;
+  }
+
+  table.mvp {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 18px;
+    font-size: 11.8px;
+  }
+  table.mvp th, table.mvp td {
+    border: 1px solid #A8832E55;
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: top;
+  }
+  table.mvp th {
+    background: #F4E9CB88;
+    color: #7C5E20;
+  }
+</style>
+</head>
+<body>
+
+<div class="portada">
+  <div class="emblema"><span>100</span></div>
+  <div class="kicker">Aniversario · Congregación Mundial</div>
+  <h1>Anfitriones</h1>
+  <div class="subtitulo">Manual del sistema de distribución de hogares</div>
+  <div class="ficha">
+    <strong>Versión inicial (MVP)</strong> · Julio 2026<br>
+    Guía sencilla para agentes, supervisores y administradores
+  </div>
+</div>
+
+<section>
+  <h2 class="titulo-seccion"><span class="num-badge">1</span>¿Qué es este sistema?</h2>
+  <p>
+    <strong>Anfitriones</strong> es la herramienta que ayuda a organizar el hospedaje de los hermanos que llegan
+    de fuera para el evento del Centenario. En vez de llevar el control en papel o en hojas de cálculo sueltas,
+    el sistema permite:
+  </p>
+  <ul class="lista-simple">
+    <li>Registrar, casa por casa, a los hermanos anfitriones que ofrecen su hogar: dueño, dirección, ubicación en el mapa, fotos, capacidad y condiciones del lugar.</li>
+    <li>Llevar el conteo de cuántas personas ya llegaron a cada casa, para no exceder su capacidad.</li>
+    <li>Ver en tiempo real, desde una computadora, cómo va avanzando el registro y la ocupación de todo el evento.</li>
+    <li>Ubicar visualmente en un mapa qué casas ya están llenas, cuáles tienen lugar todavía y cuáles están libres.</li>
+  </ul>
+  <p>
+    El sistema funciona desde el celular (para quienes registran casas en la calle) y desde computadora
+    (para quienes supervisan y administran el evento desde una oficina o desde su casa).
+  </p>
+  <div class="nota">
+    <strong>Nota:</strong> esta es la <strong>primera versión funcional</strong> del sistema (lo que se conoce
+    como <em>MVP</em>, o "producto mínimo viable"). Ya está lista para usarse en un evento real, y seguirá
+    recibiendo mejoras a partir de lo que se necesite en la práctica. En la última sección de este manual
+    se explica esto con más detalle.
+  </div>
+</section>
+
+<section>
+  <h2 class="titulo-seccion"><span class="num-badge">2</span>Los tipos de usuario</h2>
+  <p>Cada persona que usa el sistema tiene asignado uno de estos tres roles:</p>
+  <div class="rol-grid">
+    <div class="rol-card">
+      <h4>Agente</h4>
+      <p>Va tocando puertas y registra las casas directamente desde su celular. También registra cuando
+      llegan las personas a hospedarse. Es quien más usa el sistema "en campo".</p>
+    </div>
+    <div class="rol-card">
+      <h4>Supervisor</h4>
+      <p>No registra casas, pero puede ver todo el panorama: cuántas casas hay, cómo va la ocupación, el mapa,
+      etc. Sirve para validar que todo se esté haciendo bien.</p>
+    </div>
+    <div class="rol-card">
+      <h4>Administrador</h4>
+      <p>Tiene acceso a todo lo anterior, además de crear el evento, definir las listas que usan los agentes
+      (servicios, vulnerabilidades, perfiles) y dar de alta a los demás usuarios.</p>
+    </div>
+  </div>
+  <p>Las cuentas de correo y contraseña de cada persona las crea el Administrador desde su panel (sección 6).</p>
+</section>
+
+<section>
+  <h2 class="titulo-seccion"><span class="num-badge">3</span>Cómo entrar al sistema</h2>
+  <div class="shot-row">
+    <figure class="shot-mobile">
+      <img src="file:///private/tmp/claude-501/-Users-davidchaveznunez-Documents-General-programming/b443e86c-38a9-461f-9843-29dda04da117/scratchpad/pdf_shots/login.png">
+      <figcaption>Pantalla de inicio de sesión</figcaption>
+    </figure>
+    <div>
+      <ol class="pasos">
+        <li>Abre el sitio del sistema desde el navegador de tu celular o computadora (se puede "agregar a
+        pantalla de inicio" para que se sienta como una app).</li>
+        <li>Escribe tu correo y contraseña — los mismos que te dio el Administrador.</li>
+        <li>Presiona <strong>Acceder</strong>.</li>
+        <li>Si tu rol es <strong>Agente</strong>, el sistema te pedirá elegir el evento activo (normalmente
+        solo hay uno). Si eres <strong>Administrador</strong> o <strong>Supervisor</strong>, entrarás
+        directamente al panel de control (secciones 5 y 6).</li>
+      </ol>
+      <p>La sesión se queda guardada en el dispositivo, así que no hace falta iniciar sesión cada vez que
+      se abre la app — solo si se cierra sesión manualmente.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2 class="titulo-seccion"><span class="num-badge">4</span>Lo que puede hacer un Agente</h2>
+
+  <figure class="shot-mobile" style="margin-bottom: 16px;">
+    <img src="file:///private/tmp/claude-501/-Users-davidchaveznunez-Documents-General-programming/b443e86c-38a9-461f-9843-29dda04da117/scratchpad/pdf_shots/home.png">
+    <figcaption>Pantalla de inicio: se ve el evento activo y los accesos directos</figcaption>
+  </figure>
+
+  <h3>Registrar una casa nueva</h3>
+  <p>Al tocar <strong>Registrar hogar</strong>, se abre un formulario guiado en 6 pasos sencillos:</p>
+  <ol class="pasos">
+    <li><strong>Datos del dueño:</strong> nombre, calle y número, colonia, y opcionalmente código postal y
+    referencias. Aquí también se marca la ubicación exacta en un mapa (tocando el punto donde está la casa).</li>
+    <li><strong>Fotografías:</strong> una foto del dueño (opcional) y una de la fachada de la casa.</li>
+    <li><strong>Capacidad:</strong> cuántas personas puede alojar la casa (se puede escribir el número
+    directamente o usar los botones + / −).</li>
+    <li><strong>Servicios disponibles:</strong> con qué cuenta la casa (agua, luz, electricidad, y lo que el
+    Administrador haya agregado a esa lista).</li>
+    <li><strong>Vulnerabilidades:</strong> se marcan las condiciones que apliquen (por ejemplo, acceso
+    complicado o zona insegura), para que el equipo lo tenga en cuenta.</li>
+    <li><strong>Perfil recomendado:</strong> qué tipo de hermanos recomienda el agente para esa casa
+    (familias con niños, matrimonios, adultos mayores, etc.).</li>
+  </ol>
+  <p>Al terminar el paso 6, se presiona <strong>Sellar registro</strong> y la casa queda guardada.</p>
+
+  <div class="shot-row wrap">
+    <figure class="shot-mobile">
+      <img src="file:///private/tmp/claude-501/-Users-davidchaveznunez-Documents-General-programming/b443e86c-38a9-461f-9843-29dda04da117/scratchpad/pdf_shots/registro_paso1.png">
+      <figcaption>Paso 1 · Datos del dueño</figcaption>
+    </figure>
+    <figure class="shot-mobile">
+      <img src="file:///private/tmp/claude-501/-Users-davidchaveznunez-Documents-General-programming/b443e86c-38a9-461f-9843-29dda04da117/scratchpad/pdf_shots/registro_paso4.png">
+      <figcaption>Paso 4 · Servicios disponibles</figcaption>
+    </figure>
+    <figure class="shot-mobile">
+      <img src="file:///private/tmp/claude-501/-Users-davidchaveznunez-Documents-General-programming/b443e86c-38a9-461f-9843-29dda04da117/scratchpad/pdf_shots/registro_paso5.png">
+      <figcaption>Paso 5 · Vulnerabilidades</figcaption>
+    </figure>
+  </div>
+
+  <div class="nota">
+    Las listas de <strong>Servicios</strong>, <strong>Vulnerabilidades</strong> y <strong>Perfil recomendado</strong>
+    las define el Administrador (sección 6), así que pueden irse ajustando con el tiempo sin necesidad de
+    tocar nada técnico.
+  </div>
+
+  <div class="shot-row wrap">
+    <div style="flex: 1; min-width: 260px;">
+      <h3>Registrar la llegada de personas (ingresos)</h3>
+      <p>
+        Cuando llegan hermanos a hospedarse, el agente entra a <strong>Registrar ingresos</strong>, elige la
+        casa de la lista (se ve cuántos lugares le quedan libres) y escribe cuántas personas están llegando
+        en ese momento. El sistema no deja pasarse de la capacidad de la casa.
+      </p>
+      <h3>Ver los hogares ya registrados</h3>
+      <p>
+        Desde <strong>Ver hogares registrados</strong> se ve la lista completa con foto, dirección y ocupación
+        de cada casa. Al tocar una, se abre su detalle completo, donde se puede <strong>editar</strong>
+        cualquier dato o <strong>eliminar</strong> el registro si fue un error.
+      </p>
+    </div>
+    <figure class="shot-mobile">
+      <img src="file:///private/tmp/claude-501/-Users-davidchaveznunez-Documents-General-programming/b443e86c-38a9-461f-9843-29dda04da117/scratchpad/pdf_shots/ingresos.png">
+      <figcaption>Registrar ingresos</figcaption>
+    </figure>
+    <figure class="shot-mobile">
+      <img src="file:///private/tmp/claude-501/-Users-davidchaveznunez-Documents-General-programming/b443e86c-38a9-461f-9843-29dda04da117/scratchpad/pdf_shots/hogares.png">
+      <figcaption>Hogares registrados</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section>
+  <h2 class="titulo-seccion"><span class="num-badge">5</span>El panel del Administrador</h2>
+  <p>
+    Al entrar como Administrador o Supervisor, el sistema lleva directo a un panel de control pensado para
+    computadora, con toda la información del evento organizada en un solo lugar.
+  </p>
+
+  <h3>Dashboard: el resumen general</h3>
+  <p>
+    Muestra, de un vistazo: cuántas casas se han registrado, la capacidad total, cuántos lugares están
+    ocupados y cuántos quedan libres — además de gráficas de ocupación, distribución por colonia, servicios,
+    vulnerabilidades y perfil recomendado. <strong>Todo se actualiza solo</strong>, sin necesidad de recargar
+    la página: en cuanto un agente registra una casa o una llegada, el panel lo refleja al instante.
+  </p>
+  <figure class="shot-desktop">
+    <img src="file:///private/tmp/claude-501/-Users-davidchaveznunez-Documents-General-programming/b443e86c-38a9-461f-9843-29dda04da117/scratchpad/pdf_shots/dashboard.png">
+    <figcaption>Dashboard con métricas y gráficas en vivo</figcaption>
+  </figure>
+
+  <h3>Mapa: dónde están las casas y cómo van</h3>
+  <p>
+    Muestra cada casa registrada como un punto de color sobre un mapa real, para ver de un vistazo cómo se
+    va "poblando" la colonia:
+  </p>
+  <div class="semaforo">
+    <span class="item"><span class="dot verde"></span>Libre</span>
+    <span class="item"><span class="dot amarillo"></span>Parcialmente ocupada</span>
+    <span class="item"><span class="dot rojo"></span>Llena</span>
+  </div>
+  <p>Al tocar un punto se ve el nombre, dirección y ocupación de esa casa. También se actualiza solo, en vivo.</p>
+  <figure class="shot-desktop">
+    <img src="file:///private/tmp/claude-501/-Users-davidchaveznunez-Documents-General-programming/b443e86c-38a9-461f-9843-29dda04da117/scratchpad/pdf_shots/mapa.png">
+    <figcaption>Mapa en vivo con semáforo de ocupación</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2 class="titulo-seccion"><span class="num-badge">6</span>Eventos, catálogos y usuarios</h2>
+
+  <h3>Eventos</h3>
+  <p>
+    El sistema está pensado para usarse en distintos eventos a lo largo del año, no solo el del Centenario.
+    El Administrador crea cada evento con su nombre, sede y fechas, y puede finalizarlo cuando termine (esto
+    bloquea nuevos registros para ese evento). Puede haber varios eventos abiertos al mismo tiempo si hiciera falta.
+  </p>
+
+  <h3>Catálogos: las listas que usan los agentes</h3>
+  <p>
+    Aquí el Administrador define y edita las tres listas que aparecen en el formulario de registro:
+    <strong>Servicios</strong> (agua, luz, electricidad, etc.), <strong>Vulnerabilidades</strong> y
+    <strong>Perfil recomendado</strong>. Se pueden agregar elementos nuevos, desactivar los que ya no apliquen,
+    o eliminarlos — sin que eso afecte los registros que ya se hicieron con esas opciones.
+  </p>
+  <figure class="shot-desktop">
+    <img src="file:///private/tmp/claude-501/-Users-davidchaveznunez-Documents-General-programming/b443e86c-38a9-461f-9843-29dda04da117/scratchpad/pdf_shots/catalogos.png">
+    <figcaption>Panel de catálogos configurables</figcaption>
+  </figure>
+
+  <h3>Usuarios</h3>
+  <p>
+    El Administrador da de alta las cuentas de los agentes y supervisores (correo, contraseña y rol), puede
+    cambiarles el rol, desactivar una cuenta si alguien deja de participar, y restablecer contraseñas
+    olvidadas — todo desde el panel, sin necesidad de pedirle ayuda a nadie técnico.
+  </p>
+</section>
+
+<section>
+  <h2 class="titulo-seccion"><span class="num-badge">7</span>¿Qué es un MVP y qué sigue?</h2>
+  <p>
+    <strong>MVP</strong> significa "producto mínimo viable": la primera versión de un sistema que ya cubre lo
+    esencial para usarse de verdad, sin esperar a que esté "perfecto". La ventaja de este enfoque es que el
+    equipo ya puede empezar a trabajar con la herramienta desde ahora, y las siguientes mejoras se guían por
+    lo que realmente se necesite al usarla en el evento — no por suposiciones.
+  </p>
+  <table class="mvp">
+    <tr><th>Ya funciona hoy</th><th>Se puede seguir mejorando</th></tr>
+    <tr>
+      <td>Registro completo de casas, con fotos, ubicación y capacidad</td>
+      <td>Autocompletar la colonia a partir del código postal</td>
+    </tr>
+    <tr>
+      <td>Control de llegadas sin exceder la capacidad de cada casa</td>
+      <td>Filtros de búsqueda por colonia, calle o código postal</td>
+    </tr>
+    <tr>
+      <td>Dashboard y mapa en vivo para administración y supervisión</td>
+      <td>Sincronización automática cuando el celular se queda sin señal</td>
+    </tr>
+    <tr>
+      <td>Listas configurables de servicios, vulnerabilidades y perfil</td>
+      <td>Notificaciones automáticas ante casos que necesiten atención</td>
+    </tr>
+    <tr>
+      <td>Gestión de eventos y usuarios sin depender de soporte técnico</td>
+      <td>Lo que surja al usarlo en el evento real</td>
+    </tr>
+  </table>
+  <p>
+    En resumen: el sistema ya está listo para usarse en el evento. Cualquier ajuste o funcionalidad nueva que
+    haga falta después de probarlo en la práctica, se puede seguir agregando sobre esta misma base.
+  </p>
+  <p class="cierre">— Fin del manual —</p>
+</section>
+
+</body>
+</html>

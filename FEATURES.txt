@@ -1,0 +1,8 @@
+1. El agente registra la casa en campo, en la primera vuelta, regresa a su base e imprime un QR y una calcomania de casa registrada, regresa y lo pega en una parte visible de la casa, a la hora del ingreso, el usuario llega con su celular, el agente escanea el QR de la casa, se abre la casa en el celular lista para registrar los ingresos, el agente registra los ingresos.
+
+2. A la hora de registrar los ingresos, el agente indica por ejemplo: 20 personas del Estado de México, entre ellos 2 en silla de ruedas, 5 niños y una mujer embarazada; el sistema en automático le sugiere el hogar recomendado para ese grupo.
+
+3. Consideraciones: 
+
+Qué pasa si el grupo es de 15 y la casa tiene capacidad para 20, sobrarían 5 lugares, luego el siguiente grupo es de 30, tomaría 5 de ahí. Recomendaciones de como resolver eso.
+
