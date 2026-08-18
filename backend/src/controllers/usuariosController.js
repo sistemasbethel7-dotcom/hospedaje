@@ -4,6 +4,8 @@ import {
   regenerarTokenInvitacion,
   updateUsuario,
   deleteUsuario,
+  setUsuarioEventos,
+  getUsuario,
 } from '../services/usuariosService.js';
 import { enviarInvitacion } from '../services/emailService.js';
 import bcrypt from 'bcryptjs';
@@ -20,7 +22,7 @@ export async function listar(req, res) {
 }
 
 export async function crear(req, res) {
-  const { email, role, nombre, telefono } = req.body;
+  const { email, role, nombre, telefono, eventos_ids } = req.body;
 
   if (!email || !role) {
     return res.status(400).json({ message: 'Correo y rol son requeridos.' });
@@ -29,9 +31,14 @@ export async function crear(req, res) {
     return res.status(400).json({ message: 'Rol inválido.' });
   }
 
+  const eventosIds = Array.isArray(eventos_ids) ? eventos_ids.map(Number).filter(Number.isInteger) : [];
+  if (role === 'agente' && eventosIds.length === 0) {
+    return res.status(400).json({ message: 'Selecciona al menos un evento para este agente.' });
+  }
+
   let usuario, token;
   try {
-    ({ usuario, token } = await insertUsuarioInvitado({ email, role, nombre, telefono }));
+    ({ usuario, token } = await insertUsuarioInvitado({ email, role, nombre, telefono, eventosIds }));
   } catch (err) {
     if (err.code === '23505') {
       return res.status(409).json({ message: 'Ese correo ya está registrado.' });
@@ -65,7 +72,7 @@ export async function reenviarInvitacion(req, res) {
 }
 
 export async function actualizar(req, res) {
-  const { role, activo, password, nombre, telefono } = req.body;
+  const { role, activo, password, nombre, telefono, eventos_ids } = req.body;
   const id = Number(req.params.id);
 
   if (role && !ROLES_VALIDOS.includes(role)) {
@@ -76,6 +83,22 @@ export async function actualizar(req, res) {
   }
   if (id === req.user.sub && (activo === false || (role && role !== 'admin'))) {
     return res.status(400).json({ message: 'No puedes desactivar o cambiar tu propio rol de administrador.' });
+  }
+
+  // eventos_ids solo se toca si el request lo trae explícitamente (arreglo). Al cambiar de rol
+  // a agente sin mandarlo (ej. el <select> rápido de rol en la tabla), el usuario queda sin
+  // eventos hasta el siguiente PUT que sí los incluya — el admin lo completa en ese momento
+  // desde el modal "Editar eventos".
+  const eventosIds = Array.isArray(eventos_ids) ? eventos_ids.map(Number).filter(Number.isInteger) : null;
+  if (eventosIds !== null) {
+    const actual = await getUsuario(id);
+    if (!actual) {
+      return res.status(404).json({ message: 'Usuario no encontrado.' });
+    }
+    const rolEfectivo = role || actual.role;
+    if (rolEfectivo === 'agente' && eventosIds.length === 0) {
+      return res.status(400).json({ message: 'Selecciona al menos un evento para este agente.' });
+    }
   }
 
   const passwordHash = password ? await bcrypt.hash(password, 10) : null;
@@ -90,6 +113,10 @@ export async function actualizar(req, res) {
 
   if (!usuario) {
     return res.status(404).json({ message: 'Usuario no encontrado.' });
+  }
+
+  if (eventosIds !== null) {
+    await setUsuarioEventos(id, eventosIds);
   }
 
   res.json({ usuario });

@@ -67,6 +67,11 @@ export async function listHogares(eventoId) {
   return rows;
 }
 
+export async function getHogarEventoId(id) {
+  const { rows } = await pool.query('SELECT evento_id FROM hogares WHERE id = $1', [id]);
+  return rows[0]?.evento_id ?? null;
+}
+
 export async function getHogarById(id) {
   const { rows } = await pool.query(
     'SELECT id, nombre_dueno, capacidad, ocupacion_actual FROM hogares WHERE id = $1',

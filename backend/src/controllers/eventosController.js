@@ -29,7 +29,8 @@ export async function listar(req, res) {
   if (estatus && !ESTATUS_VALIDOS.includes(estatus)) {
     return res.status(400).json({ message: 'Estatus inválido.' });
   }
-  const eventos = await listEventos(estatus);
+  const usuarioId = req.user.role === 'agente' ? req.user.sub : null;
+  const eventos = await listEventos(estatus, usuarioId);
   res.json({ eventos });
 }
 

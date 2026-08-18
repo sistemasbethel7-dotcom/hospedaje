@@ -2,14 +2,35 @@ import {
   insertHogar,
   listHogares,
   getHogarDetalle,
+  getHogarEventoId,
   updateHogar,
   deleteHogar,
   findPosiblesDuplicados,
 } from '../services/hogaresService.js';
 import { getEventoById } from '../services/eventosService.js';
+import { usuarioTieneAccesoEvento } from '../services/usuariosService.js';
 import { eventBus } from '../services/eventBus.js';
 
 const TENENCIAS = ['Propia', 'Rentada'];
+
+// Un agente solo puede modificar hogares de un evento que tenga asignado y que siga abierto.
+// Admin no pasa por aquí (sin restricción, para poder corregir datos tras cerrar un evento).
+async function bloqueoAgenteSobreHogar(req, hogarId) {
+  if (req.user.role !== 'agente') return null;
+
+  const eventoId = await getHogarEventoId(hogarId);
+  if (!eventoId) {
+    return { status: 404, message: 'Hogar no encontrado.' };
+  }
+  if (!(await usuarioTieneAccesoEvento(req.user.sub, req.user.role, eventoId))) {
+    return { status: 403, message: 'No tienes acceso a este evento.' };
+  }
+  const evento = await getEventoById(eventoId);
+  if (evento?.estatus === 'finalizado') {
+    return { status: 409, message: 'El evento ya fue finalizado.' };
+  }
+  return null;
+}
 
 export async function crear(req, res) {
   const {
@@ -48,6 +69,9 @@ export async function crear(req, res) {
   const evento = await getEventoById(eventoId);
   if (!evento) {
     return res.status(404).json({ message: 'Evento no encontrado.' });
+  }
+  if (req.user.role === 'agente' && !(await usuarioTieneAccesoEvento(req.user.sub, req.user.role, eventoId))) {
+    return res.status(403).json({ message: 'No tienes acceso a este evento.' });
   }
   if (evento.estatus === 'finalizado') {
     return res.status(409).json({ message: 'El evento ya fue finalizado.' });
@@ -105,6 +129,9 @@ export async function listar(req, res) {
   if (!eventoId) {
     return res.status(400).json({ message: 'Falta el evento.' });
   }
+  if (req.user.role === 'agente' && !(await usuarioTieneAccesoEvento(req.user.sub, req.user.role, eventoId))) {
+    return res.status(403).json({ message: 'No tienes acceso a este evento.' });
+  }
   const hogares = await listHogares(eventoId);
   res.json({ hogares });
 }
@@ -113,6 +140,9 @@ export async function detalle(req, res) {
   const hogar = await getHogarDetalle(req.params.id);
   if (!hogar) {
     return res.status(404).json({ message: 'Hogar no encontrado.' });
+  }
+  if (req.user.role === 'agente' && !(await usuarioTieneAccesoEvento(req.user.sub, req.user.role, hogar.evento_id))) {
+    return res.status(403).json({ message: 'No tienes acceso a este evento.' });
   }
   res.json({ hogar });
 }
@@ -143,6 +173,11 @@ export async function actualizar(req, res) {
   }
   if (tenencia && !TENENCIAS.includes(tenencia)) {
     return res.status(400).json({ message: 'La tenencia debe ser Propia o Rentada.' });
+  }
+
+  const bloqueo = await bloqueoAgenteSobreHogar(req, req.params.id);
+  if (bloqueo) {
+    return res.status(bloqueo.status).json({ message: bloqueo.message });
   }
 
   const fotoDueno = req.files?.foto_dueno?.[0]?.filename || null;
@@ -179,6 +214,11 @@ export async function actualizar(req, res) {
 }
 
 export async function eliminar(req, res) {
+  const bloqueo = await bloqueoAgenteSobreHogar(req, req.params.id);
+  if (bloqueo) {
+    return res.status(bloqueo.status).json({ message: bloqueo.message });
+  }
+
   const resultado = await deleteHogar(req.params.id);
   if (!resultado) {
     return res.status(404).json({ message: 'Hogar no encontrado.' });

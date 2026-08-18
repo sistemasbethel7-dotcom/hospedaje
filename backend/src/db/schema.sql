@@ -260,3 +260,25 @@ UPDATE hogares h
 SET posible_duplicado_de = c.id_original
 FROM con_original c
 WHERE h.id = c.id AND c.id <> c.id_original;
+
+-- Eventos asignados a cada usuario con rol agente: el equipo de campo cambia por evento
+-- (quien atendió el evento A no necesariamente atiende el B), así que cada agente solo debe
+-- ver/operar sobre los eventos que el admin le asigne explícitamente. No aplica a admin ni
+-- supervisor (ven todos los eventos sin restricción, ver usuarioTieneAccesoEvento).
+CREATE TABLE IF NOT EXISTS usuario_eventos (
+  usuario_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+  evento_id INTEGER NOT NULL REFERENCES eventos(id) ON DELETE CASCADE,
+  PRIMARY KEY (usuario_id, evento_id)
+);
+
+GRANT ALL PRIVILEGES ON TABLE usuario_eventos TO pwa_templo_app;
+
+-- Backfill de una sola vez: todo agente que aún no tenga ningún evento asignado se asigna al
+-- evento "Santa Cena 2026, Guadalajara" (id 8 en producción) que atendieron antes de que
+-- existiera esta restricción. Self-healing como la semilla de catalogos — no vuelve a
+-- disparar para agentes que ya tengan al menos una asignación (nuevos o reasignados).
+INSERT INTO usuario_eventos (usuario_id, evento_id)
+SELECT u.id, 8 FROM usuarios u
+WHERE u.role = 'agente'
+  AND EXISTS (SELECT 1 FROM eventos WHERE id = 8)
+  AND NOT EXISTS (SELECT 1 FROM usuario_eventos ue WHERE ue.usuario_id = u.id);

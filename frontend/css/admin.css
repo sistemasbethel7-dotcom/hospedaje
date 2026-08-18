@@ -587,6 +587,44 @@
   flex: 1;
 }
 
+.admin-inline-form .field.eventos-field {
+  flex-basis: 100%;
+}
+
+.eventos-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--color-gold-border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-top: 6px;
+  background: var(--color-bg);
+}
+
+.eventos-checklist-empty {
+  color: var(--color-text-muted);
+  font: 500 13px var(--font-body);
+}
+
+.eventos-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.eventos-chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--color-gold-tint);
+  color: var(--color-text);
+  font: 600 12px var(--font-body);
+  white-space: nowrap;
+}
+
 .admin-inline-form input,
 .admin-inline-form select {
   height: 42px;

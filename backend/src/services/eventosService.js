@@ -21,11 +21,24 @@ export async function insertEvento(data) {
   return rows[0];
 }
 
-export async function listEventos(estatus) {
-  const query = estatus
-    ? `${RESUMEN_SELECT} WHERE e.estatus = $1 GROUP BY e.id ORDER BY e.created_at DESC`
-    : `${RESUMEN_SELECT} GROUP BY e.id ORDER BY e.created_at DESC`;
-  const { rows } = await pool.query(query, estatus ? [estatus] : []);
+export async function listEventos(estatus, usuarioId) {
+  const condiciones = [];
+  const params = [];
+
+  if (estatus) {
+    params.push(estatus);
+    condiciones.push(`e.estatus = $${params.length}`);
+  }
+  if (usuarioId) {
+    params.push(usuarioId);
+    condiciones.push(`EXISTS (SELECT 1 FROM usuario_eventos ue WHERE ue.evento_id = e.id AND ue.usuario_id = $${params.length})`);
+  }
+
+  const where = condiciones.length > 0 ? `WHERE ${condiciones.join(' AND ')}` : '';
+  const { rows } = await pool.query(
+    `${RESUMEN_SELECT} ${where} GROUP BY e.id ORDER BY e.created_at DESC`,
+    params
+  );
   return rows;
 }
 

@@ -9,21 +9,76 @@ function hashToken(token) {
 
 export async function listUsuarios() {
   const { rows } = await pool.query(
-    `SELECT id, email, nombre, telefono, role, activo, created_at, (password_hash IS NULL) AS pendiente
-     FROM usuarios ORDER BY created_at DESC`
+    `SELECT u.id, u.email, u.nombre, u.telefono, u.role, u.activo, u.created_at,
+            (u.password_hash IS NULL) AS pendiente,
+            COALESCE(
+              (SELECT json_agg(json_build_object('id', e.id, 'nombre', e.nombre, 'sede', e.sede) ORDER BY e.created_at DESC)
+               FROM usuario_eventos ue JOIN eventos e ON e.id = ue.evento_id
+               WHERE ue.usuario_id = u.id),
+              '[]'
+            ) AS eventos
+     FROM usuarios u ORDER BY u.created_at DESC`
   );
   return rows;
 }
 
-export async function insertUsuarioInvitado({ email, role, nombre, telefono }) {
-  const token = crypto.randomBytes(32).toString('hex');
+export async function setUsuarioEventos(usuarioId, eventosIds) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('DELETE FROM usuario_eventos WHERE usuario_id = $1', [usuarioId]);
+    if (eventosIds.length > 0) {
+      const values = eventosIds.map((_, i) => `($1, $${i + 2})`).join(', ');
+      await client.query(
+        `INSERT INTO usuario_eventos (usuario_id, evento_id) VALUES ${values}`,
+        [usuarioId, ...eventosIds]
+      );
+    }
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+export async function usuarioTieneAccesoEvento(usuarioId, role, eventoId) {
+  if (role !== 'agente') return true;
   const { rows } = await pool.query(
-    `INSERT INTO usuarios (email, password_hash, role, nombre, telefono, setup_token_hash, setup_token_expires)
-     VALUES ($1, NULL, $2, $3, $4, $5, $6)
-     RETURNING id, email, nombre, telefono, role, activo, created_at`,
-    [email, role, nombre || null, telefono || null, hashToken(token), new Date(Date.now() + TOKEN_TTL_MS)]
+    'SELECT 1 FROM usuario_eventos WHERE usuario_id = $1 AND evento_id = $2',
+    [usuarioId, eventoId]
   );
-  return { usuario: rows[0], token };
+  return rows.length > 0;
+}
+
+export async function insertUsuarioInvitado({ email, role, nombre, telefono, eventosIds }) {
+  const token = crypto.randomBytes(32).toString('hex');
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const { rows } = await client.query(
+      `INSERT INTO usuarios (email, password_hash, role, nombre, telefono, setup_token_hash, setup_token_expires)
+       VALUES ($1, NULL, $2, $3, $4, $5, $6)
+       RETURNING id, email, nombre, telefono, role, activo, created_at`,
+      [email, role, nombre || null, telefono || null, hashToken(token), new Date(Date.now() + TOKEN_TTL_MS)]
+    );
+    const usuario = rows[0];
+    if (role === 'agente' && eventosIds?.length > 0) {
+      const values = eventosIds.map((_, i) => `($1, $${i + 2})`).join(', ');
+      await client.query(
+        `INSERT INTO usuario_eventos (usuario_id, evento_id) VALUES ${values}`,
+        [usuario.id, ...eventosIds]
+      );
+    }
+    await client.query('COMMIT');
+    return { usuario, token };
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
 }
 
 export async function regenerarTokenInvitacion(id) {
@@ -54,6 +109,11 @@ export async function establecerPasswordDesdeToken(token, passwordHash) {
      RETURNING id, email, role, activo`,
     [passwordHash, hashToken(token)]
   );
+  return rows[0] || null;
+}
+
+export async function getUsuario(id) {
+  const { rows } = await pool.query('SELECT id, role FROM usuarios WHERE id = $1', [id]);
   return rows[0] || null;
 }
 
