@@ -2,6 +2,11 @@ import { me, listarEventos, actualizarEvento } from '../services/api.js';
 import { getSession, clearSession } from '../services/session.js';
 import { setActiveEventId, clearActiveEventId } from '../services/eventoActivo.js';
 
+const DASHBOARD_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 20V10M12 20V4M20 20v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const EDIT_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 20h4L18.5 9.5a2.121 2.121 0 00-3-3L5 17v3z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 6.5l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
+const LOCK_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 11V8a4 4 0 018 0v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
+const UNLOCK_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 11V8a4 4 0 017.94-.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
+
 let session = null;
 let esAdmin = false;
 let navigateFn = null;
@@ -35,11 +40,11 @@ function renderEventos(eventos) {
       const badgeClass = e.estatus === 'abierto' ? '' : 'finalizado';
       const badgeLabel = e.estatus === 'abierto' ? 'Abierto' : 'Finalizado';
       const toggleAction = esAdmin
-        ? `<button type="button" class="admin-btn outline" data-toggle="${e.id}" data-nuevo-estatus="${e.estatus === 'abierto' ? 'finalizado' : 'abierto'}">${e.estatus === 'abierto' ? 'Finalizar' : 'Reabrir'}</button>`
+        ? `<button type="button" class="admin-btn outline icon" title="${e.estatus === 'abierto' ? 'Finalizar' : 'Reabrir'}" aria-label="${e.estatus === 'abierto' ? 'Finalizar' : 'Reabrir'}" data-toggle="${e.id}" data-nuevo-estatus="${e.estatus === 'abierto' ? 'finalizado' : 'abierto'}">${e.estatus === 'abierto' ? LOCK_ICON : UNLOCK_ICON}</button>`
         : '';
       const editarAction =
         esAdmin && e.estatus === 'abierto'
-          ? `<button type="button" class="admin-btn outline" data-editar="${e.id}">Editar</button>`
+          ? `<button type="button" class="admin-btn outline icon" title="Editar" aria-label="Editar" data-editar="${e.id}">${EDIT_ICON}</button>`
           : '';
       return `
         <tr>
@@ -51,7 +56,7 @@ function renderEventos(eventos) {
           <td>${e.ocupacion_total}/${e.capacidad_total}</td>
           <td>
             <div class="admin-table-actions">
-              <button type="button" class="admin-btn" data-ver="${e.id}">Ver dashboard</button>
+              <button type="button" class="admin-btn icon" title="Ver dashboard" aria-label="Ver dashboard" data-ver="${e.id}">${DASHBOARD_ICON}</button>
               ${editarAction}
               ${toggleAction}
             </div>
