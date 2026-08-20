@@ -11,6 +11,7 @@ const ROL_LABEL = { agente: 'Agente', supervisor: 'Supervisor', admin: 'Admin' }
 let session = null;
 let usuarioActualId = null;
 let todosLosEventos = [];
+let usuariosActuales = [];
 
 function renderEventosChecklist(container, eventosSeleccionados) {
   if (todosLosEventos.length === 0) {
@@ -45,6 +46,56 @@ function escapeHtml(value) {
 function formatFecha(iso) {
   const [y, m, d] = iso.slice(0, 10).split('-');
   return `${d}/${m}/${y}`;
+}
+
+function usuariosFiltrados() {
+  const filtroNombre = document.getElementById('filtro-nombre').value.trim().toLowerCase();
+  const filtroCorreo = document.getElementById('filtro-correo').value.trim().toLowerCase();
+  const filtroTelefono = document.getElementById('filtro-telefono').value.trim().toLowerCase();
+  const filtroRol = document.getElementById('filtro-rol').value;
+  const filtroEventos = document.getElementById('filtro-eventos').value.trim().toLowerCase();
+  const filtroEstatus = document.getElementById('filtro-estatus').value;
+  const filtroDesde = document.getElementById('filtro-creado-desde').value;
+  const filtroHasta = document.getElementById('filtro-creado-hasta').value;
+
+  return usuariosActuales.filter((u) => {
+    if (filtroNombre && !(u.nombre || '').toLowerCase().includes(filtroNombre)) return false;
+    if (filtroCorreo && !u.email.toLowerCase().includes(filtroCorreo)) return false;
+    if (filtroTelefono && !(u.telefono || '').toLowerCase().includes(filtroTelefono)) return false;
+    if (filtroRol && u.role !== filtroRol) return false;
+    if (filtroEventos) {
+      const coincide = (u.eventos || []).some((e) => `${e.nombre} ${e.sede || ''}`.toLowerCase().includes(filtroEventos));
+      if (!coincide) return false;
+    }
+    if (filtroEstatus === 'activo' && !u.activo) return false;
+    if (filtroEstatus === 'inactivo' && u.activo) return false;
+    if (filtroEstatus === 'pendiente' && !u.pendiente) return false;
+    const fechaCreado = u.created_at.slice(0, 10);
+    if (filtroDesde && fechaCreado < filtroDesde) return false;
+    if (filtroHasta && fechaCreado > filtroHasta) return false;
+    return true;
+  });
+}
+
+function renderFiltrados() {
+  const usuarios = usuariosFiltrados();
+  const total = usuariosActuales.length;
+  const contador = document.getElementById('usuarios-contador');
+  const palabra = total === 1 ? 'usuario' : 'usuarios';
+  contador.textContent = usuarios.length === total ? `${total} ${palabra}` : `${usuarios.length} de ${total} ${palabra}`;
+
+  const wrap = document.getElementById('usuarios-table-wrap');
+  const sinResultados = document.getElementById('usuarios-sin-resultados');
+  if (usuarios.length === 0) {
+    wrap.hidden = true;
+    sinResultados.hidden = false;
+    document.getElementById('usuarios-tbody').innerHTML = '';
+    return;
+  }
+  wrap.hidden = false;
+  sinResultados.hidden = true;
+
+  renderUsuarios(usuarios);
 }
 
 function renderUsuarios(usuarios) {
@@ -226,7 +277,8 @@ async function cargarUsuarios() {
   errorEl.textContent = '';
   try {
     const { usuarios } = await listarUsuarios(session.token);
-    renderUsuarios(usuarios);
+    usuariosActuales = usuarios;
+    renderFiltrados();
   } catch (err) {
     if (err.status === 401) {
       clearSession();
@@ -249,6 +301,13 @@ export async function mount({ navigate }) {
   document.getElementById('mostrar-form-btn').addEventListener('click', () => {
     const form = document.getElementById('usuario-form');
     form.hidden = !form.hidden;
+  });
+
+  ['filtro-nombre', 'filtro-correo', 'filtro-telefono', 'filtro-eventos'].forEach((id) => {
+    document.getElementById(id).addEventListener('input', renderFiltrados);
+  });
+  ['filtro-rol', 'filtro-estatus', 'filtro-creado-desde', 'filtro-creado-hasta'].forEach((id) => {
+    document.getElementById(id).addEventListener('change', renderFiltrados);
   });
 
   const nuevoEventosField = document.getElementById('nuevo-eventos-field');

@@ -79,7 +79,31 @@
       <button type="button" class="admin-btn" id="guardar-usuario-btn">Guardar</button>
     </form>
 
-    <div class="admin-table-wrap">
+    <div class="admin-filtros">
+      <input type="text" id="filtro-nombre" placeholder="Filtrar por nombre">
+      <input type="text" id="filtro-correo" placeholder="Filtrar por correo">
+      <input type="text" id="filtro-telefono" placeholder="Filtrar por teléfono">
+      <select class="admin-select" id="filtro-rol">
+        <option value="">Todos los roles</option>
+        <option value="agente">Agente</option>
+        <option value="supervisor">Supervisor</option>
+        <option value="admin">Admin</option>
+      </select>
+      <input type="text" id="filtro-eventos" placeholder="Filtrar por evento">
+      <select class="admin-select" id="filtro-estatus">
+        <option value="">Todos los estatus</option>
+        <option value="activo">Activo</option>
+        <option value="inactivo">Inactivo</option>
+        <option value="pendiente">Pendiente</option>
+      </select>
+      <input type="date" id="filtro-creado-desde" title="Creado desde">
+      <input type="date" id="filtro-creado-hasta" title="Creado hasta">
+    </div>
+
+    <p class="admin-contador" id="usuarios-contador"></p>
+    <p class="admin-empty" id="usuarios-sin-resultados" hidden>Ningún usuario coincide con el filtro.</p>
+
+    <div class="admin-table-wrap" id="usuarios-table-wrap">
       <table class="admin-table">
         <thead>
           <tr>
