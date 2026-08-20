@@ -1,6 +1,7 @@
 import { me, listarUsuarios, crearUsuario, actualizarUsuario, reenviarInvitacion, eliminarUsuario, listarEventos } from '../services/api.js';
 import { getSession, clearSession } from '../services/session.js';
 import { clearActiveEventId } from '../services/eventoActivo.js';
+import { cerrarAlClicFuera } from '../domUtils.js';
 
 const EDIT_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 20h4L18.5 9.5a2.121 2.121 0 00-3-3L5 17v3z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 6.5l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
 const TRASH_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m-9 0l1 13a1 1 0 001 1h8a1 1 0 001-1l1-13M10 11v6M14 11v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
@@ -264,12 +265,12 @@ export async function mount({ navigate }) {
     setActivoToggle(event.currentTarget.dataset.activo !== 'true');
   });
 
-  document.getElementById('usuario-modal-close').addEventListener('click', () => {
-    document.getElementById('usuario-modal-backdrop').hidden = true;
-  });
-  document.getElementById('usuario-modal-backdrop').addEventListener('click', (event) => {
-    if (event.target === event.currentTarget) event.currentTarget.hidden = true;
-  });
+  const usuarioModalBackdrop = document.getElementById('usuario-modal-backdrop');
+  const cerrarModalUsuario = () => {
+    usuarioModalBackdrop.hidden = true;
+  };
+  document.getElementById('usuario-modal-close').addEventListener('click', cerrarModalUsuario);
+  cerrarAlClicFuera(usuarioModalBackdrop, cerrarModalUsuario);
 
   document.getElementById('guardar-usuario-btn').addEventListener('click', async () => {
     const errorEl = document.getElementById('usuarios-error');

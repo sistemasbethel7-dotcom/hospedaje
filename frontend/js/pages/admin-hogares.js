@@ -4,6 +4,7 @@ import { getActiveEventId, setActiveEventId, clearActiveEventId } from '../servi
 import { subscribeToEvento } from '../services/eventStream.js';
 import { setupMapModal } from '../mapModal.js';
 import { renderDetalleHogarHTML } from '../hogarDetalleView.js';
+import { cerrarAlClicFuera } from '../domUtils.js';
 
 const HOUSE_ICON = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 10.5L12 4l8 6.5V20a1 1 0 01-1 1h-4v-6H9v6H5a1 1 0 01-1-1v-9.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
 const EYE_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg>`;
@@ -598,19 +599,13 @@ export async function mount() {
   document.getElementById('editar-form').addEventListener('submit', guardarEdicion);
   document.getElementById('editar-cancelar').addEventListener('click', cerrarEditar);
   document.getElementById('editar-modal-close').addEventListener('click', cerrarEditar);
-  document.getElementById('editar-modal-backdrop').addEventListener('click', (event) => {
-    if (event.target === event.currentTarget) cerrarEditar();
-  });
+  cerrarAlClicFuera(document.getElementById('editar-modal-backdrop'), cerrarEditar);
 
   document.getElementById('photo-lightbox-close').addEventListener('click', cerrarLightbox);
-  document.getElementById('photo-lightbox').addEventListener('click', (event) => {
-    if (event.target === event.currentTarget) cerrarLightbox();
-  });
+  cerrarAlClicFuera(document.getElementById('photo-lightbox'), cerrarLightbox);
 
   document.getElementById('comparar-modal-close').addEventListener('click', cerrarComparacion);
-  document.getElementById('comparar-modal-backdrop').addEventListener('click', (event) => {
-    if (event.target === event.currentTarget) cerrarComparacion();
-  });
+  cerrarAlClicFuera(document.getElementById('comparar-modal-backdrop'), cerrarComparacion);
 
   try {
     const { user } = await me(session.token);

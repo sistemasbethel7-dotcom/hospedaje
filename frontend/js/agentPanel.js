@@ -3,6 +3,7 @@ import { obtenerConfigAgente, obtenerHogar } from './services/api.js';
 import { getSession } from './services/session.js';
 import { getActiveEventId } from './services/eventoActivo.js';
 import { folioDe, renderDetalleHogarHTML, renderHogaresTablaHTML } from './hogarDetalleView.js';
+import { cerrarAlClicFuera } from './domUtils.js';
 
 const PUNTOS_ESFERA = 160;
 const RADIO_BASE = 70;
@@ -62,9 +63,7 @@ function crearModalVistaPrevia() {
   modalBody = modalBackdrop.querySelector('.admin-modal-body');
 
   modalBackdrop.querySelector('.admin-modal-close').addEventListener('click', cerrarVistaPrevia);
-  modalBackdrop.addEventListener('click', (e) => {
-    if (e.target === modalBackdrop) cerrarVistaPrevia();
-  });
+  cerrarAlClicFuera(modalBackdrop, cerrarVistaPrevia);
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !modalBackdrop.hidden) cerrarVistaPrevia();
   });

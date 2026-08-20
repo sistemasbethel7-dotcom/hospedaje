@@ -1,6 +1,7 @@
 import { me, listarEventos, actualizarEvento } from '../services/api.js';
 import { getSession, clearSession } from '../services/session.js';
 import { setActiveEventId, clearActiveEventId } from '../services/eventoActivo.js';
+import { cerrarAlClicFuera } from '../domUtils.js';
 
 const DASHBOARD_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 20V10M12 20V4M20 20v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const EDIT_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 20h4L18.5 9.5a2.121 2.121 0 00-3-3L5 17v3z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 6.5l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
@@ -166,12 +167,12 @@ export async function mount({ navigate }) {
   navigateFn = navigate;
   esAdmin = false;
 
-  document.getElementById('editar-evento-modal-close').addEventListener('click', () => {
-    document.getElementById('editar-evento-modal-backdrop').hidden = true;
-  });
-  document.getElementById('editar-evento-modal-backdrop').addEventListener('click', (event) => {
-    if (event.target === event.currentTarget) event.currentTarget.hidden = true;
-  });
+  const editarEventoBackdrop = document.getElementById('editar-evento-modal-backdrop');
+  const cerrarEditarEvento = () => {
+    editarEventoBackdrop.hidden = true;
+  };
+  document.getElementById('editar-evento-modal-close').addEventListener('click', cerrarEditarEvento);
+  cerrarAlClicFuera(editarEventoBackdrop, cerrarEditarEvento);
 
   try {
     const { user } = await me(session.token);

@@ -3,6 +3,7 @@ import { getSession, clearSession } from '../services/session.js';
 import { getActiveEventId, setActiveEventId, clearActiveEventId } from '../services/eventoActivo.js';
 import { subscribeToEvento } from '../services/eventStream.js';
 import { folioDe, renderDetalleHogarHTML, renderHogaresTablaHTML } from '../hogarDetalleView.js';
+import { cerrarAlClicFuera } from '../domUtils.js';
 
 // Paleta llamativa a propósito: el dorado del tema se ve bien en botones y
 // texto, pero en gráficas se veía apagado y costaba distinguir series/barras.
@@ -339,13 +340,9 @@ export async function mount() {
     card.addEventListener('click', () => abrirKpiModal(card.dataset.kpi));
   });
   document.getElementById('kpi-modal-close').addEventListener('click', cerrarKpiModal);
-  document.getElementById('kpi-modal-backdrop').addEventListener('click', (event) => {
-    if (event.target.id === 'kpi-modal-backdrop') cerrarKpiModal();
-  });
+  cerrarAlClicFuera(document.getElementById('kpi-modal-backdrop'), cerrarKpiModal);
   document.getElementById('detalle-modal-close').addEventListener('click', cerrarDetalleModal);
-  document.getElementById('detalle-modal-backdrop').addEventListener('click', (event) => {
-    if (event.target.id === 'detalle-modal-backdrop') cerrarDetalleModal();
-  });
+  cerrarAlClicFuera(document.getElementById('detalle-modal-backdrop'), cerrarDetalleModal);
 
   onKeydown = (event) => {
     if (event.key !== 'Escape') return;
