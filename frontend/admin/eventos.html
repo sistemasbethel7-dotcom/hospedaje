@@ -68,6 +68,39 @@
         <tbody id="eventos-tbody"></tbody>
       </table>
     </div>
+
+<div class="admin-modal-backdrop" id="editar-evento-modal-backdrop" hidden>
+  <div class="admin-modal" role="dialog" aria-modal="true" aria-labelledby="editar-evento-modal-title">
+    <div class="admin-modal-header">
+      <h2 class="admin-modal-title" id="editar-evento-modal-title">Editar evento</h2>
+      <button type="button" class="admin-modal-close" id="editar-evento-modal-close" aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="admin-modal-body">
+      <p class="admin-error" id="editar-evento-error" role="alert"></p>
+      <div class="admin-edit-grid">
+        <div class="admin-edit-field span-2">
+          <label class="label-caps" for="ee-nombre">Nombre del evento</label>
+          <input type="text" id="ee-nombre">
+        </div>
+        <div class="admin-edit-field span-2">
+          <label class="label-caps" for="ee-sede">Sede</label>
+          <input type="text" id="ee-sede" placeholder="Opcional">
+        </div>
+        <div class="admin-edit-field">
+          <label class="label-caps" for="ee-fecha-inicio">Fecha inicio</label>
+          <input type="date" id="ee-fecha-inicio">
+        </div>
+        <div class="admin-edit-field">
+          <label class="label-caps" for="ee-fecha-fin">Fecha fin</label>
+          <input type="date" id="ee-fecha-fin">
+        </div>
+      </div>
+      <div class="admin-edit-actions">
+        <button type="button" class="admin-btn" id="editar-evento-guardar-btn">Guardar cambios</button>
+      </div>
+    </div>
+  </div>
+</div>
   </main>
 
 </div>

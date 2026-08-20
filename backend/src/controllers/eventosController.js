@@ -80,6 +80,25 @@ export async function actualizar(req, res) {
     return res.status(400).json({ message: 'Estatus inválido.' });
   }
 
+  // Editar nombre/sede/fechas solo se permite mientras el evento sigue abierto; el estatus en
+  // sí (finalizar/reabrir) no pasa por aquí.
+  const editaDatos = nombre !== undefined || sede !== undefined || fecha_inicio !== undefined || fecha_fin !== undefined;
+  if (editaDatos) {
+    if (!nombre || !fecha_inicio || !fecha_fin) {
+      return res.status(400).json({ message: 'Faltan datos obligatorios del evento.' });
+    }
+    if (fecha_fin < fecha_inicio) {
+      return res.status(400).json({ message: 'La fecha de fin no puede ser anterior a la de inicio.' });
+    }
+    const actual = await getEventoById(req.params.id);
+    if (!actual) {
+      return res.status(404).json({ message: 'Evento no encontrado.' });
+    }
+    if (actual.estatus === 'finalizado') {
+      return res.status(409).json({ message: 'No se puede editar un evento finalizado. Reábrelo primero.' });
+    }
+  }
+
   const evento = await updateEvento(req.params.id, {
     nombre: nombre || null,
     sede: sede || null,

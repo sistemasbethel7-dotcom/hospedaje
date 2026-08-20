@@ -37,6 +37,10 @@ function renderEventos(eventos) {
       const toggleAction = esAdmin
         ? `<button type="button" class="admin-btn outline" data-toggle="${e.id}" data-nuevo-estatus="${e.estatus === 'abierto' ? 'finalizado' : 'abierto'}">${e.estatus === 'abierto' ? 'Finalizar' : 'Reabrir'}</button>`
         : '';
+      const editarAction =
+        esAdmin && e.estatus === 'abierto'
+          ? `<button type="button" class="admin-btn outline" data-editar="${e.id}">Editar</button>`
+          : '';
       return `
         <tr>
           <td>${escapeHtml(e.nombre)}</td>
@@ -48,6 +52,7 @@ function renderEventos(eventos) {
           <td>
             <div class="admin-table-actions">
               <button type="button" class="admin-btn" data-ver="${e.id}">Ver dashboard</button>
+              ${editarAction}
               ${toggleAction}
             </div>
           </td>
@@ -63,6 +68,13 @@ function renderEventos(eventos) {
     });
   });
 
+  tbody.querySelectorAll('[data-editar]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const evento = eventos.find((e) => e.id === Number(btn.dataset.editar));
+      if (evento) abrirModalEditar(evento);
+    });
+  });
+
   tbody.querySelectorAll('[data-toggle]').forEach((btn) => {
     btn.addEventListener('click', async () => {
       btn.disabled = true;
@@ -75,6 +87,52 @@ function renderEventos(eventos) {
       }
     });
   });
+}
+
+function abrirModalEditar(evento) {
+  document.getElementById('editar-evento-error').textContent = '';
+  document.getElementById('ee-nombre').value = evento.nombre;
+  document.getElementById('ee-sede').value = evento.sede || '';
+  document.getElementById('ee-fecha-inicio').value = evento.fecha_inicio.slice(0, 10);
+  document.getElementById('ee-fecha-fin').value = evento.fecha_fin.slice(0, 10);
+
+  const guardarBtn = document.getElementById('editar-evento-guardar-btn');
+  guardarBtn.onclick = async () => {
+    const errorEl = document.getElementById('editar-evento-error');
+    errorEl.textContent = '';
+
+    const nombre = document.getElementById('ee-nombre').value.trim();
+    const sede = document.getElementById('ee-sede').value.trim();
+    const fechaInicio = document.getElementById('ee-fecha-inicio').value;
+    const fechaFin = document.getElementById('ee-fecha-fin').value;
+
+    if (!nombre || !fechaInicio || !fechaFin) {
+      errorEl.textContent = 'Completa el nombre y las fechas del evento.';
+      return;
+    }
+    if (fechaFin < fechaInicio) {
+      errorEl.textContent = 'La fecha de fin no puede ser anterior a la de inicio.';
+      return;
+    }
+
+    guardarBtn.disabled = true;
+    try {
+      await actualizarEvento(session.token, evento.id, {
+        nombre,
+        sede: sede || null,
+        fecha_inicio: fechaInicio,
+        fecha_fin: fechaFin,
+      });
+      document.getElementById('editar-evento-modal-backdrop').hidden = true;
+      await cargarEventos();
+    } catch (err) {
+      errorEl.textContent = err.message || 'No se pudo guardar el evento.';
+    } finally {
+      guardarBtn.disabled = false;
+    }
+  };
+
+  document.getElementById('editar-evento-modal-backdrop').hidden = false;
 }
 
 async function cargarEventos() {
@@ -102,6 +160,13 @@ export async function mount({ navigate }) {
   }
   navigateFn = navigate;
   esAdmin = false;
+
+  document.getElementById('editar-evento-modal-close').addEventListener('click', () => {
+    document.getElementById('editar-evento-modal-backdrop').hidden = true;
+  });
+  document.getElementById('editar-evento-modal-backdrop').addEventListener('click', (event) => {
+    if (event.target === event.currentTarget) event.currentTarget.hidden = true;
+  });
 
   try {
     const { user } = await me(session.token);
